@@ -1,0 +1,2382 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Famlyfi (Copy)</title>
+<meta name="theme-color" content="#0F1013">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,800&display=swap">
+<style>
+/* =========================================================
+   1. DESIGN TOKENS
+   Layout: sticky sidebar + content on desktop, bottom dock + sheets on phones.
+   Dark-first; light values follow the viewer or the in-app theme setting.
+   ========================================================= */
+:root{
+  --bg:#0F1013; --surface:#1A1B20; --surface2:#24252B; --surface3:#2C2D34;
+  --line:rgba(255,255,255,.07); --other:#4A4B55; --text:#F3F2EE; --muted:#8C8D96; --ink:#0F1013;
+  --accent:#FFB547; --danger:#FF5B47; --scrim:rgba(0,0,0,.6);
+  --g-violet:#9C95FF; --g-coral:#FF5B47; --g-mint:#3DDC97; --g-pink:#FF7EB6;
+  --g-amber:#FFB547; --g-sky:#5BB8FF; --g-lime:#D2F35C; --g-sand:#E8C39E;
+  --font:"Bricolage Grotesque",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r-card:24px; --r-pill:999px;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#F4F4F0; --surface:#FFFFFF; --surface2:#ECECE7; --surface3:#E2E2DC;
+    --line:rgba(0,0,0,.08); --other:#C4C4CA; --text:#121316; --muted:#62636B; --ink:#0F1013;
+    --accent:#C77700; --danger:#D9432E; --scrim:rgba(20,20,24,.45);
+    --g-violet:#6B61F0; --g-coral:#E03A26; --g-mint:#0F9A6C; --g-pink:#D63F86;
+    --g-amber:#C77700; --g-sky:#1F7FD1; --g-lime:#6E9A00; --g-sand:#A87B4F;
+    color-scheme:light;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#F4F4F0; --surface:#FFFFFF; --surface2:#ECECE7; --surface3:#E2E2DC;
+  --line:rgba(0,0,0,.08); --other:#C4C4CA; --text:#121316; --muted:#62636B; --ink:#0F1013;
+  --accent:#C77700; --danger:#D9432E; --scrim:rgba(20,20,24,.45);
+  --g-violet:#6B61F0; --g-coral:#E03A26; --g-mint:#0F9A6C; --g-pink:#D63F86;
+  --g-amber:#C77700; --g-sky:#1F7FD1; --g-lime:#6E9A00; --g-sand:#A87B4F;
+  color-scheme:light;
+}
+
+/* =========================================================
+   2. BASE
+   ========================================================= */
+*,*::before,*::after{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased;font-size:15px}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+input,select{font:inherit;color:var(--text)}
+a{color:inherit}
+svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:10px}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+/* =========================================================
+   3. LAYOUT (app shell)
+   ========================================================= */
+.app{display:flex;min-height:100vh}
+.side{display:none}
+.main{flex:1;min-width:0;padding:24px 16px 130px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column}
+.mtop{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px}
+.mtitle{margin:0;font-size:28px;font-weight:800;letter-spacing:-.045em;line-height:1}
+.mtop .brand{font-size:28px;letter-spacing:-.045em;line-height:1}
+.mtop .brand i{width:8px;height:8px}
+.mtop .right{display:flex;align-items:center;gap:10px}
+.gap-hero{margin-top:34px}
+@media (max-width:899px){.dt-only{display:none!important}.topbar .btn.primary{display:none}.gap-hero{margin-top:8px}.hero-row{margin-top:10px}.main{padding-bottom:150px}.cards{margin-top:22px}.sec-h{margin-top:34px}.acards{margin-top:24px}}
+@media (min-width:900px){.m-only{display:none!important}}
+@media (min-width:900px){
+  .side{display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;width:248px;flex:none;
+    padding:30px 16px 22px 22px;border-right:1px solid var(--line);overflow-y:auto;scrollbar-width:none}
+  .side::-webkit-scrollbar{display:none}
+  .main{padding:34px 40px 64px}
+  .dock,.mtop{display:none!important}
+}
+
+/* Sidebar */
+.brand{font-size:23px;font-weight:800;letter-spacing:-.04em;text-decoration:none;color:var(--text)}
+.brand i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-left:2px}
+.side .brand{margin:0 0 36px 12px}
+.nav{display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;border-radius:12px;font-size:15px;font-weight:500;color:var(--muted);text-align:left;text-decoration:none}
+.nav:hover{background:var(--surface);color:var(--text)}
+.nav.on{background:var(--surface);color:var(--text)}
+.nav .cnt{margin-left:auto;font-size:13px}
+.nav .dot{width:10px;height:10px;border-radius:4px;margin:0 4px;flex:none}
+.side-lbl{display:flex;justify-content:space-between;align-items:center;margin:26px 8px 4px 12px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+.side-lbl button{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:var(--muted)}
+.side-lbl button:hover{background:var(--surface);color:var(--text)}
+.side-lbl .sg-toggle{width:auto;height:28px;padding:0 8px 0 0;margin-left:0;display:flex;align-items:center;gap:6px;font:inherit;color:var(--muted);letter-spacing:inherit}
+.side-lbl .sg-toggle:hover{background:none;color:var(--text)}
+.sg-wrap{display:grid;grid-template-rows:1fr;transition:grid-template-rows .35s var(--ease),opacity .25s}
+.sg-wrap.closed{grid-template-rows:0fr;opacity:0;pointer-events:none}
+.side-foot{margin-top:auto;padding-top:18px;border-top:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.me{display:flex;align-items:center;gap:10px;flex:1;min-width:0;padding:8px;border-radius:14px;text-decoration:none}
+.me:hover,.me.on{background:var(--surface)}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--accent);color:var(--ink);display:grid;place-items:center;font-weight:800;font-size:15px;flex:none;text-decoration:none}
+.iconbtn{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--muted)}
+.iconbtn:hover,.iconbtn.on{background:var(--surface);color:var(--text)}
+
+/* Mobile dock */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:30px 16px calc(18px + env(safe-area-inset-bottom,0px));
+  background:linear-gradient(to top,var(--bg) 62%,transparent);display:flex;gap:10px;pointer-events:none}
+.dock>*{pointer-events:auto}
+.dock nav{flex:1;height:62px;border-radius:var(--r-pill);background:var(--surface);display:flex;align-items:center;justify-content:space-around;padding:0 6px;max-width:460px;margin-left:auto}
+.tab{width:52px;height:48px;border-radius:var(--r-pill);display:grid;place-items:center;color:var(--muted);text-decoration:none}
+.tab.on{background:var(--text);color:var(--bg)}
+.tab svg.i{width:21px;height:21px}
+.fab{width:62px;height:62px;border-radius:50%;background:var(--accent);color:var(--ink);display:grid;place-items:center;flex:none}
+.fab svg.i{width:24px;height:24px;stroke-width:2.6}
+.dock .spacer{flex:1;max-width:460px;margin-right:auto;display:none}
+
+/* =========================================================
+   4. COMPONENTS
+   ========================================================= */
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.seg{display:inline-flex;background:var(--surface);border-radius:var(--r-pill);padding:4px;gap:2px}
+.seg button{height:34px;padding:0 15px;border-radius:var(--r-pill);font-size:14px;font-weight:600;color:var(--muted);white-space:nowrap;transition:background .2s,color .2s}
+.seg button.on{background:var(--text);color:var(--bg)}
+.seg.sm{background:var(--surface2);padding:3px}
+.seg.sm button{height:32px;padding:0 14px;font-size:13.5px}
+.btn{height:48px;padding:0 22px;border-radius:var(--r-pill);font-weight:700;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;text-decoration:none}
+.btn.primary{background:var(--accent);color:var(--ink);font-weight:800;letter-spacing:-.02em}
+.btn.ghost{background:var(--surface2)}
+.btn.text{padding:0 14px}
+.btn.danger{background:var(--danger);color:#fff}
+.btn.danger-text{color:var(--danger);padding:0 6px}
+.btn svg.i{width:16px;height:16px;stroke-width:2.6}
+.chip{height:40px;padding:0 16px;border-radius:var(--r-pill);background:var(--surface);font-size:14px;font-weight:500;display:inline-flex;align-items:center;gap:8px}
+.chip:hover{background:var(--surface2)}
+.chip.dark{background:var(--text);color:var(--bg);font-weight:600}
+.chip svg.i{width:15px;height:15px}
+
+.eyebrow{font-size:15px;color:var(--muted);font-weight:500}
+.hero{margin:6px 0 0;font-size:clamp(64px,13vw,132px);line-height:.86;font-weight:800;letter-spacing:-.06em;color:var(--accent);text-wrap:balance}
+.hero-row{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.hwrap{}
+.hstage{display:grid;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;padding-bottom:.08em}
+.hs{grid-area:1/1;will-change:transform,opacity,filter}
+.hs .hero{color:var(--hc,var(--accent))}
+.hs .eyebrow{margin-bottom:0}
+.hs.in{animation:hsIn .85s var(--ease) both}
+.hs.out{animation:hsOut .5s cubic-bezier(.5,0,.9,.4) both;pointer-events:none}
+@keyframes hsIn{from{opacity:0;transform:translateY(34%) scale(.97);filter:blur(16px)}to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes hsOut{from{opacity:1;transform:none;filter:blur(0)}to{opacity:0;transform:translateY(-34%) scale(.97);filter:blur(16px)}}
+.hdots{display:flex;gap:6px;margin-top:22px}
+.hdot{height:4px;width:16px;border-radius:4px;background:var(--line);border:0;padding:0;position:relative;overflow:hidden;transition:width .5s var(--ease);cursor:pointer}
+.hdot::before{content:'';position:absolute;inset:-10px 0}
+.hdot.on{width:40px}
+.hdot.on::after{content:'';position:absolute;inset:0;background:var(--text);opacity:.85;transform-origin:left;animation:hdp var(--hdur,5000ms) linear both}
+.hwrap:hover .hdot.on::after{animation-play-state:paused}
+@keyframes hdp{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media (prefers-reduced-motion:reduce){.hs.in,.hs.out{animation-duration:.01s}}
+.hero-unit{font-size:clamp(17px,2.4vw,22px);font-weight:700;letter-spacing:-.02em}
+.hero-unit span{color:var(--muted);font-weight:500}
+.title{margin:0;font-size:clamp(56px,10vw,112px);line-height:.86;font-weight:800;letter-spacing:-.06em;color:var(--accent)}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:10px;margin-top:28px}
+@media (min-width:900px){.cards{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}}
+.sc{background:var(--surface);border-radius:22px;padding:18px 20px 20px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.sc-h{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--muted);font-weight:500}
+.tint{display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--c) 16%,transparent);color:var(--c)}
+.sc-h .tint{width:30px;height:30px;border-radius:10px}
+.sc-h .tint svg.i{width:15px;height:15px;stroke-width:2.4}
+.sc-v{font-size:clamp(26px,3.2vw,36px);font-weight:800;letter-spacing:-.045em;line-height:1;overflow-wrap:anywhere}
+.sc-s{font-size:12.5px;color:var(--muted);margin-top:8px}
+
+.card{background:var(--surface);border-radius:var(--r-card);padding:24px 26px;min-width:0}
+.card-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:12px}
+.card-t{font-size:20px;font-weight:800;letter-spacing:-.03em}
+.link{font-size:13.5px;font-weight:600;color:var(--muted);text-decoration:none}
+.link:hover{color:var(--text)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:16px;margin-top:36px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:16px}
+
+.row{display:flex;align-items:center;gap:14px;padding:13px 0;border-top:1px solid var(--line);width:100%;text-align:left}
+.row:first-of-type{border-top:0}
+.tile{width:42px;height:42px;border-radius:14px}
+.tile svg.i{width:19px;height:19px}
+.nm{font-size:16px;font-weight:600;letter-spacing:-.01em}
+.sub{font-size:13px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:6px}
+.amt{margin-left:auto;font-size:16px;font-weight:700;text-align:right;white-space:nowrap}
+.pos{color:var(--g-mint)}
+.gpin{display:inline-flex;vertical-align:middle;margin-left:8px;color:var(--muted)}
+.gpin svg.i{width:14px;height:14px;transform:rotate(30deg)}
+.tag{display:inline-flex;align-items:center;height:19px;padding:0 7px;border-radius:6px;background:var(--surface2);font-size:11px;font-weight:600;color:var(--text)}
+
+.sec-h{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:44px 0 14px}
+.sec-h h2{margin:0;font-size:26px;font-weight:800;letter-spacing:-.04em}
+.sec-h .acts{display:flex;gap:8px;flex-wrap:wrap}
+.gsmenu{position:relative}.gsmenu .menu{top:52px;right:0}
+@media (max-width:899px){.sec-h{flex-wrap:nowrap}}
+
+.bar{display:flex;gap:4px;height:14px;margin-top:12px}
+.bar span{border-radius:7px;min-width:6px;background:var(--c)}
+.legend{display:flex;flex-wrap:wrap;gap:10px 24px;margin-top:14px}
+.legend div{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.legend i{width:9px;height:9px;border-radius:3px;background:var(--c)}
+.legend b{color:var(--text);font-weight:600}
+
+/* Groups (Overview) */
+.groups{display:flex;flex-direction:column;gap:12px}
+.gcard{background:var(--surface);border-radius:22px}
+.ghead{position:relative;display:flex;align-items:center}
+.gtoggle{flex:1;min-width:0;display:flex;align-items:center;gap:16px;padding:18px 8px 18px 22px;text-align:left;border-radius:22px}
+.gname{font-size:19px;font-weight:800;letter-spacing:-.03em}
+.share{flex:1;max-width:200px;height:6px;border-radius:6px;background:var(--surface2);overflow:hidden;margin-left:auto}
+.share span{display:block;height:100%;border-radius:6px;background:var(--c)}
+.gnet{min-width:96px;text-align:right;font-size:20px;font-weight:800;letter-spacing:-.03em}
+.chev{color:var(--muted);transition:transform .25s}
+.gcard.open .chev{transform:rotate(180deg)}
+.gmore{margin-right:14px;color:var(--text);background:var(--surface2);width:36px;height:36px}
+.gmore:hover{background:var(--surface3)}
+.gbody{padding:0 22px 6px 80px}
+.gbody .row{border-top:1px solid var(--line)}
+.gbody .row:hover .nm{color:var(--accent)}
+.gbody .row .pen{opacity:0;color:var(--muted);transition:opacity .15s}
+.gbody .row:hover .pen,.gbody .row:focus-visible .pen{opacity:1}
+.addrow{display:flex;align-items:center;gap:10px;padding:14px 0;border-top:1px solid var(--line);font-size:14px;font-weight:500;color:var(--muted);width:100%}
+.addrow:hover{color:var(--text)}
+@media (max-width:640px){.shr{display:none}.share{display:none}.gbody{padding:0 16px 6px 16px}.gtoggle{padding:14px 4px 14px 16px;gap:12px}.gnet{min-width:0;font-size:17px;margin-left:auto}.gname{font-size:17px}}
+.menu{position:absolute;right:14px;top:62px;z-index:15;min-width:200px;background:var(--surface2);border:1px solid var(--line);border-radius:16px;padding:6px;box-shadow:0 20px 44px rgba(0,0,0,.35);animation:pop .16s ease-out;transform-origin:top right}
+.menu.up{top:auto;bottom:calc(100% - 10px);transform-origin:bottom right}
+.menu button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:11px 12px;border-radius:10px;font-size:14.5px;font-weight:500}
+.menu button:hover{background:var(--surface3)}
+.menu svg.i{width:16px;height:16px;color:var(--muted)}
+.menu .warn,.menu .warn svg.i{color:var(--danger)}
+.confirm{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 10px 10px 16px;border-radius:14px;background:color-mix(in srgb,var(--danger) 13%,transparent);font-size:14.5px;font-weight:500}
+.confirm span{flex:1;min-width:160px}
+.confirm .btn{height:38px;padding:0 16px;font-size:14px}
+.gcard>.confirm{margin:0 18px 16px}
+
+.cards.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:640px){.cards.three{gap:8px}.cards.three .sc{padding:14px;gap:12px}.cards.three .sc-h{font-size:12px;gap:6px}.cards.three .sc-h .tint{display:none}.cards.three .sc-v{font-size:20px}.cards.three .sc-s{font-size:11px}}
+/* Accounts */
+.alists{display:flex;flex-direction:column;gap:22px;margin-top:26px}
+.alist{background:var(--surface);border-radius:24px;padding:6px 8px 8px}
+.alist-top{position:relative;display:flex;align-items:center}
+.alist-top .alist-h{flex:1;min-width:0;width:auto}
+.alist-top .gmore{margin:8px 6px 2px 0;width:34px;height:34px;flex:none}
+.alist-top .menu{top:46px;right:4px}
+.alist>.confirm{margin:4px 8px 8px}
+.alist>.confirm span{flex-basis:100%}
+.alist>.confirm .btn{flex:1}
+.arow-add{padding:12px;margin-top:2px;border-top:0}
+.alist-h{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:14px 12px 8px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.alist-h>span{flex:1}.alist-h small{margin-left:8px;font-size:12px;font-weight:500;opacity:.7}
+.alist-h .chev{width:16px;height:16px;transition:transform .3s var(--ease)}
+.alist.open .alist-h .chev{transform:rotate(180deg)}
+@media (min-width:900px){.alist-h .chev,.alist-h small{display:none}.alist-h{cursor:default;pointer-events:none}}
+@media (max-width:899px){.alist:not(.open) .arow{display:none}.alist:not(.open){padding-bottom:6px}.alist:not(.open) .alist-h{padding:16px 14px}.alist.open .arow{animation:expand .3s var(--ease) both}}
+.alist-h b{font-size:15px;color:var(--accent);font-weight:700;letter-spacing:-.02em}
+.arow{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:12px;border-radius:16px;transition:background-color .2s,transform .18s var(--ease)}
+.arow:hover{background:var(--surface2)}.arow:active{transform:scale(.985)}
+.atile{width:40px;height:40px;border-radius:13px;background:var(--surface2);display:grid;place-items:center;flex:none}
+.atile svg.i{width:19px;height:19px}
+.anm2{flex:1;min-width:0;font-size:16px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.anm2 small{display:block;font-size:12.5px;color:var(--muted);font-weight:400;margin-top:2px}
+.arow-go{width:15px!important;height:15px!important;color:var(--muted);opacity:.55;margin-left:-4px}
+.arow:hover .arow-go{opacity:1}
+.abal{font-size:18px;font-weight:700;letter-spacing:-.035em}
+.acards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:14px}
+@media (max-width:640px){.acards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.acard{min-height:160px;padding:16px;border-radius:20px}.acard .bal{font-size:22px}.acard .tile{width:38px;height:38px;margin-bottom:10px}}
+.acard{background:var(--surface);border-radius:var(--r-card);padding:20px;min-height:180px;display:flex;flex-direction:column;text-align:left;width:100%}
+.acard:hover{background:var(--surface2)}
+.acard .tile{width:44px;height:44px;background:var(--surface2);margin-bottom:14px;display:grid;place-items:center}
+.acard:hover .tile{background:var(--surface3)}
+.acard .ty{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--muted)}
+.acard .ty i{width:9px;height:9px;border-radius:3px;background:var(--c)}
+.acard .anm{margin-top:auto;padding-top:14px;font-size:16px;font-weight:500}
+.acard .bal{font-size:30px;font-weight:800;letter-spacing:-.045em;margin-top:4px}
+.newcard{background:transparent;box-shadow:inset 0 0 0 2px var(--surface2);align-items:center;justify-content:center;gap:10px;color:var(--muted);font-weight:600}
+.newcard:hover{background:var(--surface)}
+
+/* Goals */
+.goal{background:var(--surface);border-radius:28px;padding:28px 30px}
+.goal-amt{font-size:clamp(52px,8vw,96px);line-height:.88;font-weight:800;letter-spacing:-.06em;color:var(--accent)}
+.track{display:flex;align-items:center;margin:34px 14px 0}
+.track .seg2{flex:1;height:8px;margin:0 -2px;background:var(--surface2);transition:background .3s}
+.track .seg2.on{background:var(--accent)}
+.node{width:46px;height:46px;margin:0 -14px;display:grid;place-items:center;flex:none;position:relative;z-index:1}
+.node i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--surface);box-shadow:inset 0 0 0 2px var(--muted);transition:transform .25s cubic-bezier(.3,1.6,.5,1),background .2s}
+.node.on i{background:var(--accent);box-shadow:none}
+.node i svg.i{width:13px;height:13px;stroke:var(--ink);stroke-width:3;opacity:0}
+.node.on i svg.i{opacity:1}
+.node:hover i{transform:scale(1.12)}
+.ticks{display:flex;justify-content:space-between;margin-top:8px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.gmini{background:var(--surface);border-radius:var(--r-card);padding:22px 24px;text-align:left;width:100%}
+.gmini:hover{background:var(--surface2)}
+.prog{height:8px;border-radius:8px;background:var(--surface2);overflow:hidden;margin-top:18px}
+.prog span{display:block;height:100%;border-radius:8px;background:var(--c)}
+
+/* Settings */
+.set-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:44px;margin-top:40px;align-items:start}
+.set-lbl{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.02em;margin:0 0 8px}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:66px;padding:12px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.set-row:last-child{border-bottom:1px solid var(--line)}
+.set-row .nm{font-weight:500}
+.swatches{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.sw{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;background:var(--c)}
+.sw svg.i{stroke:#0F1013;stroke-width:3;opacity:0}
+.sw.on svg.i{opacity:1}
+.sw:hover{transform:scale(1.06)}
+@media (max-width:640px){.swatches{gap:8px}.sw{width:40px;height:40px;border-radius:13px}}
+.note{font-size:13.5px;color:var(--muted);line-height:1.5;max-width:60ch}
+
+/* Empty state */
+.empty{background:var(--surface);border-radius:var(--r-card);padding:36px 30px;display:flex;flex-direction:column;align-items:flex-start;gap:14px}
+.empty h3{margin:0;font-size:24px;font-weight:800;letter-spacing:-.035em}
+.empty p{margin:0;color:var(--muted);line-height:1.5;max-width:46ch}
+.banner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:color-mix(in srgb,var(--accent) 12%,var(--surface));border-radius:16px;padding:12px 12px 12px 18px;font-size:14.5px;margin-bottom:24px}
+.banner span{flex:1;min-width:200px}
+.banner .btn{height:38px;padding:0 16px;font-size:14px}
+@media (max-width:899px){.banner:not(.confirm){flex-wrap:nowrap;padding:6px 6px 6px 16px;border-radius:var(--r-pill);margin-bottom:14px;font-size:14px}.banner:not(.confirm) span{min-width:0}.banner:not(.confirm) .btn{height:34px;font-size:13.5px;white-space:nowrap}}
+
+/* =========================================================
+   5. MODALS (dialog on desktop, bottom sheet on phones)
+   ========================================================= */
+.scrim{position:fixed;inset:0;z-index:40;background:var(--scrim);animation:fade .25s ease-out;will-change:opacity}
+button,a,[data-act]{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.dialog{position:fixed;z-index:41;left:50%;top:max(48px,8vh);transform:translateX(-50%);width:min(540px,calc(100% - 32px));max-height:calc(100vh - 96px);overflow-y:auto;
+  background:var(--surface);border-radius:30px;padding:26px 30px;box-shadow:0 40px 80px rgba(0,0,0,.45);animation:popIn .3s cubic-bezier(.2,.8,.2,1);scrollbar-width:none}
+.dialog::-webkit-scrollbar{display:none}
+@media (max-width:640px){
+  .dialog{left:0;right:0;top:auto;bottom:0;transform:none;width:100%;max-height:92vh;border-radius:30px 30px 0 0;padding:12px 20px calc(24px + env(safe-area-inset-bottom,0px));animation:up .38s cubic-bezier(.22,1,.36,1);will-change:transform;backface-visibility:hidden}
+  .dialog::before{content:"";display:block;width:40px;height:4px;border-radius:4px;background:var(--surface3);margin:0 auto 16px}
+}
+.d-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.d-kicker{font-size:15px;font-weight:600;color:var(--muted)}
+.d-title{font-size:22px;font-weight:800;letter-spacing:-.035em}
+.close{width:36px;height:36px;border-radius:50%;background:var(--surface2);display:grid;place-items:center}
+.close svg.i{width:15px;height:15px}
+.bigname{width:100%;border:0;outline:none;background:transparent;margin-top:14px;font-size:30px;font-weight:800;letter-spacing:-.04em;padding:0}
+.bigname::placeholder,.bigamt::placeholder{color:var(--muted)}
+.bigname{text-overflow:ellipsis}
+@media (max-width:420px){.bigname{font-size:27px}}
+.amtrow{display:flex;align-items:baseline;gap:10px;margin-top:16px}
+.amtrow .cur{font-size:20px;font-weight:700;color:var(--muted);white-space:nowrap;flex:none}
+.bigamt{width:100%;min-width:0;border:0;outline:none;background:transparent;padding:0;font-size:clamp(54px,11vw,72px);font-weight:800;letter-spacing:-.06em;line-height:1}
+.hint{margin:10px 0 20px;font-size:14px;color:var(--muted)}
+.frow{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:60px;border-top:1px solid var(--line);width:100%;text-align:left;flex-wrap:wrap}
+.frow .lbl{font-size:15px;font-weight:500;color:var(--muted)}
+.frow input.plain{border:0;outline:none;background:transparent;text-align:right;font-size:16px;font-weight:600;min-width:0;flex:1}
+.gval{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600}
+.gval i{width:10px;height:10px;border-radius:4px;background:var(--c)}
+.d-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:20px;padding-top:18px;border-top:1px solid var(--line);flex-wrap:wrap}
+.d-foot .right{display:flex;gap:8px;margin-left:auto}
+.srch{display:flex;align-items:center;gap:10px;height:48px;padding:0 16px;border-radius:16px;background:var(--surface2);margin-top:18px}
+.srch input{border:0;outline:none;background:transparent;flex:1;min-width:0;font-size:15px}
+.pick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:360px;overflow-y:auto;margin-top:14px;scrollbar-width:none}
+.pick::-webkit-scrollbar{display:none}
+.pt{display:flex;align-items:center;gap:12px;height:56px;padding:0 14px;border-radius:16px;background:var(--surface2);text-align:left;width:100%;min-width:0}
+.pt:hover{background:var(--surface3)}
+.pt.on{box-shadow:inset 0 0 0 2px var(--accent)}
+.pt i{width:12px;height:12px;border-radius:4px;flex:none;background:var(--c)}
+.pt b{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pt span{font-size:12.5px;color:var(--muted)}
+.pt.more{background:transparent;box-shadow:inset 0 0 0 1.5px var(--surface3)}
+.pt.more b{color:var(--text)}
+.pt.more svg.i{width:16px;height:16px;color:var(--muted)}
+.im-grp{display:flex;align-items:center;gap:10px;width:100%;height:52px;padding:0 16px;margin-top:18px;border-radius:16px;background:var(--surface2);text-align:left;transition:background-color .2s}
+.im-grp:hover{background:var(--surface3)}
+.im-grp-l{font-size:13px;color:var(--muted);font-weight:500;margin-right:auto}
+.im-grp i{width:10px;height:10px;border-radius:3px;background:var(--c);flex:none}
+.im-grp b{font-weight:600;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.im-grp .chev{width:16px;height:16px;color:var(--muted);transform:rotate(-90deg)}
+.pt.new{background:transparent;box-shadow:inset 0 0 0 1.5px var(--surface3);color:var(--muted)}
+.icons{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:6px}
+@media (max-width:640px){.icons{grid-template-columns:repeat(6,minmax(0,1fr))}}
+.ic{aspect-ratio:1;border-radius:14px;display:grid;place-items:center;background:var(--surface2);color:var(--muted);max-width:100%}
+.ic:hover{color:var(--text)}
+.ic.on{background:color-mix(in srgb,var(--c) 18%,transparent);color:var(--c);box-shadow:inset 0 0 0 2px var(--c)}
+.flbl{display:block;font-size:13px;color:var(--muted);font-weight:600;letter-spacing:.02em;margin:22px 0 10px}
+.colors{display:flex;gap:10px;flex-wrap:wrap}
+.colors button{width:40px;height:40px;border-radius:13px;background:var(--c)}
+.colors button.on{box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--text)}
+.chipset{display:flex;gap:6px;flex-wrap:wrap}
+.chipset button{height:36px;padding:0 14px;border-radius:var(--r-pill);background:var(--surface2);font-size:14px;font-weight:500;color:var(--muted)}
+.chipset button.on{background:var(--text);color:var(--bg);font-weight:600}
+
+.toast{position:fixed;left:50%;bottom:110px;transform:translate(-50%,20px);z-index:60;background:var(--text);color:var(--bg);padding:12px 20px;border-radius:var(--r-pill);font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;white-space:nowrap}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast{max-width:calc(100vw - 32px);width:max-content;text-align:center;line-height:1.35;white-space:normal;border-radius:18px}
+@media (min-width:900px){.toast{bottom:32px}}
+@media (max-width:899px){.toast{bottom:auto;top:calc(16px + env(safe-area-inset-top,0px));transform:translate(-50%,-20px)}.toast.on{transform:translate(-50%,0)}}
+
+@keyframes popIn{from{opacity:0;transform:translate(-50%,16px) scale(.98)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes up{from{transform:translate3d(0,100%,0)}to{transform:translate3d(0,0,0)}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes pop{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:none}}
+@keyframes slideL{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+.slide{animation:slideL .28s cubic-bezier(.2,.8,.2,1)}
+
+/* =========================================================
+   6. MOTION
+   ========================================================= */
+:root{--ease:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.3,1.4,.5,1)}
+#view{transition:opacity .15s ease,transform .15s ease}
+#view.leaving{opacity:0;transform:translateY(-8px)}
+.btn,.chip,.fab,.tab,.iconbtn,.close,.seg button,.sw,.ic,.colors button,.pt,.node,.row,.gtoggle,.acard,.gmini,.sc,.addrow,.avatar{transition:transform .18s var(--ease),background-color .2s,color .2s,box-shadow .2s,opacity .2s,filter .2s}
+.btn:active,.chip:active,.fab:active,.tab:active,.iconbtn:active,.close:active,.seg button:active,.pt:active,.ic:active,.colors button:active,.sw:active,.avatar:active{transform:scale(.94)}
+.row:active,.gtoggle:active,.acard:active,.gmini:active{transform:scale(.985)}
+@media (hover:hover){
+  .btn.primary:hover,.fab:hover{filter:brightness(1.07)}
+  .acard:hover,.gmini:hover,.sc:hover{transform:translateY(-3px)}
+  .avatar:hover{transform:rotate(-8deg) scale(1.05)}
+  .gtoggle:hover .tint{transform:scale(1.06)}
+}
+.tint{transition:transform .25s var(--spring)}
+.enter .rise{animation:rise .55s var(--ease) both;animation-delay:calc(var(--i,0) * 45ms)}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.enter .hero,.enter .title{animation:heroIn .65s var(--ease) both}
+@keyframes heroIn{from{opacity:0;transform:translateY(20px);filter:blur(8px)}to{opacity:1;transform:none;filter:none}}
+.enter .bar span,.enter .prog span,.enter .share span{animation:grow 1s var(--ease) both;animation-delay:.18s;transform-origin:left center}
+@keyframes grow{from{transform:scaleX(0)}to{transform:none}}
+.gbody.opening{animation:expand .32s var(--ease)}
+.gbody.opening>*{animation:rise .38s var(--ease) both;animation-delay:calc(var(--i,0) * 28ms)}
+.gbody.closing{animation:collapse .18s ease-in forwards}
+@keyframes expand{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes collapse{to{opacity:0;transform:translateY(-6px)}}
+.removing{animation:remove .28s ease-in forwards}
+@keyframes remove{to{opacity:0;transform:scale(.96)}}
+.flash{animation:flash 1.8s ease-out;border-radius:12px}
+@keyframes flash{0%,35%{background:color-mix(in srgb,var(--accent) 18%,transparent)}100%{background:transparent}}
+.node.pop i{animation:nodePop .5s var(--spring)}
+@keyframes nodePop{40%{transform:scale(1.4)}}
+.menu{animation:pop .2s var(--spring)}
+.confirm{animation:rise .28s var(--ease)}
+#modal.closing .scrim{animation:fadeOut .2s ease-in forwards}
+#modal.closing .dialog{animation:dialogOut .2s ease-in forwards}
+@keyframes fadeOut{to{opacity:0}}
+@keyframes dialogOut{to{opacity:0;transform:translate(-50%,14px) scale(.97)}}
+@keyframes sheetOut{to{transform:translate3d(0,100%,0)}}
+@media (max-width:640px){#modal.closing .dialog{animation-name:sheetOut}}
+.toast{transition:transform .4s var(--spring),opacity .25s}
+/* sliding indicators */
+.navs{position:relative;display:flex;flex-direction:column;gap:4px}
+.ind{position:absolute;left:0;right:0;top:0;height:44px;border-radius:12px;background:var(--surface);transition:transform .4s var(--spring),height .3s var(--ease),opacity .2s;pointer-events:none}
+.ind.instant{transition:none}
+.navs .nav{position:relative;z-index:1}
+.navs .nav.on,.navs .nav:hover{background:transparent}
+.navs .nav:hover:not(.on){color:var(--text)}
+.dock nav{position:relative}
+.dind{position:absolute;top:7px;left:0;width:52px;height:48px;border-radius:999px;background:var(--text);transition:transform .45s var(--spring);pointer-events:none}
+.dind.instant{transition:none}
+.dock .tab{position:relative;z-index:1;transition:color .3s,transform .18s var(--ease)}
+.dock .tab.on{background:transparent;color:var(--bg)}
+.fab{transition:transform .35s var(--spring),opacity .2s,filter .2s}
+.fab{transition:transform .35s var(--spring),opacity .2s,filter .2s,width .35s var(--ease),margin .35s var(--ease)}
+.fab.hide{transform:scale(.3) rotate(-90deg);opacity:0;pointer-events:none;width:0;margin-left:-10px}
+.split{display:grid;grid-template-columns:1fr 1fr;background:var(--surface);border-radius:24px;margin-top:22px;padding:20px 0}
+.split>div{padding:2px 22px}.split>div+div{border-left:1px solid var(--line)}
+.split>div>span{display:block;font-size:13.5px;color:var(--muted)}
+.split b{display:block;margin-top:8px;font-size:30px;font-weight:800;letter-spacing:-.05em;line-height:1}
+.mcards{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.mcards .sc{gap:20px}
+.mcards .sc-v{font-size:38px}
+.mcards .prog{margin-top:16px}
+.mseg{display:flex;gap:3px;height:8px;margin-top:16px}
+.mseg span{border-radius:8px;background:var(--c);min-width:6px}
+.slims{display:flex;flex-direction:column;margin-top:14px}
+.slim{display:flex;align-items:center;gap:10px;padding:18px 4px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--text)}
+.slim>span{flex:1;font-size:15px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slim b{font-size:20px;font-weight:800;letter-spacing:-.04em}
+.slim svg.i{width:16px;height:16px;color:var(--muted)}
+@media (max-width:899px){.gcard .ghead .sub{display:none}}
+.pstats{display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface);border-radius:var(--r-card,24px);margin-top:28px;padding:20px 0}
+.pstats>div{text-align:center;padding:2px 8px}.pstats>div+div{border-left:1px solid var(--line)}
+.pstats b{display:block;font-size:34px;font-weight:800;letter-spacing:-.05em;line-height:1}
+.pstats span{display:block;margin-top:8px;font-size:13.5px;color:var(--muted)}
+/* Item sheet */
+.im .bigname{margin-top:22px}
+.im-to{display:inline-flex;align-items:center;gap:7px}
+.im-to i{width:9px;height:9px;border-radius:3px;background:var(--c);box-shadow:0 0 0 2px color-mix(in srgb,var(--ink) 20%,transparent)}
+.im-in{margin-top:22px;display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:500;color:var(--muted)}
+.im-in span{display:inline-flex;align-items:center;gap:7px;height:26px;padding:0 11px;border-radius:var(--r-pill);background:color-mix(in srgb,var(--c) 16%,transparent);color:var(--text);font-weight:600}
+.im-in i{width:8px;height:8px;border-radius:3px;background:var(--c)}
+.im-note{margin-top:26px!important}
+/* Drag & drop */
+.gbody .row[data-act=edit-item]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+@media (hover:hover){.gbody .row[data-act=edit-item]{cursor:grab}}
+.gbody .row.dragging{opacity:.3}
+.drag-ghost{position:fixed;left:0;top:0;z-index:70;pointer-events:none;display:flex;align-items:center;gap:14px;padding:12px 18px;border-radius:16px;background:var(--surface3);box-shadow:0 24px 50px rgba(0,0,0,.45);transform-origin:center;animation:lift .2s var(--spring) both}
+.drag-ghost .pen{display:none}
+.drag-ghost .amt{margin-left:auto}
+@keyframes lift{from{scale:1}to{scale:1.04;rotate:-1.5deg}}
+body.is-dragging,body.is-dragging *{cursor:grabbing!important}
+.gcard{transition:box-shadow .2s,background-color .2s,transform .2s var(--ease)}
+body.is-dragging .gcard.drop-on{box-shadow:inset 0 0 0 2px var(--c);background:color-mix(in srgb,var(--c) 10%,var(--surface));transform:scale(1.01)}
+body.is-dragging .gbody .row:hover .nm{color:inherit}
+body.is-dragging .gbody .row:hover .pen{opacity:0}
+.gcard{scroll-margin-top:28px}
+.gcard.pulse{animation:gpulse 1.4s var(--ease)}
+@keyframes gpulse{0%,30%{box-shadow:inset 0 0 0 2px var(--c);background:color-mix(in srgb,var(--c) 9%,var(--surface))}100%{box-shadow:inset 0 0 0 2px transparent}}
+#side-groups .nav.on{color:var(--text);background:var(--surface)}
+.drop-line{position:relative;height:0;z-index:2;pointer-events:none}
+.drop-line::before{content:"";position:absolute;left:-6px;right:0;top:-1.5px;height:3px;border-radius:3px;background:var(--c,var(--accent));box-shadow:0 0 12px color-mix(in srgb,var(--c,var(--accent)) 60%,transparent)}
+.drop-line::after{content:"";position:absolute;left:-10px;top:-5px;width:11px;height:11px;border-radius:50%;background:var(--surface);box-shadow:inset 0 0 0 3px var(--c,var(--accent))}
+.drag-tip{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin:-4px 0 14px}
+.drag-tip button{margin-left:auto;white-space:nowrap;font-size:12.5px;font-weight:600;color:var(--muted)}
+.drag-tip button:hover{color:var(--text)}
+.im .cur.pos{color:var(--g-mint)}
+.im-freq{display:flex;align-items:center;gap:12px;margin:14px 0 2px;flex-wrap:wrap}
+.im-acts{position:relative;display:flex;gap:8px}
+.im-menu{top:46px;right:0;min-width:230px}
+.im-switch{width:34px;height:20px;border-radius:999px;background:var(--surface3);position:relative;flex:none;transition:background .2s}
+.im-switch i{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--muted);transition:transform .25s var(--spring),background .2s}
+.im-switch.on{background:var(--accent)}.im-switch.on i{transform:translateX(14px);background:var(--ink)}
+.im-yr{height:28px;padding:0 11px;border-radius:var(--r-pill);background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px}
+.im-yr svg.i{width:13px;height:13px}
+.im-note{margin-top:22px;border-top:1px solid var(--line)}
+.im-note-h{display:flex;align-items:center;gap:10px;width:100%;padding:16px 2px 4px;text-align:left;color:var(--muted);font-size:14px;font-weight:600}
+.im-note-h:hover{color:var(--text)}
+.im-note-h svg.i{width:15px;height:15px}
+.im-note-h span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.im-note-h em{font-style:normal;font-weight:500;font-size:12.5px;opacity:.7}
+.im-note.open .chev{transform:rotate(180deg)}
+.im-note textarea{display:block;width:100%;margin-top:10px;padding:14px 16px;border:0;outline:none;border-radius:16px;background:var(--surface2);font:inherit;font-size:15px;line-height:1.45;resize:none;animation:expand .28s var(--ease)}
+.im-note textarea::placeholder{color:var(--muted)}
+.item-note{display:block;max-width:44ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.im-fq{height:34px;padding:0 6px 0 12px;border-radius:var(--r-pill);background:var(--surface2);font-size:13.5px;font-weight:600;display:inline-flex;align-items:center;gap:7px}
+.im-fq svg.i{width:14px;height:14px;color:var(--muted)}
+.im-fq.on{box-shadow:inset 0 0 0 1.5px var(--accent)}
+.im-sw{height:24px;padding:0 9px;border-radius:var(--r-pill);background:var(--surface3);color:var(--muted);font-size:12px;display:inline-flex;align-items:center;margin-left:2px}
+.im-fq:hover .im-sw{color:var(--text)}
+.im-hint{font-size:13.5px;color:var(--muted)}
+.im .flbl{margin-top:26px}
+.amtrow{cursor:text}
+.bigamt{flex:none;max-width:calc(100% - 70px)}
+.im-groups{display:flex;flex-wrap:wrap;gap:8px}
+.im-glbl{display:flex;align-items:center;justify-content:space-between;margin-top:26px;margin-bottom:10px}
+.im .im-glbl .flbl{margin:0}
+.im-all{height:30px;padding:0 12px;border-radius:var(--r-pill);background:var(--surface2);font-size:13px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.im-all:hover{color:var(--text)}
+.im-all svg.i{width:13px;height:13px}
+.im-groups.scroll{--px:30px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 calc(-1 * var(--px));padding:2px var(--px);scroll-padding:0 var(--px)}
+.im-groups.scroll::-webkit-scrollbar{display:none}
+.im-groups.scroll .gchip{flex:none}
+.im-groups.scroll.fr{-webkit-mask-image:linear-gradient(to right,#000 85%,transparent);mask-image:linear-gradient(to right,#000 85%,transparent)}
+.im-groups.scroll.fl{-webkit-mask-image:linear-gradient(to right,transparent,#000 15%);mask-image:linear-gradient(to right,transparent,#000 15%)}
+.im-groups.scroll.fl.fr{-webkit-mask-image:linear-gradient(to right,transparent,#000 15%,#000 85%,transparent);mask-image:linear-gradient(to right,transparent,#000 15%,#000 85%,transparent)}
+@media (max-width:640px){.im-groups.scroll{--px:20px}}
+.gchip{height:40px;padding:0 15px;border-radius:var(--r-pill);background:var(--surface2);display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--muted);transition:background-color .2s,color .2s,box-shadow .2s,transform .18s var(--ease)}
+.gchip:hover{color:var(--text)}
+.gchip:active{transform:scale(.95)}
+.gchip i{width:10px;height:10px;border-radius:4px;background:var(--c)}
+.gchip.on{background:color-mix(in srgb,var(--c) 18%,transparent);color:var(--text);box-shadow:inset 0 0 0 1.5px var(--c)}
+.gchip.new{background:transparent;box-shadow:inset 0 0 0 1.5px var(--surface3)}
+.gchip.new svg.i{width:14px;height:14px}
+.im-foot{display:flex;gap:10px;margin-top:28px}
+.im-foot .btn.primary{flex:1;height:56px;font-size:16px}
+.im-del{width:56px;height:56px;border-radius:50%;background:var(--surface2);color:var(--danger);display:grid;place-items:center;flex:none;transition:transform .18s var(--ease),background-color .2s}
+.im-del:hover{background:color-mix(in srgb,var(--danger) 14%,var(--surface2))}
+.im-del:active{transform:scale(.94)}
+/* Spending breakdown */
+.spend{background:var(--surface);border-radius:var(--r-card)}
+.sp-head{display:flex;align-items:center;gap:16px;width:100%;padding:18px 22px;text-align:left;border-radius:var(--r-card)}
+.sp-ttl{display:flex;flex-direction:column;gap:3px;flex:none}
+.sp-ttl>span{font-size:18px;font-weight:800;letter-spacing:-.03em}
+.sp-ttl small{font-size:13px;color:var(--muted);font-weight:500}
+.sp-mini{flex:1;display:flex;gap:3px;height:8px;max-width:260px;margin-left:auto}
+.sp-mini span{border-radius:4px;min-width:4px;background:var(--c)}
+.sp-head .chev{margin-left:auto;flex:none}
+.sp-mini+.chev{margin-left:0}
+.spend.open .chev{transform:rotate(180deg)}
+.sp-body{padding:0 22px 20px;animation:expand .32s var(--ease)}
+.sp-seg{margin-bottom:18px}
+.sp-donut{display:grid;grid-template-columns:minmax(0,240px) minmax(0,400px);justify-content:center;gap:64px;align-items:center}
+.sp-more{display:flex;align-items:center;gap:6px;margin:6px 0 0 12px;font-size:13px;font-weight:600;color:var(--muted);padding:6px 0}
+.sp-more svg.i{width:14px;height:14px}
+.sp-more:hover{color:var(--text)}
+.sp-ring{position:relative;width:100%;max-width:240px;aspect-ratio:1;margin:0 auto}
+.sp-ring svg{width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+.sp-arc{fill:none;stroke:var(--c);stroke-width:24;cursor:pointer;transition:opacity .25s,stroke-width .25s var(--spring);animation:arcIn .9s var(--ease) both;animation-delay:calc(var(--i) * 60ms)}
+.sp-arc:hover,.sp-arc.sel{stroke-width:30}
+.sp-arc.dim,.sp-key.dim{opacity:.28}
+@keyframes arcIn{from{stroke-dasharray:0 var(--C)}}
+.sp-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none;padding:0 50px}
+.sp-center span{font-size:13px;color:var(--muted);font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sp-center b{font-size:clamp(28px,4vw,36px);font-weight:800;letter-spacing:-.05em;line-height:1.05;margin-top:4px}
+.sp-center small{font-size:12px;color:var(--muted);margin-top:4px}
+.home-charts{align-items:stretch}
+.home-charts>div{display:flex;flex-direction:column}
+.home-charts .spend{flex:1}
+.spend.compact .sp-body{padding-top:6px;padding-bottom:26px}
+.sp-all{display:flex;align-items:center;gap:4px;margin-left:auto;flex:none}
+.sp-all svg.i{width:14px;height:14px}
+.wallet{display:flex;flex-direction:column}
+.wgrid{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:10px;padding:6px 22px 22px;min-height:0}
+.wgrid.n1>.wtile{grid-column:1/-1}
+.wtile.wide{grid-column:1/-1}
+.wtile{display:flex;flex-direction:column;gap:4px;min-width:0;text-align:left;background:var(--surface2);border-radius:18px;padding:14px 16px;color:var(--text);text-decoration:none;transition:transform .25s var(--ease),background-color .2s;animation:rise .5s var(--ease) backwards;animation-delay:calc(var(--i) * 60ms)}
+.wtile:hover{transform:translateY(-3px)}
+.wtop{display:flex;align-items:center;justify-content:space-between;margin-bottom:auto;padding-bottom:12px}
+.wtop .tint{width:30px;height:30px;border-radius:10px}
+.wtop .tint svg.i{width:15px;height:15px}
+.wtype{font-size:12px;color:var(--muted);font-weight:500}
+.wname{font-size:13.5px;color:var(--muted);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wbal{font-size:24px;font-weight:800;letter-spacing:-.04em;line-height:1.1}
+.wbar{display:block;height:4px;border-radius:4px;background:var(--line);margin-top:8px;overflow:hidden}
+.wbar span{display:block;height:100%;border-radius:4px;background:var(--c);transform-origin:left;animation:grow .9s var(--ease) both;animation-delay:calc(var(--i) * 60ms + .2s)}
+.wmore{align-items:flex-start;justify-content:flex-end;background:transparent;border:1.5px dashed var(--line)}
+.wmore b{font-size:24px;font-weight:800;letter-spacing:-.04em}
+.wmore span{font-size:13px;color:var(--muted)}
+.wmore svg.i{width:16px;height:16px;color:var(--muted);margin-top:4px}
+.wmore:hover{border-color:var(--muted)}
+.hero.neg{color:var(--danger)}
+.hero-hint{display:flex;align-items:center;gap:8px;margin:12px 0 0;font-size:14px;color:var(--danger);font-weight:500}
+.hero-hint svg.i{width:16px;height:16px;flex:none}
+.sav-line{display:flex;align-items:center;gap:10px;margin:0 22px 20px;padding:14px 16px;border-radius:16px;background:var(--surface2);font-size:14px}
+.sav-line i{width:10px;height:10px;border-radius:3px;background:var(--g-sky);flex:none}
+.sav-line span{font-weight:600}
+.sav-line b{margin-left:auto;font-weight:800;font-size:16px}
+.sav-line small{color:var(--muted);font-size:12.5px}
+.sav-line em{font-style:normal;color:var(--g-sky);font-weight:600;font-size:13px;margin-left:10px;white-space:nowrap}
+@media (max-width:899px){.sav-line small{display:none}.sav-line{margin:0 16px 16px}}
+.sav-row{display:flex;align-items:center;gap:14px;width:100%;margin-top:22px;padding:14px 16px;border-radius:16px;background:var(--surface2);text-align:left}
+.sav-row>span:first-child{flex:1;display:flex;flex-direction:column;gap:3px}
+.sav-row b{font-weight:600}.sav-row small{font-size:12.5px;color:var(--muted)}
+.auto-badge{display:inline-flex;align-items:center;gap:5px;margin-left:10px;padding:3px 9px 3px 7px;border-radius:999px;background:color-mix(in srgb,var(--g-sky) 16%,transparent);color:var(--g-sky);font-size:12px;font-weight:600;vertical-align:middle;letter-spacing:0}
+.auto-badge svg.i{width:12px;height:12px}
+.auto-val{display:flex;align-items:center;gap:8px;font-weight:700}
+.auto-val em{font-style:normal;font-size:11.5px;font-weight:600;color:var(--g-sky);padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--g-sky) 16%,transparent)}
+.fsearch{display:flex;align-items:center;gap:10px;height:48px;padding:0 16px;margin:16px 0 6px;border-radius:16px;background:var(--surface);transition:box-shadow .2s}
+.fsearch:focus-within{box-shadow:inset 0 0 0 1.5px var(--muted)}
+.fsearch svg.i{width:18px;height:18px;color:var(--muted);flex:none}
+.fsearch input{flex:1;min-width:0;border:0;outline:0;background:transparent;font-size:15px;color:var(--text)}
+.fsearch input::-webkit-search-cancel-button{display:none}
+.fsearch kbd{font:600 12px/1 inherit;color:var(--muted);padding:4px 8px;border-radius:7px;background:var(--surface2)}
+#gwrap.hide{display:none}
+.sres-n{margin:18px 4px 10px;font-size:13px;color:var(--muted);font-weight:500}
+.sres-card{background:var(--surface);border-radius:var(--r-card);padding:6px 22px}
+.sres-card .row:first-child{border-top:0}
+.sres-cat{display:flex;align-items:center;gap:6px}
+.sres-cat i{width:8px;height:8px;border-radius:3px;flex:none}
+mark{background:color-mix(in srgb,var(--accent) 30%,transparent);color:inherit;border-radius:3px;padding:0 1px}
+.sres-empty{display:flex;align-items:center;gap:10px;margin-top:18px;padding:22px;border-radius:var(--r-card);background:var(--surface);color:var(--muted)}
+.sres-empty svg.i{width:18px;height:18px}
+.sav-tog{width:100%;text-align:left;color:var(--text)}
+.h-sub{display:flex;align-items:center;gap:10px;margin:14px 0 0;font-size:14px;color:var(--muted)}
+.hd{display:inline-flex;align-items:center;gap:5px;font-weight:700}
+.hd svg.i{width:16px;height:16px}
+.hd.good,.h-nw small.good{color:var(--g-mint)}.hd.bad,.h-nw small.bad{color:var(--danger)}
+.hd-flat{color:var(--muted);font-weight:600}
+.sc-v .hd-flat{font-size:22px;letter-spacing:-.02em}
+.h-card .sc-v .hd{font-size:inherit}
+.h-chart{position:relative;height:240px;margin:8px 0 4px;cursor:crosshair;touch-action:pan-y}
+.h-chart svg{position:absolute;inset:0 0 26px;width:100%;height:calc(100% - 26px);overflow:visible}
+.h-line{stroke-dasharray:2000;stroke-dashoffset:2000;animation:draw 1.4s var(--ease) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.h-dot{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--surface);box-shadow:0 0 0 2.5px var(--accent);transition:transform .2s var(--spring);pointer-events:none}
+.h-dot.last{background:var(--accent);box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 25%,transparent)}
+.h-dot.hov{transform:scale(1.5)}
+.h-x{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;padding:0 2px;font-size:12px;color:var(--muted)}
+.h-tip{position:absolute;transform:translate(-50%,calc(-100% - 14px));padding:8px 12px;border-radius:12px;background:var(--text);color:var(--ink);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;display:flex;flex-direction:column;align-items:center;gap:2px}
+.h-tip.on{opacity:1}.h-tip small{font-size:11.5px;opacity:.7}.h-tip b{font-size:15px;font-weight:800}
+.h-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:40px 20px 30px;color:var(--muted)}
+.h-empty svg.i{width:28px;height:28px;color:var(--accent);margin-bottom:6px}.h-empty b{color:var(--text);font-size:17px}.h-empty span{max-width:340px;font-size:14px}
+.h-table{padding:0 22px 14px}
+.h-row{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1.3fr;align-items:center;gap:12px;padding:14px 0;border-top:1px solid var(--line);font-size:14.5px}
+.h-row>span:not(:first-child){text-align:right}
+.h-th{border-top:0;font-size:12.5px;color:var(--muted);font-weight:600;padding:4px 0 10px}
+.h-m{font-weight:600;display:flex;align-items:center;gap:8px}
+.h-m em{font-style:normal;font-size:11.5px;color:var(--accent);font-weight:600;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--accent) 15%,transparent)}
+.h-sv{color:var(--g-sky)}
+.h-nw{font-weight:800;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.h-nw small{font-size:12px;font-weight:600}
+@media (max-width:899px){.h-row{grid-template-columns:1fr auto}.h-table{padding:0 16px 10px}.h-chart{height:200px}}
+.onboarding{overflow:hidden}
+#setup .su-wrap{position:fixed;inset:0;z-index:80;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px 16px;overflow-y:auto}
+.su-card{width:100%;max-width:520px;background:var(--surface);border-radius:28px;padding:28px 28px 24px}
+.su-step{animation:rise .5s var(--ease) both}
+.su-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:34px}
+.su-brand{font-size:20px}
+.su-dots{display:flex;gap:6px}
+.su-dot{width:8px;height:8px;border-radius:8px;background:var(--surface3);transition:width .4s var(--ease),background .3s}
+.su-dot.on{width:26px;background:var(--accent)}.su-dot.done{background:var(--accent);opacity:.5}
+.su-t{font-size:clamp(28px,5vw,36px);font-weight:800;letter-spacing:-.045em;line-height:1.05;margin:0}
+.su-s{color:var(--muted);font-size:15px;margin:12px 0 26px;line-height:1.5}
+.su-cur{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.su-cur button{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:18px;border-radius:18px;background:var(--surface2);text-align:left;transition:box-shadow .2s}
+.su-cur button b{font-size:22px;font-weight:800;letter-spacing:-.03em}.su-cur button span{font-size:13px;color:var(--muted)}
+.su-cur button.on{box-shadow:inset 0 0 0 2px var(--accent)}
+.su-amt{margin:0 0 6px}
+.su-cats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.su-cats button{display:flex;align-items:center;gap:10px;height:56px;padding:0 12px;min-width:0;border-radius:16px;background:var(--surface2);font-weight:600;text-align:left;transition:box-shadow .2s}
+.su-cats button .tint{width:32px;height:32px;border-radius:10px}.su-cats button .tint svg.i{width:16px;height:16px}
+.su-cats button.on{box-shadow:inset 0 0 0 2px var(--c)}
+.su-cats button .su-n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:420px){.su-cats .ck{display:none}.su-cats button{gap:8px;padding:0 9px;font-size:13.5px}.su-cats button .tint{width:26px;height:26px;border-radius:9px}.su-cats button .tint svg.i{width:14px;height:14px}.su-card{padding:22px 14px 18px}#setup .su-wrap{padding:16px 10px}}
+.su-cats .ck{margin-left:auto;width:16px;height:16px;color:var(--c)}
+.su-foot{display:flex;align-items:center;justify-content:space-between;margin-top:30px}
+.su-foot .btn.primary{min-width:150px;height:52px}
+.su-skip{font-size:13.5px;color:var(--muted);font-weight:500;padding:8px}
+.su-skip:hover{color:var(--text)}
+@media (max-width:899px){.su-card{padding:24px 20px 20px;border-radius:24px}}
+.bh{margin-top:20px;padding:6px 6px 8px;border-radius:18px;background:var(--surface2)}
+.bh-h{display:flex;align-items:baseline;justify-content:space-between;padding:10px 12px 6px;font-weight:600;font-size:14px}
+.bh-h small{color:var(--muted);font-weight:500;font-size:12.5px}
+.bh-row{display:flex;align-items:center;border-radius:12px;transition:background-color .2s}
+.bh-row:hover,.bh-row.on{background:var(--surface3)}
+.bh-pick{flex:1;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;text-align:left;font-size:14px}
+.bh-pick span{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.bh-pick em{font-style:normal;font-size:11px;font-weight:600;color:var(--accent);padding:2px 7px;border-radius:999px;background:color-mix(in srgb,var(--accent) 15%,transparent)}
+.bh-pick b{font-weight:700}
+.bh-del{width:36px;height:36px;display:grid;place-items:center;border-radius:10px;color:var(--muted);opacity:.6}
+.bh-del:hover{opacity:1;color:var(--danger)}
+.bh-del svg.i{width:15px;height:15px}
+.bh-more{display:block;width:100%;padding:10px;font-size:13px;font-weight:600;color:var(--muted)}
+.bh-tip{margin:4px 12px 4px;font-size:12px;color:var(--muted)}
+.im-dates{display:flex;align-items:center;gap:10px;margin-top:16px;padding:10px 10px 10px 14px;border-radius:16px;background:var(--surface2)}
+.im-dates label{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
+.im-dates span{font-size:12px;color:var(--muted);font-weight:600}
+.im-dates input{background:transparent;border:0;outline:0;color:var(--text);font:inherit;font-weight:600;font-size:14.5px;color-scheme:dark;min-width:0}
+:root[data-theme="light"] .im-dates input{color-scheme:light}
+.im-dates-x{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;color:var(--muted)}
+.im-dates-x:hover{background:var(--surface3);color:var(--text)}
+.im-dates-x svg.i{width:15px;height:15px}
+.tag+.tag,.sub .tag+.tag{margin-left:6px}
+.tag-up{background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent)}
+.row.upcoming .amt{opacity:.45}
+.h-years{display:flex;align-items:center;gap:10px;margin-top:26px;flex-wrap:wrap}
+.h-legend{display:flex;gap:18px;margin:6px 2px 4px;font-size:12.5px;color:var(--muted)}
+.h-legend span{display:flex;align-items:center;gap:7px}
+.h-legend i{width:16px;height:3px;border-radius:3px}
+.h-legend i.dash{background:repeating-linear-gradient(90deg,var(--muted) 0 5px,transparent 5px 9px)}
+.hc{padding:0 22px 14px}
+.hc-row{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;align-items:center;gap:10px;padding:13px 0;border-top:1px solid var(--line);font-size:14.5px}
+.hc-row>*:not(:first-child){text-align:right;justify-content:flex-end}
+.hc-row b{font-weight:700}
+.hc-th{border-top:0;font-size:12.5px;color:var(--muted);font-weight:600;padding:4px 0 8px}
+@media (max-width:899px){.hc{padding:0 16px 10px}.hc-row{font-size:13px;grid-template-columns:1.2fr 1fr 1fr 1fr}}
+.dp-field{position:relative;display:flex;align-items:center;gap:12px;width:100%;height:58px;flex:none;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;text-align:left;padding:0}
+.dp-field.top{margin-top:14px}
+.dp-l{font-size:15px;font-weight:500;color:var(--muted);margin-right:auto}
+.dp-v{font-size:16px;font-weight:600}
+.dp-v.dp-ph{color:var(--muted);font-weight:500}
+.dp-ic{width:17px;height:17px;color:var(--muted);transition:color .2s}
+.dp-field:hover .dp-ic,.dp-field.open .dp-ic{color:var(--accent)}
+.dp-field.open .dp-v{color:var(--accent)}
+.dp-pop{margin:2px 0 10px;padding:14px;border-radius:20px;background:var(--surface2);animation:dpIn .22s var(--ease)}
+@keyframes dpIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.dp-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.dp-head b{font-size:15px;font-weight:700}
+.dp-nav{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;color:var(--muted)}
+.dp-nav:hover:not(:disabled){background:var(--surface3);color:var(--text)}
+.dp-nav:disabled{opacity:.25;cursor:default}
+.dp-nav svg.i{width:16px;height:16px}.dp-nav .flip{transform:rotate(180deg)}
+.dp-months{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.dp-months button,.dp-days button{height:42px;border-radius:12px;font-size:14px;font-weight:600;transition:background-color .15s}
+.dp-days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.dp-days button{height:38px;font-weight:500}
+.dp-week{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px}
+.dp-week span{text-align:center;font-size:11.5px;color:var(--muted);font-weight:600;padding:4px 0}
+.dp-months button:hover:not(:disabled),.dp-days button:hover:not(:disabled){background:var(--surface3)}
+.dp-months button.now,.dp-days button.now{box-shadow:inset 0 0 0 1.5px var(--surface3);color:var(--accent)}
+.dp-months button.on,.dp-days button.on{background:var(--accent);color:var(--ink);box-shadow:none}
+.dp-months button:disabled,.dp-days button:disabled{opacity:.22;cursor:default}
+.dp-foot{display:flex;gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);flex-wrap:wrap}
+.dp-foot button{height:32px;padding:0 12px;border-radius:999px;background:var(--surface3);font-size:13px;font-weight:600}
+.dp-foot button:disabled{opacity:.35}
+.dp-foot .dp-clear{margin-left:auto;background:transparent;color:var(--muted)}
+.dp-group{margin-top:14px}
+.dp-group .dp-field:first-child{border-top:0}
+.dp-remove{display:flex;align-items:center;gap:6px;margin:4px 0 0;padding:8px 2px;font-size:13px;font-weight:600;color:var(--muted)}
+.dp-remove svg.i{width:14px;height:14px}.dp-remove:hover{color:var(--text)}
+.st{width:100%;max-width:640px;margin:0 auto;padding-top:10px}
+.st-title{font-size:34px;font-weight:800;letter-spacing:-.04em;margin:18px 0 8px}
+.st-sec{margin-top:30px}
+.st-sec h2{font-size:13px;font-weight:600;color:var(--muted);margin:0 0 10px 4px;letter-spacing:.01em}
+.st-card{background:var(--surface);border-radius:22px;padding:0 20px}
+.st-row{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:64px;padding:10px 0;width:100%;text-align:left;color:var(--text)}
+.st-row+.st-row{border-top:1px solid var(--line)}
+.st-nm{display:flex;flex-direction:column;gap:3px;font-weight:600;font-size:15px}
+.st-nm small{font-size:12.5px;color:var(--muted);font-weight:500}
+.st-sw{display:flex;gap:8px}
+.st-sw .sw{width:28px;height:28px;border-radius:50%}
+.st-sw .sw svg.i{width:14px;height:14px}
+.st-sw .sw.on{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--c)}
+.st-card2{margin-top:10px}
+.st-btn{height:36px;padding:0 16px;border-radius:999px;background:var(--surface2);font-size:13.5px;font-weight:600}
+.st-btn:hover{background:var(--surface3)}
+.st-btn.danger{color:var(--danger);background:color-mix(in srgb,var(--danger) 12%,transparent)}
+.st-card>.confirm{margin:0 0 16px}
+.st-note{display:flex;align-items:center;gap:8px;margin:12px 4px 0;font-size:12.5px;color:var(--muted)}
+.st-note svg.i{width:14px;height:14px}
+.st-ver{text-align:center;font-size:12.5px;font-weight:500;color:var(--muted);margin:36px 0 10px}
+@media (max-width:899px){.st{padding-top:0}.st-sec:first-of-type{margin-top:14px}.st-card{padding:0 16px}.st-sw{gap:6px}.st-sw .sw{width:26px;height:26px}}
+.sec-r{display:flex;align-items:center;gap:8px;margin-left:auto}
+.fsx{position:relative;display:flex;align-items:center;height:40px;width:40px;border-radius:999px;background:var(--surface);overflow:hidden;transition:width .4s var(--ease),background-color .2s,box-shadow .2s}
+.fsx:hover{background:var(--surface2)}
+.fsx.open{width:300px;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line)}
+.fsx.open:focus-within{box-shadow:inset 0 0 0 1.5px var(--muted)}
+.fsx-btn{flex:none;width:40px;height:40px;display:grid;place-items:center;color:var(--text)}
+.fsx-btn svg.i{width:17px;height:17px}
+.fsx input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font-size:14.5px;padding:0;opacity:0;transition:opacity .2s}
+.fsx.open input{opacity:1}
+.fsx input::-webkit-search-cancel-button{display:none}
+.fsx-x{flex:none;width:32px;height:32px;margin-right:4px;display:grid;place-items:center;border-radius:50%;color:var(--muted);opacity:0;pointer-events:none;transition:opacity .2s}
+.fsx.open .fsx-x{opacity:1;pointer-events:auto}
+.fsx-x:hover{background:var(--surface2);color:var(--text)}
+.fsx-x svg.i{width:14px;height:14px}
+@media (max-width:899px){.sec-h.searching h2{display:none}.sec-h.searching .sec-r{flex:1;margin-left:0}.sec-h.searching .fsx{flex:1;width:auto}}
+.sc-prog{display:block;height:6px;border-radius:6px;background:var(--surface2);margin-top:10px;overflow:hidden}
+.sc-prog span{display:block;height:100%;border-radius:6px;background:var(--g-violet);transform-origin:left;animation:grow 1s var(--ease) both;animation-delay:.2s}
+.grid2 .sp-donut{grid-template-columns:176px minmax(0,1fr);gap:18px;justify-content:stretch}
+.grid2 .sp-key{padding:10px 8px;gap:10px}
+.grid2 .sp-key em{min-width:34px}
+.grid2 .sp-ring{max-width:176px}
+.grid2 .sp-center{padding:0 26px}
+.grid2 .sp-center b{font-size:30px}
+.sp-keys{display:flex;flex-direction:column;gap:2px}
+.sp-key{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:14px;text-align:left;width:100%;transition:background-color .2s,opacity .25s}
+.sp-key:hover,.sp-key.sel{background:var(--surface2)}
+.sp-key i{width:12px;height:12px;border-radius:4px;background:var(--c);flex:none}
+.sp-key span{flex:1;min-width:0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sp-key b{font-weight:700}
+.sp-key em,.sp-li em{font-style:normal;font-size:13px;color:var(--muted);font-weight:600;min-width:40px;text-align:right}
+.sp-list{display:flex;flex-direction:column;gap:4px}
+.sp-li{display:flex;align-items:center;gap:14px;padding:10px 8px;border-radius:16px;text-align:left;width:100%;transition:background-color .2s}
+.sp-li:hover{background:var(--surface2)}
+.sp-li .tint{width:38px;height:38px;border-radius:12px}
+.sp-li-m{flex:1;min-width:0}
+.sp-li-t{display:flex;justify-content:space-between;gap:10px;font-weight:600}
+.sp-li-t b{font-weight:700;white-space:nowrap}
+.sp-li-t em{display:inline-block;min-width:36px}
+.sp-track{display:block;height:8px;border-radius:8px;background:var(--surface2);margin-top:8px;overflow:hidden}
+.sp-track span{display:block;height:100%;border-radius:8px;background:var(--c);transform-origin:left;animation:grow .9s var(--ease) both;animation-delay:calc(var(--i) * 50ms + .1s)}
+.sp-hint{margin:14px 0 0;font-size:12.5px;color:var(--muted)}
+@media (max-width:640px){.sp-donut{grid-template-columns:1fr;gap:18px}.sp-ring{max-width:210px}.sp-head{padding:16px 18px;gap:12px}.sp-body{padding:0 14px 16px}.sp-mini{max-width:90px}}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.35s}
+@media (prefers-reduced-motion: reduce){#view{transition:none}}
+</style>
+
+<div class="app">
+  <aside class="side" id="side" aria-label="Main navigation"></aside>
+  <main class="main"><div class="wrap" id="view"></div></main>
+</div>
+<div class="dock" id="dock"></div>
+<div id="modal"></div>
+<div id="setup"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* =========================================================
+   1. CONSTANTS
+   ========================================================= */
+const ICONS = {
+  home: 'M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z', car: 'M4 15h16M6 15l1.6-6h8.8L18 15M6 15v3M18 15v3',
+  work: 'M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM9 7V5h6v2',
+  health: 'M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z',
+  subs: 'M17 3l3 3-3 3M4 11V9a3 3 0 0 1 3-3h13M7 21l-3-3 3-3M20 13v2a3 3 0 0 1-3 3H4',
+  savings: 'M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17zM12 7.5v9M9 10h4.5a1.75 1.75 0 0 1 0 3.5H10',
+  shopping: 'M3 4h2l2.4 11h10.6l2-8H6.5M9 20h.01M18 20h.01', travel: 'M21 4 3 11l7 3 3 7zM10 14l5-5',
+  kids: 'M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17zM9 14c1.5 1.5 4.5 1.5 6 0M9 10h.01M15 10h.01',
+  education: 'M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM9 7h6', gifts: 'M4 11h16v10H4zM3 7h18v4H3zM12 7v14',
+  phone: 'M7 2h10v20H7zM11 18h2', utilities: 'M13 2 4 14h7l-1 8 9-12h-7z',
+  food: 'M4 8h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5zM17 10h2a2 2 0 0 1 0 4h-2M8 2v3M12 2v3',
+  music: 'M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z',
+  investing: 'M3 17l6-6 4 4 8-8M15 7h6v6', insurance: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z',
+  nature: 'M5 19c0-8 6-14 14-14 0 8-6 14-14 14zM5 19l7-7'
+};
+const UI = {
+  home: 'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z', list: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01',
+  wallet: 'M3 7a2 2 0 0 1 2-2h14v4M3 7v10a2 2 0 0 0 2 2h16V9H5a2 2 0 0 1-2-2zM16 14h.01',
+  alert: 'M12 8v5M12 16.5v.01M10.3 3.9 2.6 17.3A2 2 0 0 0 4.3 20h15.4a2 2 0 0 0 1.7-2.7L13.7 3.9a2 2 0 0 0-3.4 0z',
+  lock: 'M6 11h12v10H6zM8 11V7a4 4 0 0 1 8 0v4',
+  hist: 'M3 3v18h18M7 15l4-4 3 3 6-7',
+  pin: 'M12 16v5M9 3h6l-1 6 4 3v2H6v-2l4-3z',
+  cash: 'M2.5 6h19v12h-19zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM6 9.5v.01M18 14.5v.01',
+  pie: 'M12 3v9h9M12 3a9 9 0 1 0 9 9', target: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 11.5v1',
+  plus: 'M12 5v14M5 12h14', x: 'M6 6l12 12M18 6 6 18', check: 'M5 12l5 5 9-10', chev: 'm6 9 6 6 6-6', right: 'm9 6 6 6-6 6',
+  back: 'M15 18l-6-6 6-6', dots: 'M5 12h.01M12 12h.01M19 12h.01', pen: 'M4 20h4L19 9l-4-4L4 16zM14 6l4 4',
+  trash: 'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13', search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-3.5-3.5',
+  sliders: 'M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1M15 4v4M9 10v4M17 16v4',
+  in: 'M17 7 7 17M16 17H7V8', out: 'M7 17 17 7M8 7h9v9', up: 'M3 17l6-6 4 4 8-8M15 7h6v6', down: 'M3 7l6 6 4-4 8 8M15 17h6v-6', left: 'M20 12a8 8 0 1 1-8-8M20 4v8h-8', cal: 'M4 6h16v14H4zM4 10h16M9 3v4M15 3v4',
+  grid: 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z', card: 'M2.5 5h19v14h-19zM2.5 10h19', expand: 'm7 9 5-5 5 5M7 15l5 5 5-5', collapse: 'm7 4 5 5 5-5M7 20l5-5 5 5'
+};
+const GROUP_COLORS = ['violet', 'coral', 'mint', 'pink', 'amber', 'sky', 'lime', 'sand'];
+const ACCENTS = {
+  amber: ['#FFB547', '#C77700'], coral: ['#FF6B57', '#D9432E'], lime: ['#D2F35C', '#6E9A00'],
+  violet: ['#A99BFF', '#6B61F0'], sky: ['#5BC8FF', '#1F7FD1'], mint: ['#3DDC97', '#0F9A6C']
+};
+const ACCOUNT_TYPES = {
+  checking: { label: 'Checking', icon: UI.card, c: 'var(--accent)' }, savings: { label: 'Savings', icon: ICONS.savings, c: 'var(--accent)' },
+  investment: { label: 'Investment', icon: ICONS.investing, c: 'var(--g-sky)' }, cash: { label: 'Cash', icon: UI.wallet, c: 'var(--accent)' },
+  credit: { label: 'Credit card', icon: UI.card, c: 'var(--danger)' }
+};
+const CURRENCIES = ['CHF', 'USD'];
+/* App version: bumped on every published update (0.51 = update 51) */
+const APP_VERSION = '0.53';
+const STORE_KEY = 'famlyfi.v1';
+
+/* =========================================================
+   2. HELPERS
+   ========================================================= */
+const $ = (sel, root = document) => root.querySelector(sel);
+const uid = () => Math.random().toString(36).slice(2, 10);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+const icon = (d, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${d}"/></svg>`;
+const nf = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+const fmt = n => nf.format(Math.round(Math.abs(n)));
+const signed = n => (Math.round(n) === 0 ? '' : n > 0 ? '+' : '−') + fmt(n);
+const parseAmt = v => { const n = parseFloat(String(v).replace(/[^0-9.]/g, '')); return isFinite(n) ? n : 0; };
+const gc = g => `var(--g-${g ? g.color : 'violet'})`;
+const REDUCED = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
+const fmtKind = (v, k) => k === 'signed' ? signed(v) : k === 'left' ? (Math.round(v) < 0 ? '−' : '') + fmt(v) : fmt(v);
+const numEl = (key, v, kind) => `<span data-nk="${key}" data-n="${v}" data-f="${kind}">${fmtKind(v, kind)}</span>`;
+
+/* =========================================================
+   3. DATA (store + persistence)
+   ========================================================= */
+const AG_DEF = { cash: ['ag-cash', 'Cash & savings', 'savings', 'mint'], inv: ['ag-inv', 'Investments', 'investing', 'sky'], debt: ['ag-debt', 'Debt', 'insurance', 'coral'] };
+const mkAg = ([id, name, icon, color]) => ({ id, name, icon, color });
+const agKind = t => t === 'credit' ? 'debt' : t === 'investment' ? 'inv' : 'cash';
+function migrateAccounts(d) {
+  if (!Array.isArray(d.agroups)) d.agroups = Object.values(AG_DEF).map(mkAg);
+  d.agroups.forEach((g, i) => { if (!g.icon) g.icon = 'savings'; if (!g.color) g.color = GROUP_COLORS[(i + 2) % GROUP_COLORS.length]; });
+  if (!Array.isArray(d.aclosed)) d.aclosed = [];
+  (d.accounts || []).forEach(a => {
+    if (d.agroups.some(g => g.id === a.groupId)) return;
+    const def = AG_DEF[agKind(a.type)];
+    let g = d.agroups.find(x => x.id === def[0]);
+    if (!g) { g = mkAg(def); d.agroups.push(g); }
+    a.groupId = g.id;
+  });
+  return d;
+}
+/* Group for a new account: the default one for its type, else the first group, else created on save */
+function agroupFor(type, create) {
+  const def = AG_DEF[agKind(type)];
+  const g = db.agroups.find(x => x.id === def[0]) || (create ? null : db.agroups[0]);
+  if (g) return g.id;
+  if (!create) return null;
+  if (db.agroups.length) return db.agroups[0].id;
+  db.agroups.push(mkAg(def)); return def[0];
+}
+function exampleData() {
+  const g = (name, icon, color) => ({ id: uid(), name, icon, color });
+  const home = g('Home', 'home', 'violet'), car = g('Car', 'car', 'coral'), work = g('Work', 'work', 'mint'),
+    save = Object.assign(g('Savings', 'savings', 'sky'), { savings: true }), health = g('Health', 'health', 'pink'), subs = g('Subscriptions', 'subs', 'lime');
+  const it = (grp, name, amount, type = 'expense', freq = 'monthly') => ({ id: uid(), groupId: grp.id, name, amount, type, freq });
+  return {
+    groups: [home, car, work, save, health, subs],
+    items: [
+      it(home, 'Rent', 2150), it(home, 'Room sublet', 600, 'income'), it(home, 'Utilities', 140), it(home, 'Internet', 59),
+      it(car, 'Leasing', 389), it(car, 'Fuel', 180), it(car, 'Insurance', 1140, 'expense', 'yearly'), it(car, 'Taxes', 480, 'expense', 'yearly'), it(car, 'Garage', 45),
+      it(work, 'Salary', 7200, 'income'), it(work, 'Side project', 450, 'income'), it(work, 'Phone plan', 45),
+      it(save, 'Savings account', 800), it(save, 'Pension 3a', 588),
+      it(health, 'Health insurance', 412), it(health, 'Gym', 79),
+      it(subs, 'Streaming', 24), it(subs, 'Music', 13), it(subs, 'Cloud storage', 10)
+    ],
+    agroups: Object.values(AG_DEF).map(mkAg), aclosed: [],
+    accounts: [
+      { id: uid(), name: 'Main checking', type: 'checking', balance: 6240, groupId: 'ag-cash' }, { id: 'acc-rainy', name: 'Rainy day', type: 'savings', balance: 24500, groupId: 'ag-cash' },
+      { id: uid(), name: 'Portfolio', type: 'investment', balance: 21380, groupId: 'ag-inv' }, { id: uid(), name: 'Credit card', type: 'credit', balance: 3200, groupId: 'ag-debt' }
+    ],
+    goals: [
+      { id: uid(), title: 'Emergency fund', target: 30000, current: 24500, date: '2027-12', accountId: 'acc-rainy' },
+      { id: uid(), title: 'New car', target: 12000, current: 6000, date: '2027-06' },
+      { id: uid(), title: 'Japan trip', target: 5000, current: 2500, date: '2027-04' }
+    ]
+  };
+}
+function freshDb() {
+  // First visit: start empty and show the 3-step setup (example data is one tap away)
+  return { v: 1, example: false, onboard: true, savMig: true, histSeeded: true, profile: { name: '' },
+    settings: { theme: 'dark', accent: 'amber', currency: 'CHF', period: 'month' }, open: [],
+    groups: [], items: [], accounts: [], agroups: Object.values(AG_DEF).map(mkAg), aclosed: [], goals: [], history: [] };
+}
+const Store = {
+  load() {
+    try { const d = JSON.parse(localStorage.getItem(STORE_KEY)); if (d && d.v === 1) { if (d.settings && !CURRENCIES.includes(d.settings.currency)) d.settings.currency = 'CHF'; return migrateAccounts(d); } } catch (e) {}
+    const d = freshDb();
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(d)); } catch (e) {}
+    return d;
+  },
+  save() { if (typeof syncGoals === 'function') syncGoals(); snapshot(); try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); } catch (e) {} }
+};
+let db = Store.load();
+/* One-time: mark obvious savings categories so savings stop counting as spending */
+if (!db.savMig) { db.groups.forEach(g => { if (g.icon === 'savings' || /sav|pension|3a|invest/i.test(g.name)) g.savings = true; }); db.savMig = true; }
+/* Monthly snapshot: keeps one entry per month, updated with the latest numbers (feeds the History page) */
+function snapshot() {
+  if (!db || !db.items) return;
+  const t = Calc.totals(), a = Calc.accounts(), d = new Date(), m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  const h = db.history || (db.history = []);
+  if (db.example && !db.histSeeded) {
+    // Example mode: 6 months of believable past data so the History page has something to show
+    const base = Calc.accounts().net, inc = Math.round(t.inn);
+    for (let k = 6; k >= 1; k--) {
+      const dt = new Date(d.getFullYear(), d.getMonth() - k, 1), mm = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+      if (h.some(x => x.m === mm)) continue;
+      const wob = [0.94, 1.06, 0.98, 1.12, 0.95, 1.03][k - 1];
+      h.push({ m: mm, net: Math.round(base - k * 1450 + (k % 2 ? 380 : -260)), inn: inc, out: Math.round(t.out * wob), save: Math.round(t.save), ex: true });
+    }
+    h.sort((a, b) => a.m.localeCompare(b.m)); db.histSeeded = true;
+  }
+  const row = { m, net: Math.round(a.net), inn: Math.round(t.inn), out: Math.round(t.out), save: Math.round(t.save) };
+  const i = h.findIndex(x => x.m === m);
+  if (i >= 0) h[i] = row; else h.push(row);
+}
+
+/* Transient UI state (not saved) */
+const ui = { route: 'home', menu: null, gconfirm: null, danger: null, modal: null };
+
+/* =========================================================
+   4. CALCULATIONS (single source of truth for every number)
+   ========================================================= */
+const curYM = () => { const t = new Date(); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}`; };
+const ymShort = ym => { const [y, m] = ym.split('-').map(Number), dt = new Date(y, m - 1, 1); return dt.toLocaleDateString('en-US', y === new Date().getFullYear() ? { month: 'short' } : { month: 'short', year: 'numeric' }); };
+const Calc = {
+  // Entries can have a start/end month and amount changes over time (ch: [{ from: 'YYYY-MM' | null, a }])
+  amountAt: (it, ym) => { if (!it.ch || !it.ch.length) return it.amount; let a = it.ch[0].a; it.ch.forEach(c => { if (!c.from || c.from <= ym) a = c.a; }); return a; },
+  // An entry counts from its start month, or else from the month it was added (since); never before
+  activeAt: (it, ym) => { const st = it.start || it.since; return (!st || st <= ym) && (!it.end || it.end >= ym); },
+  monthly: (it, ym = curYM()) => Calc.activeAt(it, ym) ? (it.freq === 'yearly' ? Calc.amountAt(it, ym) / 12 : Calc.amountAt(it, ym)) * (it.type === 'income' ? 1 : -1) : 0,
+  factor: () => (db.settings.period === 'year' ? 12 : 1),
+  itemsOf: gid => db.items.filter(i => i.groupId === gid),
+  groupNet: gid => Calc.itemsOf(gid).reduce((s, i) => s + Calc.monthly(i), 0),
+  groupOut: gid => Calc.itemsOf(gid).reduce((s, i) => s + Math.min(0, Calc.monthly(i)), 0),
+  isSavings: gid => !!db.groups.find(g => g.id === gid)?.savings,
+  // out = real spending; save = money put aside (savings categories). Left over = income − spending − savings.
+  totals() {
+    let inn = 0, out = 0, save = 0, yearly = 0, nIn = 0, nOut = 0, nSave = 0;
+    const sav = new Set(db.groups.filter(g => g.savings).map(g => g.id));
+    db.items.forEach(i => {
+      if (!Calc.activeAt(i, curYM())) return;
+      const m = Calc.monthly(i);
+      if (m >= 0) { inn += m; nIn++; }
+      else if (sav.has(i.groupId)) { save -= m; nSave++; }
+      else { out -= m; nOut++; }
+      if (i.freq === 'yearly' && i.type === 'expense') yearly += i.amount / 12;
+    });
+    return { inn, out, save, left: inn - out - save, yearly, nIn, nOut, nSave, rate: inn > 0 ? save / inn : 0 };
+  },
+  spendGroups() { return db.groups.filter(g => !g.savings).map(g => ({ g, v: -Calc.groupOut(g.id) })).filter(x => x.v > 0).sort((a, b) => b.v - a.v); },
+  accounts() {
+    let cash = 0, invested = 0, debt = 0;
+    db.accounts.forEach(a => { if (a.type === 'credit') debt += a.balance; else if (a.type === 'investment') invested += a.balance; else cash += a.balance; });
+    return { cash, invested, debt, net: cash + invested - debt };
+  }
+};
+
+/* Dated balances: every account keeps hist = [{ d: 'YYYY-MM-DD', b }]; balance = latest entry */
+const todayISO = () => { const t = new Date(); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`; };
+const dShort = iso => { const [y, m, d] = iso.split('-').map(Number); const dt = new Date(y, m - 1, d), now = new Date();
+  return dt.toLocaleDateString('en-US', dt.getFullYear() === now.getFullYear() ? { day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short', year: 'numeric' }); };
+function migrateHist() {
+  db.accounts.forEach(a => {
+    if (Array.isArray(a.hist) && a.hist.length) return;
+    const t = todayISO();
+    a.hist = [{ d: t, b: a.balance }];
+    if (db.example) { // example accounts get a believable past
+      const now = new Date();
+      for (let k = 1; k <= 12; k++) {
+        const dt = new Date(now.getFullYear(), now.getMonth() - k, 1), iso = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-01`;
+        const f = a.type === 'credit' ? 1 + Math.sin(k) * 0.25 : 1 - k * (a.type === 'investment' ? 0.022 : 0.03) + (k % 3 === 0 ? 0.012 : 0);
+        a.hist.unshift({ d: iso, b: Math.max(0, Math.round(a.balance * f / 10) * 10) });
+      }
+    }
+  });
+}
+const latestBal = a => a.hist && a.hist.length ? a.hist.reduce((x, y) => (y.d > x.d ? y : x)).b : a.balance;
+/* Balance of an account at the end of a month (ym = 'YYYY-MM'); null if the account had no balance yet */
+function balanceAt(a, ym) {
+  let best = null;
+  (a.hist || []).forEach(e => { if (e.d.slice(0, 7) <= ym && (!best || e.d > best.d)) best = e; });
+  return best ? best.b : null;
+}
+function netAt(ym) {
+  return db.accounts.reduce((n, a) => { const b = balanceAt(a, ym); return b == null ? n : n + (a.type === 'credit' ? -b : b); }, 0);
+}
+/* History months, calculated from dated balances + entries (old snapshots fill gaps) */
+const prevYM = ym => { const [y, m] = ym.split('-').map(Number), d = new Date(y, m - 2, 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; };
+function historyMonths() {
+  const now = curYM(), snaps = (db.history || []).filter(x => !x.ex);
+  const starts = [...db.accounts.flatMap(a => (a.hist || []).map(e => e.d.slice(0, 7))), ...snaps.map(x => x.m)].filter(m => m <= now);
+  if (!starts.length && !db.items.length) return [];
+  let m = starts.length ? starts.reduce((a, b) => (b < a ? b : a)) : now;
+  const sav = new Set(db.groups.filter(g => g.savings).map(g => g.id)), out = [];
+  while (m <= now) {
+    let inn = 0, sp = 0, sv = 0;
+    db.items.forEach(i => { const v = Calc.monthly(i, m); if (v >= 0) inn += v; else if (sav.has(i.groupId)) sv -= v; else sp -= v; });
+    const hasBal = db.accounts.some(a => balanceAt(a, m) != null), snap = snaps.find(x => x.m === m);
+    out.push({ m, inn: Math.round(inn), out: Math.round(sp), save: Math.round(sv), net: Math.round(hasBal ? netAt(m) : snap ? snap.net : 0) });
+    m = (() => { const [y, mm] = m.split('-').map(Number), d = new Date(y, mm, 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; })();
+  }
+  return out;
+}
+migrateHist();
+/* Goals linked to an account follow that account's balance automatically */
+const linkedAcct = g => g.accountId ? db.accounts.find(a => a.id === g.accountId && a.type !== 'credit') : null;
+function syncGoals() {
+  (db.goals || []).forEach(g => {
+    if (!g.accountId) return;
+    const a = linkedAcct(g);
+    if (a) g.current = Math.max(0, a.balance); else delete g.accountId;
+  });
+}
+syncGoals();
+Store.save(); // record this month's snapshot on load
+
+/* =========================================================
+   5. ACTIONS (all data changes go through here)
+   ========================================================= */
+/* Interaction sounds: tiny tones made in the browser (no files). Off with Settings → Sounds */
+const Sound = {
+  ctx: null, t: 0, p: 0,
+  PRIO: { tap: 1, open: 2, close: 2, toggle: 3, drop: 3, warn: 4, delete: 4, success: 4, milestone: 5 },
+  // each sound: list of [startSec, freqFrom, freqTo, durSec, gain, wave]
+  DEF: {
+    tap: [[0, 1800, 1200, .035, .035, 'sine']],
+    open: [[0, 520, 760, .09, .04, 'sine']],
+    close: [[0, 700, 480, .08, .03, 'sine']],
+    toggle: [[0, 900, 900, .05, .045, 'triangle'], [.045, 1350, 1350, .06, .03, 'triangle']],
+    drop: [[0, 420, 300, .09, .06, 'sine']],
+    success: [[0, 784, 784, .16, .05, 'sine'], [.07, 1175, 1175, .26, .045, 'sine']],
+    delete: [[0, 340, 170, .2, .06, 'sine']],
+    warn: [[0, 300, 300, .08, .05, 'triangle'], [.11, 260, 260, .1, .045, 'triangle']],
+    milestone: [[0, 659, 659, .2, .045, 'sine'], [.07, 831, 831, .2, .045, 'sine'], [.14, 988, 988, .22, .045, 'sine'], [.21, 1319, 1319, .4, .04, 'sine']]
+  },
+  play(kind) {
+    if (!db || db.settings.sound === false) return;
+    const now = performance.now(), pr = this.PRIO[kind] || 1;
+    if (now - this.t < 90 && this.p >= pr) return; // one sound per action: the most meaningful wins
+    this.t = now; this.p = pr;
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      const c = this.ctx || (this.ctx = new AC()); if (c.state === 'suspended') c.resume();
+      const out = c.createGain(), lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3200; out.gain.value = .9;
+      lp.connect(out); out.connect(c.destination);
+      const t0 = c.currentTime + .005;
+      (this.DEF[kind] || this.DEF.tap).forEach(([st, f1, f2, d, g, w]) => {
+        const o = c.createOscillator(), e = c.createGain(), a = t0 + st;
+        o.type = w; o.frequency.setValueAtTime(f1, a); if (f2 !== f1) o.frequency.exponentialRampToValueAtTime(f2, a + d);
+        e.gain.setValueAtTime(0.0001, a); e.gain.exponentialRampToValueAtTime(g, a + .008); e.gain.exponentialRampToValueAtTime(0.0001, a + d);
+        o.connect(e); e.connect(lp); o.start(a); o.stop(a + d + .02);
+      });
+    } catch (err) {}
+  }
+};
+function commit(msg) { db.example = db.example && !msg?.startsWith?.('Started'); Store.save(); render(); if (msg) { Sound.play(/deleted|erase|started fresh/i.test(msg) ? 'delete' : /unpinned|hidden|shown|^sounds/i.test(msg) ? 'toggle' : 'success'); toast(msg); } }
+const Actions = {
+  saveItem(d) {
+    const data = { name: d.name.trim() || 'Untitled', amount: parseAmt(d.amount), type: d.type, freq: d.freq, groupId: d.groupId, note: (d.note || '').trim(), start: d.start || null, end: d.end || null };
+    if (data.start && data.end && data.end < data.start) data.end = data.start;
+    if (d.id) {
+      const it = db.items.find(i => i.id === d.id), ym = curYM();
+      // Amount changed: keep the old value for past months, the new one applies from this month on
+      if (it.amount !== data.amount && (!it.start || it.start < ym)) {
+        const ch = it.ch && it.ch.length ? it.ch.filter(c => c.from !== ym) : [{ from: null, a: it.amount }];
+        ch.push({ from: ym, a: data.amount }); data.ch = ch;
+      }
+      Object.assign(it, data); ui.flash = d.id;
+    } else { const id = uid(); db.items.push(Object.assign({ id, since: curYM() }, data)); ui.flash = id; }
+    if (!db.open.includes(d.groupId)) db.open.push(d.groupId);
+    ui.lastGroup = d.groupId;
+    commit(d.id ? 'Item saved' : 'Item added');
+  },
+  deleteItem(id) { db.items = db.items.filter(i => i.id !== id); commit('Item deleted'); },
+  saveGroup(d) {
+    const data = { name: d.name.trim() || 'New category', icon: d.icon, color: d.color, savings: !!d.savings };
+    let id = d.id;
+    if (id) Object.assign(db.groups.find(g => g.id === id), data); else { id = uid(); db.groups.push(Object.assign({ id }, data)); db.open.push(id); }
+    commit(d.id ? 'Category saved' : 'Category created');
+    return id;
+  },
+  deleteGroup(id) { db.groups = db.groups.filter(g => g.id !== id); db.items = db.items.filter(i => i.groupId !== id); commit('Category deleted'); },
+  saveAccount(d) {
+    const hist = (d.hist || []).map(e => ({ ...e }));
+    if (!d.id || d.bTouched || !hist.length) {
+      const day = d.bdate || todayISO(), b = parseAmt(d.balance), i = hist.findIndex(e => e.d === day);
+      if (i >= 0) hist[i].b = b; else hist.push({ d: day, b });
+    }
+    hist.sort((x, y) => x.d.localeCompare(y.d));
+    const data = { name: d.name.trim() || 'Account', type: d.type, hist, balance: hist[hist.length - 1].b, groupId: db.agroups.some(g => g.id === d.groupId) ? d.groupId : agroupFor(d.type, true) };
+    db.aclosed = (db.aclosed || []).filter(x => x !== data.groupId);
+    if (d.id) Object.assign(db.accounts.find(a => a.id === d.id), data); else db.accounts.push(Object.assign({ id: uid() }, data));
+    commit(d.id ? 'Account saved' : 'Account added');
+  },
+  saveAgroup(d) {
+    const data = { name: d.name.trim() || 'New group', icon: d.icon, color: d.color };
+    if (d.id) Object.assign(db.agroups.find(g => g.id === d.id), data); else db.agroups.push(Object.assign({ id: uid() }, data));
+    commit(d.id ? 'Group saved' : 'Group created');
+  },
+  deleteAgroup(id) { db.agroups = db.agroups.filter(g => g.id !== id); db.accounts = db.accounts.filter(a => a.groupId !== id); commit('Group deleted'); },
+  deleteAccount(id) { db.accounts = db.accounts.filter(a => a.id !== id); commit('Account deleted'); },
+  saveGoal(d) {
+    const data = { title: d.title.trim() || 'Goal', target: Math.max(1, parseAmt(d.target)), current: parseAmt(d.current), date: d.date, accountId: d.accountId || null };
+    if (!data.accountId) data.current = Math.min(data.current, data.target);
+    if (d.id) Object.assign(db.goals.find(g => g.id === d.id), data); else db.goals.push(Object.assign({ id: uid() }, data));
+    commit(d.id ? 'Goal saved' : 'Goal added');
+  },
+  deleteGoal(id) { db.goals = db.goals.filter(g => g.id !== id); commit('Goal deleted'); },
+  milestone(id, k) {
+    const g = db.goals.find(x => x.id === id), step = g.target / 4, reached = Math.floor(g.current / step + 1e-9);
+    if (linkedAcct(g)) { toast(`This goal follows ${linkedAcct(g).name}. Update the account balance instead.`); return; }
+    g.current = k === 0 ? 0 : (reached === k ? step * (k - 1) : step * k);
+    Sound.play(k > reached ? 'milestone' : 'toggle');
+    ui.pop = k;
+    commit();
+  },
+  setting(key, val) {
+    db.settings[key] = val; Store.save();
+    const run = () => { applyTheme(); render(); };
+    if ((key === 'theme' || key === 'accent') && document.startViewTransition && !REDUCED) document.startViewTransition(run); else run();
+  },
+  startFresh() { Object.assign(db, { groups: [], items: [], accounts: [], agroups: [], aclosed: [], goals: [], open: [], example: false, history: [], histSeeded: true, onboard: true }); ui.su = null; commit('Started fresh'); },
+  loadExample() { const d = exampleData(); Object.assign(db, d, { example: true, open: [d.groups[0].id], histSeeded: false, history: (db.history || []).filter(x => !x.ex) }); commit('Example data loaded'); }
+};
+
+/* =========================================================
+   6. THEME
+   ========================================================= */
+function resolvedTheme() {
+  const t = db.settings.theme;
+  if (t === 'light' || t === 'dark') return t;
+  try { return matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; } catch (e) { return 'dark'; }
+}
+function applyTheme() {
+  const root = document.documentElement, t = db.settings.theme;
+  if (t === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', t);
+  const pair = ACCENTS[db.settings.accent] || ACCENTS.amber;
+  root.style.setProperty('--accent', resolvedTheme() === 'light' ? pair[1] : pair[0]);
+}
+try { matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => { applyTheme(); }); } catch (e) {}
+
+/* =========================================================
+   7. SHARED UI PIECES
+   ========================================================= */
+const NAV = [['home', 'Home', UI.home], ['overview', 'Finance', UI.cash], ['accounts', 'Accounts', UI.wallet], ['goals', 'Goals', UI.target], ['history', 'History', UI.hist]];
+const navList = () => NAV.filter(([k]) => k !== 'history' || db.settings.showHistory === true);
+const cur = () => db.settings.currency;
+const per = () => (db.settings.period === 'year' ? 'year' : 'month');
+
+function periodSeg() {
+  const p = db.settings.period;
+  return `<div class="seg" role="group" aria-label="Show amounts per">
+    <button data-act="period" data-v="month" class="${p === 'month' ? 'on' : ''}" aria-pressed="${p === 'month'}">Month</button>
+    <button data-act="period" data-v="year" class="${p === 'year' ? 'on' : ''}" aria-pressed="${p === 'year'}">Year</button></div>`;
+}
+function mobileCards(t, f, a, goal) {
+  const spent = t.inn > 0 ? Math.min(100, Math.round(t.out / t.inn * 100)) : (t.out > 0 ? 100 : 0);
+  const seg = [[a.cash, 'var(--g-sky)'], [a.invested, 'var(--g-violet)'], [a.debt, 'var(--g-coral)']].filter(x => x[0] > 0);
+  const card = (c, ic, label, val, sub, bar) => `<div class="sc"><div class="sc-h"><span class="tint" style="--c:${c}">${icon(ic)}</span>${label}</div>
+    <div><div class="sc-v num">${val}</div><div class="sc-s">${sub}</div>${bar}</div></div>`;
+  let h = '';
+  h += card('var(--g-sky)', UI.wallet, 'Net worth', numEl('mnw', a.net, 'left'), `Cash ${fmt(a.cash)} · Invested ${fmt(a.invested)}${a.debt > 0 ? ` · Debt ${fmt(a.debt)}` : ''}`,
+    seg.length ? `<div class="mseg">${seg.map(x => `<span style="--c:${x[1]};flex:${x[0]}"></span>`).join('')}</div>` : '');
+  if (goal && goal.target > 0) {
+    const p = Math.min(100, Math.min(100, Math.round(goal.current / goal.target * 100)));
+    h += card('var(--g-violet)', UI.target, esc(goal.title), `${p}%`, `${fmt(goal.current)} of ${fmt(goal.target)} ${cur()}`,
+      `<div class="prog"><span style="--c:var(--g-violet);width:${p}%"></span></div>`);
+  }
+  return h;
+}
+function accountsBreakdown(a, mt, extra = {}) {
+  if (!db.accounts.length) return '';
+  const pal = ['var(--g-sky)', 'var(--g-violet)', 'var(--g-mint)', 'var(--g-pink)', 'var(--g-lime)', 'var(--g-sand)', 'var(--accent)'];
+  let k = 0;
+  const segs = [...db.accounts].filter(x => x.balance > 0 && x.type !== 'credit').sort((x, y) => (x.type === 'credit') - (y.type === 'credit') || y.balance - x.balance).map(x => {
+    const t = ACCOUNT_TYPES[x.type] || ACCOUNT_TYPES.checking, debt = x.type === 'credit';
+    return { name: x.name, v: x.balance, shown: (debt ? '−' : '') + fmt(x.balance), c: debt ? 'var(--danger)' : pal[k++ % pal.length], icon: t.icon, act: 'edit-account', id: x.id, keep: debt };
+  });
+  return segs.length ? breakdownCard(extra.compact ? 'h-accounts' : 'accounts', { ...extra, mt, title: 'Where your money is', sub: `${cur()} ${fmt(a.cash + a.invested)} assets${a.debt ? ` · ${fmt(a.debt)} debt` : ''}`,
+    center: `<span>Net worth</span><b class="num">${(a.net < 0 ? '−' : '') + fmt(a.net)}</b><small>${cur()}</small>`, ...extra, segs }) : '';
+}
+/* Pinning: up to 3 groups per page stay on top. k = 'g' (Finance groups) or 'a' (account groups) */
+const PIN_MAX = 3;
+const pinList = k => { const p = db.pins || (db.pins = {}); return p[k] || (p[k] = []); };
+const isPinned = (k, id) => pinList(k).includes(id);
+function pinSort(arr, k) {
+  const p = pinList(k), pinned = p.map(id => arr.find(g => g.id === id)).filter(Boolean);
+  return [...pinned, ...arr.filter(g => !p.includes(g.id))];
+}
+const pinBadge = (k, id) => isPinned(k, id) ? `<span class="gpin" title="Pinned">${icon(UI.pin)}</span>` : '';
+/* Home: accounts as a 2x2 grid of wallet cards inside a card the same size as the donut card */
+function walletCard(a) {
+  const pal = ['var(--g-sky)', 'var(--g-violet)', 'var(--g-mint)', 'var(--g-pink)'];
+  const list = [...db.accounts].sort((x, y) => (x.type === 'credit') - (y.type === 'credit') || y.balance - x.balance);
+  const assets = (a.cash + a.invested) || 1, n = list.length;
+  const show = n > 4 ? list.slice(0, 3) : list, more = n - show.length;
+  let k = 0;
+  const tiles = show.map((x, i) => {
+    const t = ACCOUNT_TYPES[x.type] || ACCOUNT_TYPES.checking, debt = x.type === 'credit', c = debt ? 'var(--danger)' : pal[k++ % pal.length];
+    return `<button class="wtile ${n === 3 && i === 2 ? 'wide' : ''}" data-act="edit-account" data-id="${x.id}" style="--c:${c};--i:${i}">
+      <span class="wtop"><span class="tint" style="--c:${c}">${icon(t.icon)}</span><span class="wtype">${t.label}</span></span>
+      <span class="wname">${esc(x.name)}</span>
+      <b class="wbal num" style="${debt ? 'color:var(--danger)' : ''}">${debt ? '−' : ''}${fmt(x.balance)}</b></button>`;
+  }).join('');
+  const moreTile = more > 0 ? `<a class="wtile wmore" href="#accounts" style="--i:3"><b class="num">+${more}</b><span>more ${more === 1 ? 'account' : 'accounts'}</span>${icon(UI.right)}</a>` : '';
+  return `<section class="spend open compact wallet"><div class="sp-head"><span class="sp-ttl"><span>Your accounts</span><small class="num">${n} ${n === 1 ? 'account' : 'accounts'}${a.debt ? ` · ${fmt(a.debt)} debt` : ''}</small></span><a class="link sp-all" href="#accounts">See all${icon(UI.right)}</a></div>
+    <div class="wgrid n${Math.min(n, 4)}">${tiles}${moreTile}</div></section>`;
+}
+/* "Left over" hero: turns red with a short hint when the plan spends more than it earns */
+function heroLeft(t, f, key) {
+  const neg = Math.round(t.left) < 0;
+  return `<div class="hero-row"><h1 class="hero num ${neg ? 'neg' : ''}">${numEl(key, t.left * f, 'left')}</h1><div class="hero-unit">${cur()}<span> / ${per()}</span></div></div>
+    ${neg ? `<p class="hero-hint">${icon(UI.alert)}You plan to spend ${cur()} ${fmt(-t.left * f)} more than you earn every ${per()}.</p>` : ''}`;
+}
+/* Savings line under the spending chart */
+function savingsLine(t, f) {
+  if (!t.save) return '';
+  return `<div class="sav-line"><i></i><span>Saving</span><b class="num">${fmt(t.save * f)}</b><small>${cur()} / ${per()}</small><em class="num">${Math.round(t.rate * 100)}% of income</em></div>`;
+}
+const autoBadge = g => { const a = linkedAcct(g); return a ? `<span class="auto-badge" title="Follows ${esc(a.name)}">${icon(UI.wallet)}${esc(a.name)}</span>` : ''; };
+/* Finance search: finds entries (name or note) across all categories */
+function searchResults(q) {
+  q = q.trim().toLowerCase(); if (!q) return '';
+  const f = Calc.factor(), hits = db.items.filter(i => i.name.toLowerCase().includes(q) || (i.note || '').toLowerCase().includes(q));
+  const mark = t => { const k = t.toLowerCase().indexOf(q); return k < 0 ? esc(t) : esc(t.slice(0, k)) + '<mark>' + esc(t.slice(k, k + q.length)) + '</mark>' + esc(t.slice(k + q.length)); };
+  if (!hits.length) return `<div class="sres-empty">${icon(UI.search)}<span>No entries match "${esc(q)}"</span></div>`;
+  return `<div class="sres-n">${hits.length} ${hits.length === 1 ? 'result' : 'results'}</div><section class="sres-card">${hits.map((i, k) => {
+    const g = db.groups.find(x => x.id === i.groupId), m = Calc.monthly(i) * f;
+    return `<button class="row" style="--i:${k}" data-act="edit-item" data-id="${i.id}"><span><span class="nm" style="display:block;font-weight:500">${mark(i.name)}</span>
+      <span class="sub sres-cat"><i style="background:${gc(g)}"></i>${g ? esc(g.name) : ''}${i.freq === 'yearly' ? ' · Yearly' : ''}</span></span>
+      <span class="amt num ${m >= 0 ? 'pos' : ''}">${signed(m)}</span>${icon(UI.pen, 'pen')}</button>`; }).join('')}</section>`;
+}
+/* First-visit setup: currency → income → first categories */
+const SU_CATS = [['Home', 'home', 'violet'], ['Groceries', 'food', 'lime'], ['Car', 'car', 'coral'], ['Health', 'health', 'pink'], ['Subscriptions', 'subs', 'sky'], ['Kids', 'kids', 'amber'], ['Shopping', 'shopping', 'sand'], ['Savings', 'savings', 'mint', true]];
+function setupView() {
+  const su = ui.su || (ui.su = { step: 0, inc: '', cats: ['Home', 'Groceries', 'Savings'] }), st = su.step;
+  const dots = [0, 1, 2].map(i => `<span class="su-dot ${i === st ? 'on' : i < st ? 'done' : ''}"></span>`).join('');
+  let body = '';
+  if (st === 0) body = `<h1 class="su-t">Welcome to Famlyfi</h1><p class="su-s">Let's set up your money in three quick steps. First, which currency do you use?</p>
+    <div class="su-cur">${CURRENCIES.map(c => `<button class="${db.settings.currency === c ? 'on' : ''}" data-act="su-cur" data-v="${c}" aria-pressed="${db.settings.currency === c}"><b>${c}</b><span>${{ CHF: 'Swiss franc', USD: 'US dollar', EUR: 'Euro', GBP: 'British pound' }[c] || c}</span></button>`).join('')}</div>`;
+  else if (st === 1) body = `<h1 class="su-t">What comes in each month?</h1><p class="su-s">Your monthly income after tax. A rough number is fine, you can change it any time.</p>
+    <label class="amtrow su-amt"><input id="su-inc" class="bigamt num pos" value="${esc(su.inc)}" inputmode="decimal" placeholder="0" aria-label="Monthly income"><span class="cur">${cur()}</span></label>`;
+  else body = `<h1 class="su-t">What do you spend on?</h1><p class="su-s">Pick a few categories to start with. You can add more later.</p>
+    <div class="su-cats">${SU_CATS.map(([n, ic, c]) => { const on = su.cats.includes(n); return `<button class="${on ? 'on' : ''}" style="--c:var(--g-${c})" data-act="su-cat" data-v="${n}" aria-pressed="${on}"><span class="tint" style="--c:var(--g-${c})">${icon(ICONS[ic])}</span><span class="su-n">${n}</span>${on ? icon(UI.check, 'ck') : ''}</button>`; }).join('')}</div>`;
+  const last = st === 2;
+  return `<div class="su-wrap"><div class="su-card su-step" key="${st}">
+      <div class="su-top"><a class="brand su-brand">Famlyfi<i></i></a><div class="su-dots">${dots}</div></div>
+      ${body}
+      <div class="su-foot">${st ? '<button class="btn text" data-act="su-back">Back</button>' : '<span></span>'}
+        <button class="btn primary" data-act="${last ? 'su-finish' : 'su-next'}" ${last && !su.cats.length ? 'disabled style="opacity:.5"' : ''}>${last ? "Let's go" : st === 1 && !parseAmt(su.inc) ? 'Skip for now' : 'Continue'}</button></div>
+    </div><button class="su-skip" data-act="su-skip">Skip and explore with example data</button></div>`;
+}
+function renderSetup() {
+  const el = $('#setup'); document.body.classList.toggle('onboarding', !!db.onboard);
+  if (!db.onboard) { el.innerHTML = ''; return; }
+  el.innerHTML = setupView();
+  const inp = $('#su-inc'); if (inp) { sizeAmt(inp); inp.focus(); }
+}
+/* Date picker: an inline, app-styled month or day picker that opens under its field (no browser popups) */
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const ymOf = (y, m) => `${y}-${String(m + 1).padStart(2, '0')}`;
+function dpLabel(v, kind) {
+  if (!v) return '';
+  const [y, m, dd] = v.split('-').map(Number);
+  if (kind === 'month') return `${MONTHS[m - 1]} ${y}`;
+  if (v === todayISO()) return 'Today';
+  return `${dd} ${MONTHS[m - 1]} ${y}`;
+}
+function dpField(d, o) {
+  const v = d[o.key] || '', open = d.dp === o.key;
+  const field = `<button class="dp-field ${open ? 'open' : ''} ${o.top ? 'top' : ''}" data-act="dp-open" data-k="${o.key}" data-kind="${o.kind}" aria-expanded="${open}">
+    <span class="dp-l">${o.label}</span><span class="dp-v ${v ? '' : 'dp-ph'}">${v ? dpLabel(v, o.kind) : o.placeholder || 'Choose'}</span>${icon(UI.cal, 'dp-ic')}</button>`;
+  if (!open) return field;
+  const vy = d.dpY, vm = d.dpM; let body;
+  if (o.kind === 'month') {
+    body = `<div class="dp-head"><button class="dp-nav" data-act="dp-nav" data-k="${o.key}" data-v="-1" aria-label="Previous year">${icon(UI.back)}</button><b>${vy}</b><button class="dp-nav" data-act="dp-nav" data-k="${o.key}" data-v="1" aria-label="Next year">${icon(UI.back, 'flip')}</button></div>
+      <div class="dp-months">${MONTHS.map((mn, i) => { const ym = ymOf(vy, i), dis = (o.min && ym < o.min) || (o.max && ym > o.max);
+        return `<button class="${ym === v ? 'on' : ''} ${ym === curYM() ? 'now' : ''}" data-act="dp-pick" data-k="${o.key}" data-v="${ym}" ${dis ? 'disabled' : ''}>${mn}</button>`; }).join('')}</div>`;
+  } else {
+    const first = new Date(vy, vm, 1), lead = (first.getDay() + 6) % 7, days = new Date(vy, vm + 1, 0).getDate();
+    let cells = '';
+    for (let i = 0; i < lead; i++) cells += '<span></span>';
+    for (let dd = 1; dd <= days; dd++) { const iso = `${ymOf(vy, vm)}-${String(dd).padStart(2, '0')}`, dis = (o.max && iso > o.max) || (o.min && iso < o.min);
+      cells += `<button class="${iso === v ? 'on' : ''} ${iso === todayISO() ? 'now' : ''}" data-act="dp-pick" data-k="${o.key}" data-v="${iso}" ${dis ? 'disabled' : ''}>${dd}</button>`; }
+    const nextDis = o.max && ymOf(vy, vm) >= o.max.slice(0, 7);
+    body = `<div class="dp-head"><button class="dp-nav" data-act="dp-nav" data-k="${o.key}" data-v="-1" aria-label="Previous month">${icon(UI.back)}</button><b>${MONTHS[vm]} ${vy}</b><button class="dp-nav" data-act="dp-nav" data-k="${o.key}" data-v="1" aria-label="Next month" ${nextDis ? 'disabled' : ''}>${icon(UI.back, 'flip')}</button></div>
+      <div class="dp-week">${['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(x => `<span>${x}</span>`).join('')}</div><div class="dp-days">${cells}</div>`;
+  }
+  const quick = o.kind === 'date'
+    ? `<button data-act="dp-pick" data-k="${o.key}" data-v="${todayISO()}">Today</button><button data-act="dp-pick" data-k="${o.key}" data-v="${(() => { const t = new Date(); const e = new Date(t.getFullYear(), t.getMonth(), 0); return `${ymOf(e.getFullYear(), e.getMonth())}-${String(e.getDate()).padStart(2, '0')}`; })()}">End of last month</button>`
+    : `<button data-act="dp-pick" data-k="${o.key}" data-v="${curYM()}" ${o.min && curYM() < o.min ? 'disabled' : ''}>This month</button>`;
+  return field + `<div class="dp-pop">${body}<div class="dp-foot">${quick}${o.clearable !== false && v ? `<button class="dp-clear" data-act="dp-clear" data-k="${o.key}">Clear</button>` : ''}</div></div>`;
+}
+/* Finance search: a round icon in the Categories header that expands into a field */
+function openSearch(scroll) {
+  ui.qOpen = true; const h = $('.sec-h'), w = $('.fsx'), q = $('#fq'); if (!q) return;
+  h.classList.add('searching'); w.classList.add('open'); q.tabIndex = 0;
+  if (scroll) h.scrollIntoView({ block: 'start', behavior: REDUCED ? 'auto' : 'smooth' });
+  setTimeout(() => q.focus(), 60);
+}
+function closeSearch() {
+  ui.qOpen = false; ui.q = ''; const q = $('#fq'); if (!q) return;
+  q.value = ''; q.blur(); q.tabIndex = -1; $('#sres').innerHTML = ''; $('#gwrap')?.classList.remove('hide');
+  $('.fsx')?.classList.remove('open'); $('.sec-h')?.classList.remove('searching');
+}
+function statCard(c, ic, label, value, subline, valueCls = '', cls = '') {
+  return `<div class="sc ${cls}"><div class="sc-h"><span class="tint" style="--c:${c}">${icon(ic)}</span>${label}</div>
+    <div><div class="sc-v num ${valueCls}">${value}</div><div class="sc-s">${subline}</div></div></div>`;
+}
+function groupRow(g, act, cls = '') {
+  const n = Calc.groupNet(g.id) * Calc.factor(), items = Calc.itemsOf(g.id);
+  return `<button class="row ${cls}" data-act="${act}" data-id="${g.id}">
+    <span class="tint tile" style="--c:${gc(g)}">${icon(ICONS[g.icon] || ICONS.home)}</span>
+    <span><span class="nm" style="display:block">${esc(g.name)}</span><span class="sub">${items.length} ${items.length === 1 ? 'item' : 'items'}</span></span>
+    <span class="amt num ${n >= 0 ? 'pos' : ''}">${signed(n)}</span></button>`;
+}
+function mobileTop(title) {
+  const name = db.profile.name || 'You';
+  return `<div class="mtop">${title ? `<h1 class="mtitle">${title}</h1>` : `<a class="brand" href="#home">Famlyfi<i></i></a>`}
+    <div class="right"><a class="avatar" href="#profile" aria-label="Profile">${esc(name.charAt(0).toUpperCase())}</a></div></div>`;
+}
+function exampleBanner() {
+  if (!db.example) return '';
+  if (ui.danger === 'fresh') return `<div class="banner confirm"><span>Remove all example categories, items, accounts and goals?</span>
+    <button class="btn ghost" data-act="danger-cancel">Keep them</button><button class="btn danger" data-act="start-fresh">Remove</button></div>`;
+  return `<div class="banner"><span><b class="dt-only" style="font-weight:400">You're looking at example data. Change it, or start with an empty app.</b><b class="m-only" style="font-weight:500">Example data</b></span>
+    <button class="btn ghost" data-act="danger" data-v="fresh">Start fresh</button></div>`;
+}
+
+/* =========================================================
+   8. VIEWS
+   ========================================================= */
+const Views = {
+  home() {
+    const t = Calc.totals(), f = Calc.factor(), a = Calc.accounts();
+    const groups = [...db.groups].sort((x, y) => Math.abs(Calc.groupNet(y.id)) - Math.abs(Calc.groupNet(x.id))).slice(0, 5);
+    const goal = db.goals[0];
+    const outs = Calc.spendGroups();
+    return `${mobileTop()}${exampleBanner()}
+    <div class="eyebrow gap-hero">Left over every ${per()}</div>
+    ${heroLeft(t, f, 'left')}
+    <div class="split m-only"><div><span>Income</span><b class="num pos">${numEl('in2', t.inn * f, 'signed')}</b></div><div><span>Expense</span><b class="num">${numEl('out2', -t.out * f, 'signed')}</b></div></div>
+    <div class="mcards m-only">${mobileCards(t, f, a, goal)}</div>
+    <div class="cards dt-only">
+      ${statCard('var(--g-mint)', UI.up, 'Income', numEl('in', t.inn * f, 'signed'), `${t.nIn} ${t.nIn === 1 ? 'item' : 'items'}`, 'pos')}
+      ${statCard('var(--g-coral)', UI.down, 'Expense', numEl('out', -t.out * f, 'signed'), `${t.nOut} ${t.nOut === 1 ? 'item' : 'items'}`)}
+      ${statCard('var(--g-sky)', UI.wallet, 'Net worth', numEl('nw2', a.net, 'left'), `${db.accounts.length} ${db.accounts.length === 1 ? 'account' : 'accounts'}`)}
+      ${goal && goal.target > 0 ? statCard('var(--g-violet)', UI.target, 'Goal progress', Math.min(100, Math.round(goal.current / goal.target * 100)) + '%', `${esc(goal.title)}<span class="sc-prog"><span style="width:${Math.min(100, goal.current / goal.target * 100)}%"></span></span>`) : statCard('var(--g-violet)', UI.target, 'Goal progress', '—', 'No goals yet')}
+    </div>
+    <div class="grid2 home-charts dt-only">
+      <div class="dt-only">${outs.length ? breakdownCard('h-spend', { compact: true, href: '#overview', mt: .1, footer: savingsLine(t, f), center: t.inn > 0 ? `<span>Spent</span><b class="num" style="${t.out > t.inn ? 'color:var(--danger)' : ''}">${Math.round(t.out / t.inn * 100)}%</b><small>of income</small>` : `<span>Spending</span><b class="num">${fmt(t.out * f)}</b><small>${cur()} / ${per()}</small>`, title: 'Where your money goes', sub: `${cur()} ${fmt(t.out * f)} / ${per()}`,
+        
+        fmtV: v => fmt(v * f), segs: outs.map(x => ({ name: x.g.name, v: x.v, shown: fmt(x.v * f), c: gc(x.g), icon: ICONS[x.g.icon] || ICONS.home, act: 'goto-group', id: x.g.id })) })
+        : `<section class="card"><div class="card-h"><div class="card-t">Where your money goes</div></div><p class="note">No spending yet. Add an item to see it here.</p><button class="btn primary" data-act="add-item" style="margin-top:8px">${icon(UI.plus)}Add item</button></section>`}</div>
+      <div class="dt-only">${db.accounts.length ? walletCard(a) : `<section class="card"><div class="card-h"><div class="card-t">Where your money is</div></div><p class="note">No accounts yet.</p><a class="btn primary" href="#accounts" style="margin-top:8px">Add an account</a></section>`}</div>
+    </div>`;
+  },
+
+  overview() {
+    const t = Calc.totals(), f = Calc.factor();
+    const outs = Calc.spendGroups();
+    const totalOut = outs.reduce((s, x) => s + x.v, 0) || 1;
+    const groups = pinSort(db.groups, 'g').map(g => Views.groupCard(g, totalOut)).join('');
+    return `${mobileTop('Finance')}
+    <div class="topbar dt-only">${periodSeg()}<button class="btn primary" data-act="add-item">${icon(UI.plus)}Add item</button></div>
+    <div class="eyebrow gap-hero">Left over every ${per()}</div>
+    ${heroLeft(t, f, 'bleft')}
+    ${outs.length ? breakdownCard('spend', { mt: 34, footer: savingsLine(t, f), title: 'Where your money goes', sub: `${cur()} ${fmt(t.out * f)} / ${per()}`,
+      center: `<span>Total spending</span><b class="num">${fmt(t.out * f)}</b><small>${cur()} / ${per()}</small>`,
+      fmtV: v => fmt(v * f), segs: outs.map(x => ({ name: x.g.name, v: x.v, shown: fmt(x.v * f), c: gc(x.g), icon: ICONS[x.g.icon] || ICONS.home, act: 'goto-group', id: x.g.id })) }) : ''}
+    <div class="sec-h ${ui.qOpen || ui.q ? 'searching' : ''}"><h2>Categories</h2>
+      <div class="sec-r">
+      ${db.items.length > 5 ? `<div class="fsx ${ui.qOpen || ui.q ? 'open' : ''}" role="search"><button class="fsx-btn" data-act="search-open" aria-label="Search entries">${icon(UI.search)}</button><input id="fq" type="search" value="${esc(ui.q || '')}" placeholder="Search ${db.items.length} entries" aria-label="Search entries" autocomplete="off" tabindex="${ui.qOpen || ui.q ? 0 : -1}"><button class="fsx-x" data-act="search-close" aria-label="Close search">${icon(UI.x)}</button></div>` : ''}
+      <div class="m-only gsmenu"><button class="iconbtn" data-act="group-menu" data-id="__all" aria-label="Category options" aria-expanded="${ui.menu === '__all'}">${icon(UI.dots)}</button>
+        ${ui.menu === '__all' ? `<div class="menu" role="menu">
+          <button role="menuitem" data-act="new-group">${icon(UI.plus)}New category</button>
+          ${db.groups.length ? `<button role="menuitem" data-act="${db.open.length ? 'collapse-all' : 'expand-all'}">${icon(db.open.length ? UI.collapse : UI.expand)}${db.open.length ? 'Collapse all' : 'Expand all'}</button>` : ''}</div>` : ''}</div>
+      <div class="acts dt-only">
+      ${db.groups.length ? `<button class="chip" data-act="${db.open.length ? 'collapse-all' : 'expand-all'}">${icon(db.open.length ? UI.collapse : UI.expand)}${db.open.length ? 'Collapse all' : 'Expand all'}</button>` : ''}
+      <button class="chip dark" data-act="new-group">${icon(UI.plus)}New category</button></div></div></div>
+    ${db.items.length > 5 ? `<div id="sres">${ui.q ? searchResults(ui.q) : ''}</div>` : ''}
+    <div id="gwrap" class="${ui.q ? 'hide' : ''}">
+    ${db.groups.length > 1 && !db.dragTipSeen ? `<div class="drag-tip">${icon(UI.expand)}<span>${matchMedia('(hover:hover)').matches ? 'Drag' : 'Press and hold'} an item to reorder it or move it to another category.</span><button data-act="drag-tip-ok">Got it</button></div>` : ''}
+    ${db.groups.length ? `<div class="groups">${groups}</div>` : `<div class="empty"><h3>Create your first category</h3><p>A category collects related money in one place. For example, a Car category can hold leasing, fuel, insurance and taxes.</p><button class="btn primary" data-act="new-group">${icon(UI.plus)}New category</button></div>`}</div>`;
+  },
+
+  groupCard(g, totalOut) {
+    const ymNow = curYM(), open = db.open.includes(g.id), items = Calc.itemsOf(g.id).filter(i => !i.end || i.end >= ymNow), f = Calc.factor();
+    const net = Calc.groupNet(g.id) * f, inc = Calc.totals().inn || 1, share = g.savings ? Math.round(-Calc.groupOut(g.id) / inc * 100) : Math.round(-Calc.groupOut(g.id) / totalOut * 100);
+    const rows = items.map((i, idx) => {
+      const up = i.start && i.start > ymNow, m = (up ? Calc.monthly(i, i.start) : Calc.monthly(i)) * f;
+      const dateTag = up ? `<span class="tag tag-up">Starts ${ymShort(i.start)}</span>` : i.end ? `<span class="tag">Ends ${ymShort(i.end)}</span>` : '';
+      return `<button class="row ${ui.flash === i.id ? 'flash' : ''} ${up ? 'upcoming' : ''}" style="--i:${idx}" data-act="edit-item" data-id="${i.id}" aria-label="Edit ${esc(i.name)}">
+        <span><span class="nm" style="display:block;font-weight:500">${esc(i.name)}</span>
+        ${i.freq === 'yearly' || dateTag ? `<span class="sub">${i.freq === 'yearly' ? `<span class="tag">Yearly</span>${fmt(i.amount)} / yr` : ''}${dateTag}</span>` : ''}
+        ${i.note ? `<span class="sub item-note">${esc(i.note)}</span>` : ''}</span>
+        <span class="amt num ${m >= 0 ? 'pos' : ''}">${signed(m)}</span>${icon(UI.pen, 'pen')}</button>`;
+    }).join('');
+    const menu = ui.menu === g.id ? `<div class="menu" role="menu">
+      <button role="menuitem" data-act="pin" data-k="g" data-id="${g.id}">${icon(UI.pin)}${isPinned('g', g.id) ? 'Unpin' : 'Pin to top'}</button>
+      <button role="menuitem" data-act="edit-group" data-id="${g.id}">${icon(UI.pen)}Edit category</button>
+      <button role="menuitem" data-act="add-item" data-group="${g.id}">${icon(UI.plus)}Add item</button>
+      <button role="menuitem" class="warn" data-act="ask-del-group" data-id="${g.id}">${icon(UI.trash)}Delete category</button></div>` : '';
+    const confirm = ui.gconfirm === g.id ? `<div class="confirm"><span>Delete ${esc(g.name)} and its ${items.length} items?</span>
+      <button class="btn ghost" data-act="cancel-del-group">Keep</button><button class="btn danger" data-act="del-group" data-id="${g.id}">Delete</button></div>` : '';
+    return `<section class="gcard ${open ? 'open' : ''}" id="g-${g.id}" data-gid="${g.id}" style="--c:${gc(g)}">
+      <div class="ghead">
+        <button class="gtoggle" data-act="toggle-group" data-id="${g.id}" aria-expanded="${open}">
+          <span class="tint tile" style="--c:${gc(g)};width:44px;height:44px;border-radius:14px">${icon(ICONS[g.icon] || ICONS.home)}</span>
+          <span style="min-width:0"><span class="gname" style="display:block">${esc(g.name)}${pinBadge('g', g.id)}</span><span class="sub">${items.length} ${items.length === 1 ? 'item' : 'items'}${g.savings ? `<span class="shr"> · Savings${share > 0 ? ` · ${share}% of income` : ''}</span>` : share > 0 ? `<span class="shr"> · ${share}% of expense</span>` : ''}</span></span>
+          <span class="share" style="--c:${gc(g)}"><span style="width:${Math.max(0, share)}%"></span></span>
+          <span class="gnet num ${net >= 0 ? 'pos' : ''}">${signed(net)}</span>${icon(UI.chev, 'chev')}
+        </button>
+        <button class="iconbtn gmore" data-act="group-menu" data-id="${g.id}" aria-label="${esc(g.name)} options" aria-expanded="${ui.menu === g.id}">${icon(UI.dots)}</button>
+        ${menu}
+      </div>${confirm}
+      ${open ? `<div class="gbody ${ui.justOpened === g.id || ui.openingAll?.includes(g.id) ? 'opening' : ''}">${rows}<button class="addrow" style="--i:${items.length}" data-act="add-item" data-group="${g.id}">${icon(UI.plus)}Add to ${esc(g.name)}</button></div>` : ''}
+    </section>`;
+  },
+
+  accounts() {
+    const a = Calc.accounts(), total = a.cash + a.invested + a.debt || 1;
+    const nets = db.agroups.map(g => db.accounts.filter(x => x.groupId === g.id).reduce((n, x) => n + (x.type === 'credit' ? -x.balance : x.balance), 0));
+    const netTotal = nets.reduce((n, v) => n + Math.abs(v), 0) || 1;
+    const lists = db.agroups.map((g, gi) => {
+      const list = db.accounts.filter(x => x.groupId === g.id).sort((x, y) => (x.type === 'credit') - (y.type === 'credit') || y.balance - x.balance);
+      const sum = nets[gi], share = Math.round(Math.abs(sum) / netTotal * 100);
+      const open = !db.aclosed.includes(g.id), mid = 'a:' + g.id;
+      const menu = ui.menu === mid ? `<div class="menu" role="menu">
+        <button role="menuitem" data-act="pin" data-k="a" data-id="${g.id}">${icon(UI.pin)}${isPinned('a', g.id) ? 'Unpin' : 'Pin to top'}</button>
+        <button role="menuitem" data-act="edit-agroup" data-id="${g.id}">${icon(UI.pen)}Edit group</button>
+        <button role="menuitem" data-act="new-account" data-group="${g.id}">${icon(UI.plus)}Add account</button>
+        <button role="menuitem" class="warn" data-act="ask-del-agroup" data-id="${g.id}">${icon(UI.trash)}Delete group</button></div>` : '';
+      const confirm = ui.gconfirm === mid ? `<div class="confirm"><span>Delete ${esc(g.name)}${list.length ? ` and its ${list.length} ${list.length === 1 ? 'account' : 'accounts'}` : ''}?</span>
+        <button class="btn ghost" data-act="cancel-del-group">Keep</button><button class="btn danger" data-act="del-agroup" data-id="${g.id}">Delete</button></div>` : '';
+      const rows = list.map((x, idx) => { const t = ACCOUNT_TYPES[x.type] || ACCOUNT_TYPES.checking, debt = x.type === 'credit';
+        return `<button class="row" style="--i:${idx}" data-act="edit-account" data-id="${x.id}" aria-label="Edit ${esc(x.name)}">
+          <span><span class="nm" style="display:block;font-weight:500">${esc(x.name)}</span><span class="sub">${t.label}${x.hist && x.hist.length ? ` · ${dShort(x.hist.reduce((p, q) => (q.d > p.d ? q : p)).d)}` : ''}</span></span>
+          <span class="amt num" style="${debt ? 'color:var(--danger)' : ''}">${debt ? '−' : ''}${fmt(x.balance)}</span>${icon(UI.pen, 'pen')}</button>`; }).join('');
+      return `<section class="gcard ${open ? 'open' : ''}" id="ag-${g.id}" style="--c:${gc(g)}">
+      <div class="ghead">
+        <button class="gtoggle" data-act="toggle-agroup" data-id="${g.id}" aria-expanded="${open}">
+          <span class="tint tile" style="--c:${gc(g)};width:44px;height:44px;border-radius:14px">${icon(ICONS[g.icon] || ICONS.savings)}</span>
+          <span style="min-width:0"><span class="gname" style="display:block">${esc(g.name)}${pinBadge('a', g.id)}</span><span class="sub">${list.length} ${list.length === 1 ? 'account' : 'accounts'}</span></span>
+          <span class="share" style="--c:${gc(g)}"><span style="width:${share}%"></span></span>
+          <span class="gnet num ${sum >= 0 ? 'pos' : ''}" style="${sum < 0 ? 'color:var(--danger)' : ''}">${sum < 0 ? '−' : ''}${fmt(sum)}</span>${icon(UI.chev, 'chev')}
+        </button>
+        <button class="iconbtn gmore" data-act="agroup-menu" data-id="${mid}" aria-label="${esc(g.name)} options" aria-expanded="${ui.menu === mid}">${icon(UI.dots)}</button>
+        ${menu}
+      </div>${confirm}
+      ${open ? `<div class="gbody ${ui.justOpened === g.id || ui.openingAll?.includes(g.id) ? 'opening' : ''}">${rows}<button class="addrow" style="--i:${list.length}" data-act="new-account" data-group="${g.id}">${icon(UI.plus)}Add to ${esc(g.name)}</button></div>` : ''}
+    </section>`;
+    });
+    const agHtml = pinSort(db.agroups, 'a').map(g => lists[db.agroups.indexOf(g)]).join('');
+    const anyOpen = db.agroups.some(g => !db.aclosed.includes(g.id));
+    const secActs = `${db.agroups.length ? `<button class="chip" data-act="${anyOpen ? 'a-collapse-all' : 'a-expand-all'}">${icon(anyOpen ? UI.collapse : UI.expand)}${anyOpen ? 'Collapse all' : 'Expand all'}</button>` : ''}
+      <button class="chip dark" data-act="new-agroup">${icon(UI.plus)}New group</button>`;
+    return `${mobileTop('Accounts')}
+    <div class="topbar"><div class="eyebrow">Net worth</div><button class="btn primary" data-act="new-account">${icon(UI.plus)}Add account</button></div>
+    <div class="hero-row" style="margin-top:6px"><h1 class="hero num">${numEl('nw', a.net, 'left')}</h1><div class="hero-unit">${cur()}</div></div>
+    ${accountsBreakdown(a, 30)}
+    ${db.accounts.length || db.agroups.length ? `<div class="sec-h"><h2>Account groups</h2>
+      <div class="m-only gsmenu"><button class="iconbtn" data-act="agroup-menu" data-id="a:__all" aria-label="Group options" aria-expanded="${ui.menu === 'a:__all'}">${icon(UI.dots)}</button>
+        ${ui.menu === 'a:__all' ? `<div class="menu" role="menu"><button role="menuitem" data-act="new-agroup">${icon(UI.plus)}New group</button>
+          ${db.agroups.length ? `<button role="menuitem" data-act="${anyOpen ? 'a-collapse-all' : 'a-expand-all'}">${icon(anyOpen ? UI.collapse : UI.expand)}${anyOpen ? 'Collapse all' : 'Expand all'}</button>` : ''}</div>` : ''}</div>
+      <div class="acts dt-only">${secActs}</div></div>
+    <div class="groups">${agHtml}</div>` : `<div class="empty" style="margin-top:26px"><h3>Add your first account</h3><p>Checking, savings, investments or cards. Everything adds up to your net worth.</p><button class="btn primary" data-act="new-account">${icon(UI.plus)}Add account</button></div>`}`;
+  },
+
+  goals() {
+    const [main, ...rest] = db.goals;
+    const total = db.goals.reduce((s, g) => s + Math.min(g.current, g.target), 0), target = db.goals.reduce((s, g) => s + g.target, 0);
+    const mainCard = main ? (() => {
+      const step = main.target / 4, reached = Math.floor(main.current / step + 1e-9);
+      let track = '';
+      for (let k = 0; k <= 4; k++) {
+        if (k > 0) track += `<span class="seg2 ${k <= reached ? 'on' : ''}"></span>`;
+        const on = k <= reached, label = k === 0 ? 'Reset to start' : (k === reached ? `Undo ${fmt(step * k)}` : `Mark ${fmt(step * k)} reached`);
+        track += `<button class="node ${on ? 'on' : ''} ${ui.pop === k ? 'pop' : ''}" data-act="milestone" data-id="${main.id}" data-k="${k}" aria-label="${label}"><i>${icon(UI.check)}</i></button>`;
+      }
+      return `<section class="goal" style="margin-top:28px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div class="eyebrow" style="font-weight:600">${esc(main.title)}${autoBadge(main)}</div>
+          <div style="display:flex;align-items:center;gap:12px"><span class="muted" style="font-size:13.5px">${main.date ? 'Target ' + monthName(main.date) : ''}</span><button class="iconbtn" data-act="edit-goal" data-id="${main.id}" aria-label="Edit ${esc(main.title)}">${icon(UI.pen)}</button></div></div>
+        <div class="hero-row" style="margin-top:10px"><div class="goal-amt num">${numEl('goal-' + main.id, main.current, 'abs')}</div><div class="hero-unit"><span>of ${fmt(main.target)} · ${Math.min(100, Math.round(main.current / main.target * 100))}%</span></div></div>
+        <div class="track">${track}</div>
+        <div class="ticks num"><span>Start</span>${[1, 2, 3, 4].map(k => `<span>${fmt(step * k)}</span>`).join('')}</div>
+        ${linkedAcct(main) ? `<p class="note" style="margin:18px 0 0">Fills up automatically from ${esc(linkedAcct(main).name)}.</p>` : db.hintSeen ? '' : '<p class="note" style="margin:18px 0 0">Tap a milestone when you reach it. Tap the last filled one to undo.</p>'}</section>`;
+    })() : '';
+    const minis = rest.map(g => `<button class="gmini" data-act="edit-goal" data-id="${g.id}">
+      <div class="card-h"><div class="card-t">${esc(g.title)}${autoBadge(g)}</div><span class="link">${Math.min(100, Math.round(g.current / g.target * 100))}%</span></div>
+      <div style="display:flex;align-items:baseline;gap:8px"><span class="num" style="font-size:34px;font-weight:800;letter-spacing:-.05em;line-height:1">${fmt(g.current)}</span><span class="muted" style="font-size:14px">of ${fmt(g.target)}</span></div>
+      <div class="prog" style="--c:var(--g-sky)"><span style="width:${Math.min(100, g.current / g.target * 100)}%"></span></div>
+      ${g.date ? `<div class="sub" style="margin-top:12px">Target ${monthName(g.date)}</div>` : ''}</button>`).join('');
+    return `${mobileTop('Goals')}
+    <div class="topbar" style="align-items:flex-end"><h1 class="title dt-only">Goals</h1><button class="btn primary" data-act="new-goal">${icon(UI.plus)}New goal</button></div>
+    <div class="eyebrow" style="margin-top:14px">${db.goals.length ? `${cur()} ${fmt(total)} saved of ${fmt(target)}` : 'Save toward something'}</div>
+    ${main ? mainCard : `<div class="empty" style="margin-top:28px"><h3>Set your first goal</h3><p>Pick something you're saving for and track it with milestones.</p><button class="btn primary" data-act="new-goal">${icon(UI.plus)}New goal</button></div>`}
+    ${rest.length ? `<div class="grid2" style="margin-top:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))">${minis}</div>` : ''}`;
+  },
+
+  history() {
+    const all = historyMonths(), nowYM = curYM();
+    if (!all.length) return `${mobileTop('History')}<div class="h-empty" style="margin-top:60px">${icon(UI.hist)}<b>Your history starts now</b><span>Add accounts and entries, and your months will appear here.</span></div>`;
+    const years = [...new Set(all.map(x => x.m.slice(0, 4)))].sort();
+    if (!ui.hy || !years.includes(ui.hy)) ui.hy = years[years.length - 1];
+    const cmp = ui.hcmp && years.length > 1, y = ui.hy, yPrev = years[years.indexOf(y) - 1] || years[years.length - 2];
+    const rowsY = yy => all.filter(x => x.m.startsWith(yy));
+    const cur0 = all[all.length - 1], prev = all[all.length - 2];
+    const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const delta = (a2, b2, goodUp = true) => {
+      if (b2 == null) return '<span class="hd-flat">—</span>';
+      const d = Math.round(a2 - b2), good = goodUp ? d >= 0 : d <= 0;
+      return d === 0 ? '<span class="hd-flat">No change</span>' : `<span class="hd ${good ? 'good' : 'bad'}">${icon(d > 0 ? UI.up : UI.down)}${d > 0 ? '+' : '−'}${fmt(d)}</span>`;
+    };
+    // Chart: one year (or two overlaid), x = Jan..Dec
+    const series = cmp ? [{ y: yPrev, rows: rowsY(yPrev), c: 'var(--muted)', dash: true }, { y, rows: rowsY(y), c: 'var(--accent)' }] : [{ y, rows: rowsY(y), c: 'var(--accent)' }];
+    const vals = series.flatMap(sr => sr.rows.map(r => r.net));
+    let chart;
+    if (vals.length < 2 && !cmp) chart = `<div class="h-empty">${icon(UI.hist)}<b>Your history starts this month</b><span>History begins at your oldest account balance. Add what an account held in the past to see earlier months, or come back next month.</span>${db.accounts.length ? '<a class="btn primary" href="#accounts" style="margin-top:10px">Add a past balance</a>' : ''}</div>`;
+    else {
+      const W = 640, H = 220, P = 18, lo = Math.min(...vals), hi = Math.max(...vals), span = hi - lo || 1;
+      const X = mi => P + mi * (W - 2 * P) / 11, Y = v => H - 34 - (v - lo) / span * (H - 70);
+      const main = series[series.length - 1];
+      const paths = series.map(sr => {
+        const pts = sr.rows.map(r => [X(+r.m.slice(5) - 1), Y(r.net)]);
+        if (!pts.length) return '';
+        const line = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+        const area = sr === main && pts.length > 1 ? `<path d="${line} L${pts[pts.length - 1][0].toFixed(1)} ${H - 24} L${pts[0][0].toFixed(1)} ${H - 24} Z" fill="url(#hg)"/>` : '';
+        return area + `<path class="${sr.dash ? 'h-line2' : 'h-line'}" d="${line}" fill="none" stroke="${sr.c}" stroke-width="${sr.dash ? 2 : 3}" ${sr.dash ? 'stroke-dasharray="6 6"' : ''} stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`;
+      }).join('');
+      const tipPts = main.rows.map(r => { const mi = +r.m.slice(5) - 1, o = cmp ? series[0].rows.find(x => +x.m.slice(5) - 1 === mi) : null;
+        return [X(mi) / W, Y(r.net) / H, `<small>${MON[mi]} ${r.m.slice(0, 4)}</small><b class="num">${fmt(r.net)} ${cur()}</b>${o ? `<small>${yPrev}: ${fmt(o.net)}</small>` : ''}`]; });
+      const dots = main.rows.map((r, i) => { const p = [X(+r.m.slice(5) - 1), Y(r.net)]; return `<span class="h-dot ${r.m === nowYM ? 'last' : ''}" style="left:${p[0] / W * 100}%;top:calc(${p[1] / H * 100}% - ${(p[1] / H * 26).toFixed(1)}px)"></span>`; }).join('');
+      chart = `<div class="h-chart" id="hchart" data-pts='${JSON.stringify(tipPts).replace(/'/g, '&#39;')}'>
+        <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="Net worth trend"><defs><linearGradient id="hg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".28"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>${paths}</svg>
+        ${dots}<div class="h-tip" id="htip"></div><div class="h-x">${MON.map(m => `<span>${m}</span>`).join('')}</div></div>
+        ${cmp ? `<div class="h-legend"><span><i style="background:var(--accent)"></i>${y}</span><span><i class="dash"></i>${yPrev}</span></div>` : ''}`;
+    }
+    // Compare summary
+    const avg = (rr, k) => rr.length ? rr.reduce((n, r) => n + r[k], 0) / rr.length : 0;
+    const sum = rr => ({ inn: avg(rr, 'inn'), out: avg(rr, 'out'), save: avg(rr, 'save'), gain: rr.length ? rr[rr.length - 1].net - (all.find(x => x.m === prevYM(rr[0].m))?.net ?? rr[0].net) : 0, n: rr.length });
+    const cmpCard = cmp ? (() => { const A = sum(rowsY(y)), B = sum(rowsY(yPrev));
+      const line = (label, a2, b2, goodUp = true) => `<div class="hc-row"><span>${label}</span><b class="num">${fmt(b2)}</b><b class="num">${fmt(a2)}</b>${delta(a2, b2, goodUp)}</div>`;
+      return `<section class="spend h-card" style="margin-top:16px"><div class="sp-head"><span class="sp-ttl"><span>${yPrev} vs ${y}</span><small>Monthly average · ${B.n} vs ${A.n} months tracked</small></span></div>
+        <div class="hc"><div class="hc-row hc-th"><span></span><span>${yPrev}</span><span>${y}</span><span>Change</span></div>
+        ${line('Income', A.inn, B.inn)}${line('Spending', A.out, B.out, false)}${line('Saved', A.save, B.save)}${line('Net worth growth', A.gain, B.gain)}</div></section>`; })() : '';
+    const tableRows = [...rowsY(y)].reverse().map(x => { const p = all.find(r => r.m === prevYM(x.m));
+      return `<div class="h-row"><span class="h-m">${monthName(x.m)}${x.m === nowYM ? '<em>This month</em>' : ''}</span>
+        <span class="num dt-only">${fmt(x.inn)}</span><span class="num dt-only">${fmt(x.out)}</span><span class="num dt-only h-sv">${fmt(x.save)}</span>
+        <span class="num h-nw">${fmt(x.net)}${p ? `<small class="${x.net >= p.net ? 'good' : 'bad'}">${x.net >= p.net ? '+' : '−'}${fmt(x.net - p.net)}</small>` : ''}</span></div>`; }).join('');
+    const switcher = `<div class="h-years"><div class="seg sm">${years.map(yy => `<button class="${yy === y ? 'on' : ''}" data-act="h-year" data-v="${yy}">${yy}</button>`).join('')}</div>
+      ${years.length > 1 ? `<button class="chip ${cmp ? 'dark' : ''}" data-act="h-cmp" aria-pressed="${!!cmp}">${icon(UI.hist)}Compare years</button>` : ''}</div>`;
+    return `${mobileTop('History')}
+    <div class="eyebrow gap-hero">Net worth today</div>
+    <div class="hero-row"><h1 class="hero num">${numEl('hnw', cur0.net, 'left')}</h1><div class="hero-unit">${cur()}</div></div>
+    ${prev ? `<p class="h-sub">${delta(cur0.net, prev.net)}<span>since ${monthName(prev.m)}</span></p>` : ''}
+    ${switcher}
+    <section class="spend h-card" style="margin-top:16px"><div class="sp-head"><span class="sp-ttl"><span>${cmp ? `Net worth · ${yPrev} vs ${y}` : `Net worth in ${y}`}</span><small>${rowsY(y).length} ${rowsY(y).length === 1 ? 'month' : 'months'} tracked</small></span></div><div class="sp-body">${chart}</div></section>
+    ${cmpCard}
+    ${!cmp && prev ? `<div class="cards" style="margin-top:16px">
+      ${statCard('var(--g-sky)', UI.wallet, 'Net worth', delta(cur0.net, prev.net), `vs ${ymShort(prev.m)}`)}
+      ${statCard('var(--g-coral)', UI.down, 'Spending', delta(cur0.out, prev.out, false), `${fmt(cur0.out)} this month`)}
+      ${statCard('var(--g-sky)', UI.pie, 'Saved', delta(cur0.save, prev.save), `${fmt(cur0.save)} this month`)}
+      ${statCard('var(--g-mint)', UI.up, 'Income', delta(cur0.inn, prev.inn), `${fmt(cur0.inn)} this month`)}</div>` : ''}
+    <section class="spend h-card" style="margin-top:16px"><div class="sp-head"><span class="sp-ttl"><span>Month by month · ${y}</span><small>${cur()} per month</small></span></div>
+      <div class="h-table"><div class="h-row h-th"><span>Month</span><span class="dt-only">Income</span><span class="dt-only">Spending</span><span class="dt-only">Saved</span><span>Net worth</span></div>${tableRows}</div></section>`;
+  },
+  settings() {
+    const s = db.settings, pair = ACCENTS[s.accent] || ACCENTS.amber;
+    const danger = ui.danger === 'erase' ? `<div class="confirm" style="margin-top:12px"><span>Erase every category, item, account and goal on this device?</span>
+      <button class="btn ghost" data-act="danger-cancel">Keep</button><button class="btn danger" data-act="start-fresh">Erase</button></div>` : '';
+    const row = (nm, sub, ctl) => `<div class="st-row"><span class="st-nm">${nm}${sub ? `<small>${sub}</small>` : ''}</span>${ctl}</div>`;
+    return `${mobileTop('Settings')}
+    <div class="st">
+      <h1 class="st-title dt-only">Settings</h1>
+      <section class="st-sec"><h2>Appearance</h2><div class="st-card">
+        ${row('Theme', '', `<div class="seg sm">${['dark', 'light', 'auto'].map(t => `<button class="${s.theme === t ? 'on' : ''}" data-act="theme" data-v="${t}">${t[0].toUpperCase() + t.slice(1)}</button>`).join('')}</div>`)}
+        ${row('Accent', '', `<div class="st-sw">${Object.keys(ACCENTS).map(k => `<button class="sw ${s.accent === k ? 'on' : ''}" style="--c:${resolvedTheme() === 'light' ? ACCENTS[k][1] : ACCENTS[k][0]}" data-act="accent" data-v="${k}" aria-label="${k} accent" aria-pressed="${s.accent === k}">${icon(UI.check)}</button>`).join('')}</div>`)}
+      <button class="st-row st-tog" data-act="toggle-sound" role="switch" aria-checked="${s.sound !== false}"><span class="st-nm">Sounds<small>Soft feedback when you tap, save and reach milestones</small></span><span class="im-switch ${s.sound !== false ? 'on' : ''}"><i></i></span></button></div></section>
+      <section class="st-sec"><h2>Money</h2><div class="st-card">
+        ${row('Currency', '', `<div class="seg sm">${CURRENCIES.map(c => `<button class="${s.currency === c ? 'on' : ''}" data-act="currency" data-v="${c}">${c}</button>`).join('')}</div>`)}
+        ${row('Show amounts per', 'Default view for Home and Finance', periodSeg().replace('class="seg"', 'class="seg sm"'))}
+      </div></section>
+      <section class="st-sec"><h2>Pages</h2><div class="st-card">
+        <button class="st-row st-tog" data-act="toggle-history" role="switch" aria-checked="${s.showHistory === true}"><span class="st-nm">History<small>Show it in the menu. Your history is tracked either way.</small></span><span class="im-switch ${s.showHistory === true ? 'on' : ''}"><i></i></span></button>
+      </div></section>
+      <section class="st-sec"><h2>Your data</h2><div class="st-card">
+        ${row('Example data', 'Explore the app with sample numbers', '<button class="st-btn" data-act="load-example">Load</button>')}
+        ${row('Erase everything', 'Categories, entries, accounts and goals', '<button class="st-btn danger" data-act="danger" data-v="erase">Erase</button>')}
+        ${danger}
+      </div><p class="st-note">${icon(UI.lock)}Saved only in this browser on this device.</p></section>
+      <p class="st-ver">Famlyfi v${APP_VERSION}</p>
+    </div>`;
+  },
+
+  profile() {
+    const name = db.profile.name || '';
+    return `${mobileTop('Profile')}
+    <div style="max-width:760px;width:100%;margin:10px auto 0">
+      <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+        <div class="avatar" style="width:112px;height:112px;border-radius:36px;font-size:52px;letter-spacing:-.05em">${esc((name || 'Y').charAt(0).toUpperCase())}</div>
+        <div style="min-width:0;flex:1"><label for="pname" class="set-lbl" style="display:block">Your name</label>
+          <input id="pname" class="bigname" data-in="profile" value="${esc(name)}" placeholder="Your name" style="margin:0;font-size:clamp(40px,7vw,72px);letter-spacing:-.06em"></div>
+      </div>
+      <div class="pstats">
+        <div><b class="num">${db.groups.length}</b><span>Categories</span></div>
+        <div><b class="num">${db.accounts.length}</b><span>Accounts</span></div>
+        <div><b class="num">${db.goals.length}</b><span>Goals</span></div>
+      </div>
+      <div class="set-lbl" style="margin-top:36px">Account</div>
+      <a class="set-row" href="#settings" style="text-decoration:none"><span class="nm">Settings<span class="sub">Accent, theme, currency and data</span></span>${icon(UI.right)}</a>
+      <div class="set-row"><span class="nm">Sign-in and cloud sync<span class="sub">Not set up yet. Your data stays on this device.</span></span></div>
+    </div>`;
+  }
+};
+/* Breakdown card (Budget + Accounts): collapsible, Chart or Ranking view.
+   segs: [{ name, v (abs value), shown (display value), c (color), icon, act, id }] */
+function breakdownCard(key, o) {
+  const st = (db.bd || (db.bd = {}))[key] || {}, open = o.compact || st.open !== false, view = o.compact ? 'donut' : st.view === 'list' ? 'list' : 'donut';
+  // Distinct colours: keep each item's own colour unless an earlier (bigger) one already uses it
+  const PAL = ['var(--g-sky)', 'var(--g-mint)', 'var(--g-violet)', 'var(--g-pink)', 'var(--g-lime)', 'var(--g-coral)', 'var(--g-sand)', 'var(--accent)'];
+  const all = [...o.segs].sort((a, b) => (!!a.keep - !!b.keep) || b.v - a.v), used = new Set();
+  const colored = all.map(x => {
+    if (x.keep) return x;
+    let c = x.c;
+    if (used.has(c)) c = PAL.find(p => !used.has(p)) || c;
+    used.add(c); return { ...x, c };
+  });
+  // Chart shows the 5 biggest; the rest are merged into one calm "Other" slice
+  const TOP = 5, main = colored.filter(x => !x.keep), kept = colored.filter(x => x.keep);
+  let segs = colored, extra = 0;
+  if (main.length > TOP + 1) {
+    const rest = main.slice(TOP), v = rest.reduce((n, x) => n + x.v, 0);
+    extra = rest.length;
+    segs = [...main.slice(0, TOP), { name: `Other (${rest.length})`, v, shown: o.fmtV ? o.fmtV(v) : fmt(v), c: 'var(--other)', other: true }, ...kept];
+  }
+  const sum = segs.reduce((n, x) => n + x.v, 0) || 1, pct = v => Math.round(v / sum * 100);
+  ui.bdData = ui.bdData || {}; ui.bdData[key] = { segs, sum, center: o.center };
+  const head = o.compact ? `<div class="sp-head"><span class="sp-ttl"><span>${o.title}</span><small class="num">${o.sub}</small></span><a class="link sp-all" href="${o.href}">See all${icon(UI.right)}</a></div>` : `<button class="sp-head" data-act="bd-toggle" data-k="${key}" aria-expanded="${open}">
+      <span class="sp-ttl"><span>${o.title}</span><small class="num">${o.sub}</small></span>
+      ${open ? '' : `<span class="sp-mini">${segs.map(x => `<span style="flex:${x.v};--c:${x.c}"></span>`).join('')}</span>`}
+      ${icon(UI.chev, 'chev')}</button>`;
+  if (!open) return `<section class="spend" style="margin-top:${o.mt || 22}px">${head}</section>`;
+  let body;
+  if (view === 'donut') {
+    const R = 70, C = 2 * Math.PI * R, gap = segs.length > 1 ? 3 : 0;
+    let at = 0;
+    const arcs = segs.map((x, i) => {
+      const len = x.v / sum * C, dl = Math.max(.01, len - gap);
+      const el = `<circle class="sp-arc" data-act="bd-sel" data-k="${key}" data-i="${i}" r="${R}" cx="90" cy="90" style="--c:${x.c};--C:${C};--i:${i}" stroke-dasharray="${dl} ${C}" stroke-dashoffset="${-at}"><title>${esc(x.name)}</title></circle>`;
+      at += len; return el;
+    }).join('');
+    body = `<div class="sp-donut" id="bd-${key}">
+      <div class="sp-ring"><svg viewBox="0 0 180 180" role="img" aria-label="${o.title}">${arcs}</svg>
+        <div class="sp-center">${o.center}</div></div>
+      <div class="sp-keys">${segs.map((x, i) => `<button class="sp-key" data-act="bd-sel" data-k="${key}" data-i="${i}" style="--c:${x.c}">
+          <i></i><span>${esc(x.name)}</span><b class="num">${x.shown}</b><em class="num">${pct(x.v)}%</em></button>`).join('')}
+        ${extra && !o.compact ? `<button class="sp-more" data-act="bd-view" data-k="${key}" data-v="list">See all ${colored.length}${icon(UI.right)}</button>` : ''}</div></div>`;
+  } else {
+    const max = Math.max(...colored.map(x => x.v)) || 1;
+    body = `<div class="sp-list">${[...colored].sort((a, b) => b.v - a.v).map((x, i) => `<button class="sp-li" data-act="${x.act}" data-id="${x.id}" style="--c:${x.c};--i:${i}">
+        <span class="tint" style="--c:${x.c}">${icon(x.icon)}</span>
+        <span class="sp-li-m"><span class="sp-li-t"><span>${esc(x.name)}</span><b class="num">${x.shown} <em>${pct(x.v)}%</em></b></span>
+          <span class="sp-track"><span style="width:${x.v / max * 100}%"></span></span></span></button>`).join('')}</div>`;
+  }
+  if (o.compact) return `<section class="spend open compact" style="margin-top:${o.mt || 22}px">${head}<div class="sp-body">${body}</div>${o.footer || ''}</section>`;
+  return `<section class="spend open" style="margin-top:${o.mt || 22}px">${head}
+    <div class="sp-body"><div class="seg sm sp-seg" role="group" aria-label="Chart style">
+      <button data-act="bd-view" data-k="${key}" data-v="donut" class="${view === 'donut' ? 'on' : ''}" aria-pressed="${view === 'donut'}">Chart</button>
+      <button data-act="bd-view" data-k="${key}" data-v="list" class="${view === 'list' ? 'on' : ''}" aria-pressed="${view === 'list'}">Ranking</button></div>
+      ${body}</div>${o.footer || ''}</section>`;
+}
+function bdSelect(key, i) {
+  const box = $('#bd-' + key), data = ui.bdData?.[key];
+  if (!box || !data) return;
+  const sel = box.dataset.sel === String(i) ? null : i;
+  box.dataset.sel = sel ?? '';
+  box.querySelectorAll('.sp-arc,.sp-key').forEach(el => {
+    el.classList.toggle('dim', sel != null && el.dataset.i !== String(sel));
+    el.classList.toggle('sel', sel != null && el.dataset.i === String(sel));
+  });
+  const c = box.querySelector('.sp-center');
+  if (sel == null) c.innerHTML = data.center;
+  else { const x = data.segs[sel]; c.innerHTML = `<span style="color:${x.c}">${esc(x.name)}</span><b class="num">${Math.round(x.v / data.sum * 100)}%</b><small>${cur()} ${x.shown}</small>`; }
+}
+function monthName(ym) {
+  const [y, m] = String(ym).split('-').map(Number);
+  if (!y || !m) return '';
+  return new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+}
+
+/* =========================================================
+   9. MODALS
+   ========================================================= */
+const Modals = {
+  item(d) {
+    if (d.view === 'pick') return Modals.groupPick(d);
+    const sl = d.slide; d.slide = false;
+    const g = db.groups.find(x => x.id === d.groupId), n = parseAmt(d.amount);
+    const inc = d.type === 'income', yearly = d.freq === 'yearly';
+    const confirm = d.confirm ? `<div class="confirm" style="margin-top:20px"><span>Delete ${esc(d.name || 'this item')}?</span><button class="btn ghost" data-act="m-unconfirm">Keep</button><button class="btn danger" data-act="m-del-item">Delete</button></div>` : '';
+    return `<div class="im ${sl ? 'slide' : ''}"><div class="d-head">
+        <div class="seg sm im-type" role="group" aria-label="Type">${[['expense', 'Expense'], ['income', 'Income']].map(([v, l]) => `<button class="${d.type === v ? 'on' : ''}" data-act="m-set" data-f="type" data-v="${v}" aria-pressed="${d.type === v}">${l}</button>`).join('')}</div>
+        <div class="im-acts"><button class="close" data-act="m-menu" aria-label="More options" aria-expanded="${!!d.menu}">${icon(UI.dots)}</button>
+          <button class="close" data-act="close" aria-label="Close">${icon(UI.x)}</button>
+          ${d.menu ? `<div class="menu im-menu" role="menu">
+            <button role="menuitemcheckbox" aria-checked="${yearly}" data-act="m-freq">${icon(UI.cal)}<span style="flex:1">Repeats yearly</span><span class="im-switch ${yearly ? 'on' : ''}"><i></i></span></button>
+            <button role="menuitem" data-act="m-dates-open">${icon(UI.cal)}${d.start || d.end ? 'Edit start or end' : 'Start or end month'}</button>
+            <button role="menuitem" data-act="m-note-open">${icon(UI.pen)}${d.note ? 'Edit note' : 'Add note'}</button></div>` : ''}</div></div>
+      <input id="f-name" class="bigname" data-in="name" value="${esc(d.name)}" placeholder="${inc ? 'e.g. Salary' : 'e.g. Rent'}" aria-label="Name">
+      <label class="amtrow"><input id="f-amount" class="bigamt num ${inc ? 'pos' : ''}" data-in="amount" value="${esc(d.amount)}" inputmode="decimal" placeholder="0" aria-label="Amount per ${yearly ? 'year' : 'month'}"><span class="cur">${cur()}</span></label>
+      ${d.datesOpen ? `<div class="dp-group">${dpField(d, { key: 'start', kind: 'month', label: 'Starts', placeholder: 'Right away' })}${dpField(d, { key: 'end', kind: 'month', label: 'Ends', placeholder: 'Never', min: d.start || '' })}
+        <button class="dp-remove" data-act="m-dates-clear">${icon(UI.x)}Remove start and end</button></div>` : ''}
+      ${yearly ? `<div class="im-freq"><span class="im-yr">${icon(UI.cal)}Yearly</span><span class="im-hint num" id="f-hint">${amountHint(d.freq, n)}</span></div>` : ''}
+      <button class="im-grp" data-act="m-pick" style="--c:${g ? gc(g) : 'var(--muted)'}" aria-label="Category: ${g ? esc(g.name) : 'none'}. Change"><span class="im-grp-l">Category</span><i></i><b>${g ? esc(g.name) : 'Choose a category'}</b>${icon(UI.chev, 'chev')}</button>
+      <div class="im-note ${d.noteOpen ? 'open' : ''}">
+        <button class="im-note-h" data-act="m-note" aria-expanded="${!!d.noteOpen}">${icon(UI.pen)}<span>${d.note && !d.noteOpen ? esc(d.note) : 'Note'}</span>${d.note || d.noteOpen ? '' : '<em>Optional</em>'}${icon(UI.chev, 'chev')}</button>
+        ${d.noteOpen ? `<textarea id="f-note" data-in="note" rows="3" placeholder="Anything to remember, like contract end date or account number" aria-label="Note">${esc(d.note || '')}</textarea>` : ''}</div>
+      ${confirm}
+      <div class="im-foot">${d.id && !d.confirm ? `<button class="im-del" data-act="m-confirm" aria-label="Delete item">${icon(UI.trash)}</button>` : ''}
+        <button class="btn primary" data-act="m-save-item" ${g ? '' : 'disabled style="opacity:.5"'}>${d.id ? 'Save changes' : inc ? 'Add income' : 'Add expense'}</button></div></div>`;
+  },
+  groupPick(d) {
+    return `<div class="slide"><div class="d-head"><div style="display:flex;align-items:center;gap:12px">
+        <button class="close" data-act="m-unpick" aria-label="Back">${icon(UI.back)}</button><div class="d-title">Choose category</div></div></div>
+      <label class="srch">${icon(UI.search)}<input id="f-q" data-in="q" value="${esc(d.q || '')}" placeholder="Search ${db.groups.length} categories" aria-label="Search categories"></label>
+      <div class="pick" id="pick-list">${pickList(d)}</div></div>`;
+  },
+  group(d) {
+    const confirm = d.confirm ? `<div class="confirm" style="margin-top:20px"><span>Delete ${esc(d.name)} and its ${Calc.itemsOf(d.id).length} items?</span><button class="btn ghost" data-act="m-unconfirm">Keep</button><button class="btn danger" data-act="m-del-group">Delete</button></div>` : '';
+    const sl = d.slide; d.slide = false;
+    return `<div class="${sl ? 'slide' : ''}"><div class="d-head"><div class="d-kicker">${d.id ? 'Edit category' : 'New category'}</div><button class="close" data-act="close" aria-label="Close">${icon(UI.x)}</button></div>
+      <div style="display:flex;align-items:center;gap:16px;margin-top:18px">
+        <span class="tint" style="--c:var(--g-${d.color});width:64px;height:64px;border-radius:20px">${icon(ICONS[d.icon], '" style="width:28px;height:28px')}</span>
+        <input id="f-gname" class="bigname" style="margin:0;flex:1;min-width:0" data-in="name" value="${esc(d.name)}" placeholder="Category name" aria-label="Category name"></div>
+      <span class="flbl">Icon</span>
+      <div class="icons">${Object.keys(ICONS).map(k => `<button class="ic ${d.icon === k ? 'on' : ''}" style="--c:var(--g-${d.color})" data-act="m-icon" data-v="${k}" aria-label="${k} icon" aria-pressed="${d.icon === k}">${icon(ICONS[k])}</button>`).join('')}</div>
+      <span class="flbl">Colour</span>
+      <div class="colors">${GROUP_COLORS.map(c => `<button class="${d.color === c ? 'on' : ''}" style="--c:var(--g-${c})" data-act="m-color" data-v="${c}" aria-label="${c}" aria-pressed="${d.color === c}"></button>`).join('')}</div>
+      <button class="sav-row" data-act="m-savings" role="switch" aria-checked="${!!d.savings}"><span><b>Savings category</b><small>Money you put aside. Counts as saving, not spending.</small></span><span class="im-switch ${d.savings ? 'on' : ''}"><i></i></span></button>
+      ${confirm}
+      <div class="d-foot">${d.id && !d.confirm ? `<button class="btn danger-text" data-act="m-confirm">Delete category</button>` : '<span></span>'}
+        <div class="right"><button class="btn text" data-act="close">Cancel</button><button class="btn primary" data-act="m-save-group">${d.id ? 'Save' : 'Create category'}</button></div></div></div>`;
+  },
+  account(d) {
+    const confirm = d.confirm ? `<div class="confirm" style="margin-top:20px"><span>Delete ${esc(d.name)}?</span><button class="btn ghost" data-act="m-unconfirm">Keep</button><button class="btn danger" data-act="m-del-account">Delete</button></div>` : '';
+    return `<div class="d-head"><div class="d-kicker">${d.id ? 'Edit account' : 'New account'}</div><button class="close" data-act="close" aria-label="Close">${icon(UI.x)}</button></div>
+      <input id="f-aname" class="bigname" data-in="name" value="${esc(d.name)}" placeholder="Account name" aria-label="Account name">
+      <label class="amtrow"><input id="f-bal" class="bigamt num" data-in="balance" value="${esc(d.balance)}" inputmode="decimal" placeholder="0" aria-label="${d.type === 'credit' ? 'Amount owed' : 'Balance'}"><span class="cur">${cur()}</span></label>
+      ${dpField(d, { key: 'bdate', kind: 'date', label: d.type === 'credit' ? 'Owed on' : 'Balance on', max: todayISO(), clearable: false, top: true })}
+      ${(() => { const latest = d.hist && d.hist.length ? d.hist.reduce((x, y) => (y.d > x.d ? y : x)).d : null, past = latest && (d.bdate || todayISO()) < latest;
+        return `<div class="hint">${past ? `Adds a past balance. Your current balance (${dShort(latest)}) stays the same.` : d.type === 'credit' ? 'What you owe on this date' : 'Your balance on this date'}</div>`; })()}
+      ${d.id && d.hist && d.hist.length ? (() => { const all = [...d.hist].sort((x, y) => y.d.localeCompare(x.d)), list = d.bhAll ? all : all.slice(0, 4);
+        return `<div class="bh"><div class="bh-h"><span>Balance history</span><small>${all.length} ${all.length === 1 ? 'entry' : 'entries'}</small></div>
+          ${list.map((e, i) => `<div class="bh-row ${e.d === d.bdate ? 'on' : ''}"><button class="bh-pick" data-act="m-bh-pick" data-d="${e.d}"><span>${dShort(e.d)}${i === 0 ? '<em>Latest</em>' : ''}</span><b class="num">${d.type === 'credit' ? '−' : ''}${fmt(e.b)}</b></button>
+            <button class="bh-del" data-act="m-bh-del" data-d="${e.d}" aria-label="Delete balance from ${dShort(e.d)}">${icon(UI.trash)}</button></div>`).join('')}
+          ${all.length > list.length ? `<button class="bh-more" data-act="m-bh-all">Show all ${all.length}</button>` : ''}
+          <p class="bh-tip">Pick a past date above to add an older balance.</p></div>`; })() : ''}
+      <span class="flbl">Type</span>
+      <div class="chipset">${Object.entries(ACCOUNT_TYPES).map(([k, t]) => `<button class="${d.type === k ? 'on' : ''}" data-act="m-set" data-f="type" data-v="${k}">${t.label}</button>`).join('')}</div>
+      ${db.agroups.length ? `<span class="flbl">Group</span>
+      <div class="chipset">${db.agroups.map(g => `<button class="${d.groupId === g.id ? 'on' : ''}" data-act="m-agroup" data-id="${g.id}">${esc(g.name)}</button>`).join('')}</div>` : ''}
+      ${confirm}
+      <div class="d-foot">${d.id && !d.confirm ? `<button class="btn danger-text" data-act="m-confirm">Delete account</button>` : '<span></span>'}
+        <div class="right"><button class="btn text" data-act="close">Cancel</button><button class="btn primary" data-act="m-save-account">${d.id ? 'Save' : 'Add account'}</button></div></div>`;
+  },
+  agroup(d) {
+    const n = db.accounts.filter(a => a.groupId === d.id).length;
+    const confirm = d.confirm ? `<div class="confirm" style="margin-top:20px"><span>Delete ${esc(d.name)}${n ? ` and its ${n} ${n === 1 ? 'account' : 'accounts'}` : ''}?</span><button class="btn ghost" data-act="m-unconfirm">Keep</button><button class="btn danger" data-act="m-del-agroup">Delete</button></div>` : '';
+    return `<div class="d-head"><div class="d-kicker">${d.id ? 'Edit group' : 'New group'}</div><button class="close" data-act="close" aria-label="Close">${icon(UI.x)}</button></div>
+      <div style="display:flex;align-items:center;gap:16px;margin-top:18px">
+        <span class="tint" style="--c:var(--g-${d.color});width:64px;height:64px;border-radius:20px">${icon(ICONS[d.icon] || ICONS.savings, '" style="width:28px;height:28px')}</span>
+        <input id="f-agname" class="bigname" style="margin:0;flex:1;min-width:0" data-in="name" value="${esc(d.name)}" placeholder="e.g. Joint, Business" aria-label="Group name"></div>
+      <span class="flbl">Icon</span>
+      <div class="icons">${Object.keys(ICONS).map(k => `<button class="ic ${d.icon === k ? 'on' : ''}" style="--c:var(--g-${d.color})" data-act="m-icon" data-v="${k}" aria-label="${k} icon" aria-pressed="${d.icon === k}">${icon(ICONS[k])}</button>`).join('')}</div>
+      <span class="flbl">Colour</span>
+      <div class="colors">${GROUP_COLORS.map(c => `<button class="${d.color === c ? 'on' : ''}" style="--c:var(--g-${c})" data-act="m-color" data-v="${c}" aria-label="${c}" aria-pressed="${d.color === c}"></button>`).join('')}</div>
+      ${confirm}
+      <div class="d-foot">${d.id && !d.confirm ? `<button class="btn danger-text" data-act="m-confirm">Delete group</button>` : '<span></span>'}
+        <div class="right"><button class="btn text" data-act="close">Cancel</button><button class="btn primary" data-act="m-save-agroup">${d.id ? 'Save' : 'Create group'}</button></div></div>`;
+  },
+  goalAcct(d) {
+    const list = db.accounts.filter(a => a.type !== 'credit').sort((a, b) => b.balance - a.balance);
+    return `<div class="slide"><div class="d-head"><div style="display:flex;align-items:center;gap:12px">
+        <button class="close" data-act="m-goal-back" aria-label="Back">${icon(UI.back)}</button><div class="d-title">Link an account</div></div></div>
+      <p class="note" style="margin:14px 2px 0">The goal fills up by itself from this account's balance.</p>
+      <div class="pick" style="grid-template-columns:1fr">${list.map(a => { const t = ACCOUNT_TYPES[a.type] || ACCOUNT_TYPES.checking, on = a.id === d.accountId;
+        return `<button class="pt ${on ? 'on' : ''}" data-act="m-goal-pick" data-id="${a.id}" aria-pressed="${on}"><span class="tint" style="--c:var(--g-sky);width:30px;height:30px;border-radius:10px">${icon(t.icon)}</span><b>${esc(a.name)}</b><span class="num">${fmt(a.balance)} ${cur()}</span>${on ? icon(UI.check) : ''}</button>`; }).join('')}
+        <button class="pt new" data-act="m-goal-pick" data-id="">${icon(UI.x)}<b>Don't link, I'll update it myself</b></button></div></div>`;
+  },
+  goal(d) {
+    if (d.view === 'acct') return Modals.goalAcct(d);
+    const sl = d.slide; d.slide = false;
+    const acc = d.accountId ? db.accounts.find(a => a.id === d.accountId) : null;
+    const confirm = d.confirm ? `<div class="confirm" style="margin-top:20px"><span>Delete ${esc(d.title)}?</span><button class="btn ghost" data-act="m-unconfirm">Keep</button><button class="btn danger" data-act="m-del-goal">Delete</button></div>` : '';
+    return `<div class="${sl ? 'slide' : ''}"><div class="d-head"><div class="d-kicker">${d.id ? 'Edit goal' : 'New goal'}</div><button class="close" data-act="close" aria-label="Close">${icon(UI.x)}</button></div>
+      <input id="f-title" class="bigname" data-in="title" value="${esc(d.title)}" placeholder="Goal name" aria-label="Goal name">
+      <label class="amtrow"><input id="f-target" class="bigamt num pos" data-in="target" value="${esc(d.target)}" inputmode="decimal" placeholder="0" aria-label="Target amount"><span class="cur">${cur()}</span></label>
+      <div class="hint">Target amount. Milestones are set every 25%.</div>
+      <button class="im-grp" data-act="m-goal-acct" style="--c:var(--g-sky);margin-top:22px"><span class="im-grp-l">Linked account</span>${acc ? `<i></i><b>${esc(acc.name)}</b>` : '<b style="color:var(--muted);font-weight:500">Not linked</b>'}${icon(UI.chev, 'chev')}</button>
+      ${acc ? `<div class="frow"><span class="lbl">Saved so far</span><span class="num auto-val">${fmt(acc.balance)} ${cur()}<em>Auto</em></span></div>` : `<div class="frow"><label class="lbl" for="f-cur">Saved so far</label><input id="f-cur" class="plain num" data-in="current" value="${esc(d.current)}" inputmode="decimal" placeholder="0"></div>`}
+      ${dpField(d, { key: 'date', kind: 'month', label: 'Target month', placeholder: 'No deadline', min: curYM() })}
+      ${confirm}
+      <div class="d-foot">${d.id && !d.confirm ? `<button class="btn danger-text" data-act="m-confirm">Delete goal</button>` : '<span></span>'}
+        <div class="right"><button class="btn text" data-act="close">Cancel</button><button class="btn primary" data-act="m-save-goal">${d.id ? 'Save' : 'Add goal'}</button></div></div></div>`;
+  }
+};
+function sizeAmt(el) {
+  let m = sizeAmt.m;
+  if (!m) { m = sizeAmt.m = document.createElement('span'); m.setAttribute('aria-hidden', 'true'); m.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden;white-space:pre'; document.body.appendChild(m); }
+  const cs = getComputedStyle(el);
+  ['fontFamily', 'fontSize', 'fontWeight', 'fontStyle'].forEach(k => { m.style[k] = cs[k]; }); m.style.letterSpacing = cs.letterSpacing; m.style.fontVariantNumeric = cs.fontVariantNumeric;
+  m.textContent = el.value || el.placeholder || '0';
+  el.style.width = Math.ceil(m.getBoundingClientRect().width) + 4 + 'px';
+}
+function fadeStrip(s) { s.classList.toggle('fl', s.scrollLeft > 4); s.classList.toggle('fr', s.scrollLeft + s.clientWidth < s.scrollWidth - 4); }
+function amountHint(freq, n) {
+  if (!n) return '';
+  return freq === 'yearly' ? `≈ ${fmt(n / 12)} / month` : `≈ ${fmt(n * 12)} / year`;
+}
+function pickList(d) {
+  const q = (d.q || '').trim().toLowerCase();
+  const LIMIT = 6, pins = pinList('g');
+  let list = db.groups.filter(g => !q || g.name.toLowerCase().includes(q));
+  if (!q) list = [...list].sort((a, b) => (b.id === d.groupId) - (a.id === d.groupId) || pins.includes(b.id) - pins.includes(a.id) || Calc.itemsOf(b.id).length - Calc.itemsOf(a.id).length);
+  const hidden = !q && !d.all && list.length > LIMIT + 1 ? list.length - LIMIT : 0;
+  if (hidden) list = list.slice(0, LIMIT);
+  return list.map(g => `<button class="pt ${g.id === d.groupId ? 'on' : ''}" style="--c:${gc(g)}" data-act="m-choose" data-id="${g.id}" aria-pressed="${g.id === d.groupId}">
+      <i></i><b>${esc(g.name)}</b>${g.id === d.groupId ? icon(UI.check) : `<span>${Calc.itemsOf(g.id).length}</span>`}</button>`).join('')
+    + (hidden ? `<button class="pt more" data-act="m-pick-all"><b>Show ${hidden} more</b>${icon(UI.chev, 'chev')}</button>` : '')
+    + `<button class="pt new" data-act="m-newgroup">${icon(UI.plus)}<b>New category</b></button>`
+    + (list.length ? '' : `<p class="note" style="grid-column:1/-1;margin:6px 4px">No category matches "${esc(d.q)}".</p>`);
+}
+
+function openModal(kind, data) { ui.modal = { kind, d: data }; ui.menu = null; Sound.play('open'); renderModal(true); }
+function closeModal() {
+  const m = ui.modal; Sound.play('close');
+  if (m && m.kind === 'group' && m.d.returnTo) { ui.modal = m.d.returnTo; ui.modal.d.slide = true; renderModal(); return; }
+  ui.modal = null; renderModal();
+}
+function renderModal(focus) {
+  const root = $('#modal');
+  if (!ui.modal) {
+    if (root.firstChild && !root.classList.contains('closing')) {
+      if (REDUCED) { root.innerHTML = ''; return; }
+      root.classList.add('closing');
+      setTimeout(() => { root.classList.remove('closing'); if (!ui.modal) root.innerHTML = ''; }, 200);
+    }
+    return;
+  }
+  root.classList.remove('closing');
+  const prevScroll = root.querySelector('.im-groups')?.scrollLeft;
+  const html = Modals[ui.modal.kind](ui.modal.d), dlg = root.querySelector('.dialog');
+  if (dlg && !focus) { dlg.innerHTML = html; dlg.setAttribute('aria-label', ui.modal.kind); }
+  else root.innerHTML = `<div class="scrim" data-act="close"></div><div class="dialog" role="dialog" aria-modal="true" aria-label="${ui.modal.kind}">${html}</div>`;
+  root.querySelectorAll('.bigamt').forEach(sizeAmt);
+  const strip = root.querySelector('.im-groups.scroll');
+  if (strip) {
+    if (prevScroll != null) strip.scrollLeft = prevScroll;
+    const on = strip.querySelector('.gchip.on');
+    if (on && (on.offsetLeft < strip.scrollLeft || on.offsetLeft + on.offsetWidth > strip.scrollLeft + strip.clientWidth)) strip.scrollLeft = on.offsetLeft - 8;
+    fadeStrip(strip); strip.onscroll = () => fadeStrip(strip);
+  }
+  if (focus) {
+    /* Phones: don't focus while the sheet slides in (it pops the keyboard and makes the animation stutter) */
+    const fine = matchMedia('(hover:hover) and (pointer:fine)').matches;
+    setTimeout(() => { const f = root.querySelector('input'); if (fine && f && !ui.modal?.d.id) f.focus({ preventScroll: true }); }, 340);
+  }
+}
+
+/* =========================================================
+   10. RENDER + ROUTER
+   ========================================================= */
+let shellBuilt = false;
+function buildShell() {
+  $('#side').innerHTML = `<a class="brand" href="#home">Famlyfi<i></i></a>
+    <div class="navs"><span class="ind instant" id="ind"></span>
+      ${navList().map(([k, l, d]) => `<a class="nav" id="nav-${k}" href="#${k}">${icon(d)}${l}<span class="cnt"></span></a>`).join('')}</div>
+    <div class="side-foot" id="side-foot"></div>`;
+  $('#dock').innerHTML = `<nav aria-label="Main navigation"><span class="dind instant" id="dind"></span>
+      ${navList().map(([k, l, d]) => `<a class="tab" id="tab-${k}" href="#${k}" aria-label="${l}">${icon(d)}</a>`).join('')}</nav>
+    <button class="fab" id="fab" data-act="add-item" aria-label="Add item">${icon(UI.plus)}</button>`;
+  shellBuilt = true;
+}
+function moveIndicators() {
+  const r = ui.route, ind = $('#ind'), dind = $('#dind');
+  const nav = $('#nav-' + r), tab = $('#tab-' + r);
+  if (ind) {
+    if (nav && nav.offsetHeight) { ind.style.opacity = 1; ind.style.transform = `translateY(${nav.offsetTop}px)`; ind.style.height = nav.offsetHeight + 'px'; }
+    else ind.style.opacity = 0;
+  }
+  if (dind) {
+    if (tab && tab.offsetWidth) { dind.style.opacity = 1; dind.style.transform = `translateX(${tab.offsetLeft}px)`; }
+    else dind.style.opacity = 0;
+  }
+  requestAnimationFrame(() => { ind?.classList.remove('instant'); dind?.classList.remove('instant'); });
+}
+function renderSide() {
+  if (!shellBuilt) buildShell();
+  const r = ui.route, name = db.profile.name || 'You';
+  const counts = { overview: db.items.length, accounts: db.accounts.length, goals: db.goals.length };
+  navList().forEach(([k]) => {
+    const a = $('#nav-' + k); a.classList.toggle('on', r === k);
+    if (r === k) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    a.querySelector('.cnt').textContent = counts[k] ?? '';
+  });
+  $('#side-foot').innerHTML = `<a class="me ${r === 'profile' ? 'on' : ''}" href="#profile"><span class="avatar">${esc(name.charAt(0).toUpperCase())}</span><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(name)}</span></a>
+      <a class="iconbtn ${r === 'settings' ? 'on' : ''}" href="#settings" aria-label="Settings">${icon(UI.sliders)}</a>`;
+}
+function renderDock() {
+  if (!shellBuilt) buildShell();
+  const r = ui.route;
+  navList().forEach(([k]) => $('#tab-' + k)?.classList.toggle('on', r === k));
+  const FAB = { home: ['add-item', 'Add item'], overview: ['add-item', 'Add item'], accounts: ['new-account', 'Add account'], goals: ['new-goal', 'New goal'] }[r];
+  const fab = $('#fab');
+  fab.classList.toggle('hide', !FAB);
+  setTimeout(moveIndicators, 400);
+  if (FAB) { fab.dataset.act = FAB[0]; fab.setAttribute('aria-label', FAB[1]); }
+}
+function stagger(view) {
+  const sel = '.mtop,.banner,.topbar,.eyebrow,.cards>.sc,.grid2>*,.bar,.legend,.sec-h,.gcard,.alist,.empty,.goal,.empty,.set-grid>div,.set-lbl,.set-row,.profile-row';
+  let i = 0;
+  view.querySelectorAll(sel).forEach(el => { el.classList.add('rise'); el.style.setProperty('--i', Math.min(i++, 14)); });
+}
+function animateNums(entering) {
+  const prev = ui.nums || (ui.nums = {});
+  document.querySelectorAll('#view [data-nk]').forEach(el => {
+    const k = el.dataset.nk, to = +el.dataset.n, f = el.dataset.f;
+    const from = entering ? 0 : (k in prev ? prev[k] : to);
+    prev[k] = to;
+    if (REDUCED || Math.round(from) === Math.round(to)) return;
+    const t0 = performance.now(), dur = entering ? 1000 : 650;
+    el.textContent = fmtKind(from, f);
+    const step = now => {
+      const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 4);
+      el.textContent = fmtKind(from + (to - from) * e, f);
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
+}
+function render(entering = false) {
+  migrateHist(); db.accounts.forEach(a => { a.balance = latestBal(a); });
+  syncGoals();
+  renderSetup();
+  renderSide(); renderDock();
+  const view = $('#view');
+  view.innerHTML = (Views[ui.route] || Views.home)();
+  view.classList.remove('enter');
+  if (entering && !REDUCED) { void view.offsetWidth; stagger(view); view.classList.add('enter'); }
+  animateNums(entering);
+  if (ui.modal) renderModal();
+  // Menus near the bottom of the screen (or above the mobile dock) open upwards so they stay visible
+  document.querySelectorAll('#view .menu').forEach(m => { const r = m.getBoundingClientRect(), dock = innerWidth < 900 ? 112 : 16; if (r.bottom > innerHeight - dock && r.top - r.height > 80) m.classList.add('up'); });
+  moveIndicators();
+  ui.justOpened = null; ui.pop = null; ui.flash = null;
+  spy();
+}
+/* Jump to a group on the Budget page: no page reload if already there, keeps other groups as they are */
+function revealGroup(id, smooth) {
+  const c = $('#g-' + id); if (!c) return;
+  c.scrollIntoView({ behavior: smooth && !REDUCED ? 'smooth' : 'auto', block: 'start' });
+  c.classList.remove('pulse'); void c.offsetWidth; c.classList.add('pulse');
+  setActiveGroup(id); ui.spyLock = Date.now() + 900;
+}
+function focusGroup(id) {
+  const wasOpen = db.open.includes(id);
+  if (!wasOpen) { db.open.push(id); Store.save(); ui.justOpened = id; }
+  if (ui.route === 'overview') { if (!wasOpen) render(); revealGroup(id, true); }
+  else { ui.pendingGroup = id; go('overview'); }
+}
+function setActiveGroup(id) {
+  ui.activeGroup = id;
+  document.querySelectorAll('#side-groups .nav').forEach(b => { const on = b.dataset.id === id; b.classList.toggle('on', on); if (on) b.setAttribute('aria-current', 'location'); else b.removeAttribute('aria-current'); });
+}
+function spy() {
+  if (ui.route !== 'overview') return setActiveGroup(null);
+  if (ui.spyLock && Date.now() < ui.spyLock) return;
+  const c = [...document.querySelectorAll('#view .gcard')].find(c => { const r = c.getBoundingClientRect(); return r.top < 220 && r.bottom > 160; });
+  setActiveGroup(c ? c.dataset.gid : null);
+}
+let spyRaf; window.addEventListener('scroll', () => { cancelAnimationFrame(spyRaf); spyRaf = requestAnimationFrame(spy); }, { passive: true });
+let firstRoute = true;
+function route() {
+  const h = (location.hash || '#home').slice(1);
+  let nextRoute = Views[h] && h !== 'groupCard' ? h : 'home'; if (nextRoute === 'history' && db.settings.showHistory !== true) nextRoute = 'home'; if (nextRoute !== ui.route) { ui.q = ''; ui.qOpen = false; }
+  ui.route = nextRoute;
+  ui.menu = null; ui.gconfirm = null; ui.danger = null;
+  if (firstRoute || REDUCED) { firstRoute = false; render(true); window.scrollTo(0, 0); if (ui.pendingGroup) { revealGroup(ui.pendingGroup, false); ui.pendingGroup = null; } return; }
+  const view = $('#view');
+  renderSide(); renderDock(); moveIndicators();
+  view.classList.add('leaving');
+  clearTimeout(route._t);
+  route._t = setTimeout(() => {
+    window.scrollTo(0, 0); render(true); view.classList.remove('leaving');
+    if (ui.pendingGroup) { const id = ui.pendingGroup; ui.pendingGroup = null; requestAnimationFrame(() => revealGroup(id, false)); }
+  }, 150);
+}
+function go(r) { if (location.hash === '#' + r) route(); else location.hash = r; }
+window.addEventListener('resize', () => { $('#ind')?.classList.add('instant'); $('#dind')?.classList.add('instant'); moveIndicators(); });
+
+let toastTimer;
+function toast(msg) {
+  if (/can pin up to|follows|needs at least|first$|first\./i.test(msg)) Sound.play('warn');
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 2200);
+}
+
+/* =========================================================
+   11. EVENTS
+   ========================================================= */
+/* Sensible default category: last one used, else one that holds this kind of entry (expenses don't land in "Income") */
+function defaultGroup(type = 'expense') {
+  if (ui.lastGroup && db.groups.some(g => g.id === ui.lastGroup) && (type === 'income') === Calc.itemsOf(ui.lastGroup).some(i => i.type === 'income')) return ui.lastGroup;
+  const isInc = g => Calc.itemsOf(g.id).some(i => i.type === 'income') || /income|salary|work/i.test(g.name);
+  const pick = db.groups.find(g => type === 'income' ? isInc(g) : !isInc(g) && !g.savings);
+  return (pick || db.groups[0])?.id;
+}
+const blankItem = groupId => ({ name: '', amount: '', type: 'expense', freq: 'monthly', groupId: groupId || defaultGroup('expense'), gAuto: !groupId, view: 'main' });
+const handlers = {
+  period: el => Actions.setting('period', el.dataset.v),
+  nav: el => go(el.dataset.v),
+  'add-item': el => { if (!db.groups.length) { openModal('group', { name: '', icon: 'home', color: 'violet', returnTo: { kind: 'item', d: blankItem() } }); toast('Create a category first'); return; } openModal('item', blankItem(el.dataset.group)); },
+  'edit-item': el => { const i = db.items.find(x => x.id === el.dataset.id); openModal('item', { id: i.id, name: i.name, amount: fmt(i.amount), type: i.type, freq: i.freq, groupId: i.groupId, note: i.note || '', start: i.start || '', end: i.end || '', datesOpen: !!(i.start || i.end), view: 'main' }); },
+  'su-cur': el => { db.settings.currency = el.dataset.v; Store.save(); renderSetup(); },
+  'su-next': () => { ui.su.step++; renderSetup(); },
+  'su-back': () => { ui.su.step--; renderSetup(); },
+  'su-cat': el => { const c = ui.su.cats, v = el.dataset.v; ui.su.cats = c.includes(v) ? c.filter(x => x !== v) : [...c, v]; renderSetup(); },
+  'su-skip': () => { db.onboard = false; ui.su = null; Actions.loadExample(); },
+  'su-finish': () => {
+    const su = ui.su, inc = parseAmt(su.inc);
+    if (inc) { const g = { id: uid(), name: 'Income', icon: 'work', color: 'mint' }; db.groups.push(g); db.items.push({ id: uid(), groupId: g.id, name: 'Salary', amount: inc, type: 'income', freq: 'monthly', since: curYM() }); }
+    SU_CATS.filter(([n]) => su.cats.includes(n)).forEach(([name, ic, color, sav]) => db.groups.push({ id: uid(), name, icon: ic, color, ...(sav ? { savings: true } : {}) }));
+    db.open = db.groups.map(g => g.id); db.onboard = false; ui.su = null;
+    location.hash = '#overview'; commit("You're all set. Add your first expense.");
+  },
+  'h-year': el => { ui.hy = el.dataset.v; render(); },
+  'h-cmp': () => { ui.hcmp = !ui.hcmp; render(); },
+  'search-open': () => openSearch(false),
+  'search-close': () => closeSearch(),
+  'toggle-sound': () => { db.settings.sound = db.settings.sound === false; commit(db.settings.sound ? 'Sounds on' : 'Sounds off'); },
+  'toggle-history': () => { db.settings.showHistory = db.settings.showHistory !== true; shellBuilt = false; commit(db.settings.showHistory ? 'History page shown' : 'History page hidden'); },
+  'toggle-group': el => {
+    const id = el.dataset.id, isOpen = db.open.includes(id);
+    const apply = () => { db.open = isOpen ? db.open.filter(x => x !== id) : [...db.open, id]; ui.menu = null; Store.save(); render(); };
+    if (isOpen) { const b = $('#g-' + id + ' .gbody'); if (b && !REDUCED) { b.classList.add('closing'); setTimeout(apply, 170); return; } }
+    else ui.justOpened = id;
+    apply();
+  },
+  'toggle-agroup': el => {
+    const id = el.dataset.id, isOpen = !db.aclosed.includes(id);
+    const apply = () => { db.aclosed = isOpen ? [...db.aclosed, id] : db.aclosed.filter(x => x !== id); ui.menu = null; Store.save(); render(); };
+    if (isOpen) { const b = $('#ag-' + id + ' .gbody'); if (b && !REDUCED) { b.classList.add('closing'); setTimeout(apply, 170); return; } }
+    else ui.justOpened = id;
+    apply();
+  },
+  'a-expand-all': () => { ui.menu = null; const was = db.aclosed.slice(); db.aclosed = []; Store.save(); ui.openingAll = was; render(); ui.openingAll = null; },
+  'a-collapse-all': () => { ui.menu = null; db.aclosed = db.agroups.map(g => g.id); Store.save(); render(); },
+  'toggle-alist': el => { const id = el.dataset.id, o = !ui.aclosed.includes(id); ui.aclosed = o ? [...ui.aclosed, id] : ui.aclosed.filter(x => x !== id); el.closest('.alist').classList.toggle('open', !o); el.setAttribute('aria-expanded', String(!o)); },
+  'toggle-side-groups': () => { db.sideGroupsClosed = !db.sideGroupsClosed; Store.save(); renderSide(); },
+  'bd-toggle': el => { const b = (db.bd || (db.bd = {}))[el.dataset.k] || (db.bd[el.dataset.k] = {}); b.open = b.open === false; Store.save(); render(); },
+  'bd-view': el => { const b = (db.bd || (db.bd = {}))[el.dataset.k] || (db.bd[el.dataset.k] = {}); b.view = el.dataset.v; Store.save(); render(); },
+  'bd-sel': el => bdSelect(el.dataset.k, +el.dataset.i),
+  'expand-all': () => { ui.menu = null; const was = db.open.slice(); db.open = db.groups.map(g => g.id); Store.save(); ui.openingAll = db.open.filter(x => !was.includes(x)); render(); ui.openingAll = null; },
+  'collapse-all': () => { ui.menu = null; db.open = []; Store.save(); render(); },
+  'goto-group': el => focusGroup(el.dataset.id),
+  pin: el => {
+    const k = el.dataset.k, id = el.dataset.id, ids = (k === 'g' ? db.groups : db.agroups).map(g => g.id);
+    const p = pinList(k).filter(x => ids.includes(x)); db.pins[k] = p;
+    ui.menu = null;
+    if (p.includes(id)) { db.pins[k] = p.filter(x => x !== id); commit('Unpinned'); return; }
+    if (p.length >= PIN_MAX) { render(); toast(`You can pin up to ${PIN_MAX} ${k === 'g' ? 'categories' : 'groups'}. Unpin one first.`); return; }
+    db.pins[k] = [...p, id]; commit('Pinned to top');
+    const c = $((k === 'g' ? '#g-' : '#ag-') + id);
+    if (c) { c.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'center' }); c.classList.remove('pulse'); void c.offsetWidth; c.classList.add('pulse'); }
+  },
+  'group-menu': el => { ui.menu = ui.menu === el.dataset.id ? null : el.dataset.id; render(); },
+  'new-group': () => openModal('group', { name: '', icon: 'home', color: 'violet' }),
+  'edit-group': el => { const g = db.groups.find(x => x.id === el.dataset.id); openModal('group', { id: g.id, name: g.name, icon: g.icon, color: g.color, savings: !!g.savings }); },
+  'ask-del-group': el => { ui.gconfirm = el.dataset.id; ui.menu = null; render(); },
+  'cancel-del-group': () => { ui.gconfirm = null; render(); },
+  'del-group': el => { const id = el.dataset.id; ui.gconfirm = null; const c = $('#g-' + id); if (c && !REDUCED) { c.classList.add('removing'); setTimeout(() => Actions.deleteGroup(id), 260); } else Actions.deleteGroup(id); },
+  'new-account': el => openModal('account', { name: '', type: 'checking', balance: '', bdate: todayISO(), hist: [], groupId: el.dataset.group || agroupFor('checking'), gTouched: !!el.dataset.group }),
+  'edit-account': el => { const a = db.accounts.find(x => x.id === el.dataset.id); openModal('account', { id: a.id, name: a.name, type: a.type, balance: fmt(a.balance), bdate: todayISO(), hist: (a.hist || []).map(e => ({ ...e })), groupId: a.groupId, gTouched: true }); },
+  'm-bh-pick': el => { const d = ui.modal.d, e = d.hist.find(x => x.d === el.dataset.d); d.bdate = e.d; d.balance = fmt(e.b); d.bTouched = true; renderModal(); },
+  'm-bh-del': el => { const d = ui.modal.d; if (d.hist.length < 2) { toast('An account needs at least one balance'); return; } d.hist = d.hist.filter(x => x.d !== el.dataset.d); if (d.bdate === el.dataset.d) { d.bdate = todayISO(); d.balance = fmt(d.hist.reduce((x, y) => (y.d > x.d ? y : x)).b); } d.bTouched = true; renderModal(); },
+  'm-bh-all': () => { ui.modal.d.bhAll = true; renderModal(); },
+  'new-agroup': () => openModal('agroup', { name: '', icon: 'savings', color: GROUP_COLORS[db.agroups.length % GROUP_COLORS.length] }),
+  'edit-agroup': el => { const g = db.agroups.find(x => x.id === el.dataset.id); openModal('agroup', { id: g.id, name: g.name, icon: g.icon, color: g.color }); },
+  'agroup-menu': el => { ui.menu = ui.menu === el.dataset.id ? null : el.dataset.id; render(); },
+  'ask-del-agroup': el => { ui.gconfirm = 'a:' + el.dataset.id; ui.menu = null; render(); },
+  'del-agroup': el => { const id = el.dataset.id; ui.gconfirm = null; Actions.deleteAgroup(id); },
+  'm-agroup': el => { ui.modal.d.groupId = el.dataset.id; ui.modal.d.gTouched = true; renderModal(); },
+  'm-save-agroup': () => { const d = ui.modal.d; ui.modal = null; Actions.saveAgroup(d); renderModal(); },
+  'm-del-agroup': () => { const id = ui.modal.d.id; ui.modal = null; Actions.deleteAgroup(id); renderModal(); },
+  'new-goal': () => openModal('goal', { title: '', target: '', current: '', date: '' }),
+  'edit-goal': el => { const g = db.goals.find(x => x.id === el.dataset.id); openModal('goal', { id: g.id, title: g.title, target: fmt(g.target), current: fmt(g.current), date: g.date, accountId: g.accountId || null }); },
+  'm-goal-acct': () => { ui.modal.d.view = 'acct'; renderModal(); },
+  'm-goal-pick': el => { const d = ui.modal.d; d.accountId = el.dataset.id || null; d.view = 'main'; d.slide = true; renderModal(); },
+  'm-goal-back': () => { ui.modal.d.view = 'main'; ui.modal.d.slide = true; renderModal(); },
+  milestone: el => { db.hintSeen = true; Actions.milestone(el.dataset.id, +el.dataset.k); },
+  accent: el => Actions.setting('accent', el.dataset.v),
+  theme: el => Actions.setting('theme', el.dataset.v),
+  currency: el => Actions.setting('currency', el.dataset.v),
+  danger: el => { ui.danger = el.dataset.v; render(); },
+  'danger-cancel': () => { ui.danger = null; render(); },
+  'start-fresh': () => { ui.danger = null; Actions.startFresh(); },
+  'load-example': () => Actions.loadExample(),
+  /* modal actions */
+  close: () => closeModal(),
+  'm-set': el => { const d = ui.modal.d; d[el.dataset.f] = el.dataset.v; if (ui.modal.kind === 'item' && el.dataset.f === 'type' && d.gAuto && !d.id) d.groupId = defaultGroup(d.type); if (ui.modal.kind === 'account' && el.dataset.f === 'type' && !d.gTouched) d.groupId = agroupFor(d.type) || d.groupId; renderModal(); },
+  'drag-tip-ok': () => { db.dragTipSeen = true; Store.save(); render(); },
+  'm-freq': () => { const d = ui.modal.d; d.freq = d.freq === 'yearly' ? 'monthly' : 'yearly'; d.menu = false; renderModal(); },
+  'm-menu': () => { ui.modal.d.menu = !ui.modal.d.menu; renderModal(); },
+  'm-note': () => { const d = ui.modal.d; d.noteOpen = !d.noteOpen; d.menu = false; renderModal(); if (d.noteOpen) $('#f-note')?.focus(); },
+  'dp-open': el => { const d = ui.modal.d, k = el.dataset.k;
+    if (d.dp === k) { d.dp = null; renderModal(); return; }
+    const v = d[k] || (el.dataset.kind === 'date' ? todayISO() : curYM()), [y, m] = v.split('-').map(Number);
+    d.dp = k; d.dpY = y; d.dpM = m - 1; renderModal(); },
+  'dp-nav': el => { const d = ui.modal.d, n = +el.dataset.v;
+    if (d.dp === 'bdate') { const t = new Date(d.dpY, d.dpM + n, 1); d.dpY = t.getFullYear(); d.dpM = t.getMonth(); } else d.dpY += n;
+    renderModal(); },
+  'dp-pick': el => { const d = ui.modal.d, k = el.dataset.k; d[k] = el.dataset.v; d.dp = null;
+    if (k === 'bdate') d.bTouched = true;
+    if (k === 'start' && d.end && d.end < d.start) d.end = '';
+    renderModal(); },
+  'dp-clear': el => { const d = ui.modal.d; d[el.dataset.k] = ''; d.dp = null; renderModal(); },
+  'm-dates-open': () => { const d = ui.modal.d; d.datesOpen = true; d.menu = false; renderModal(); },
+  'm-dates-clear': () => { const d = ui.modal.d; d.start = ''; d.end = ''; d.datesOpen = false; renderModal(); },
+  'm-note-open': () => { const d = ui.modal.d; d.noteOpen = true; d.menu = false; renderModal(); $('#f-note')?.focus(); },
+  'm-group': el => { ui.modal.d.groupId = el.dataset.id; renderModal(); },
+  'm-pick': () => { ui.modal.d.view = 'pick'; ui.modal.d.q = ''; renderModal(); $('#f-q')?.focus(); },
+  'm-pick-all': () => { ui.modal.d.all = true; $('#pick-list').innerHTML = pickList(ui.modal.d); },
+  'm-unpick': () => { ui.modal.d.view = 'main'; ui.modal.d.slide = true; renderModal(); },
+  'm-choose': el => { ui.modal.d.gAuto = false; ui.modal.d.groupId = el.dataset.id; ui.modal.d.view = 'main'; ui.modal.d.slide = true; renderModal(); },
+  'm-newgroup': () => { const back = ui.modal; ui.modal = { kind: 'group', d: { name: back.d.q || '', icon: 'home', color: 'violet', returnTo: back, slide: true } }; renderModal(); $('#f-gname')?.focus(); },
+  'm-confirm': () => { ui.modal.d.confirm = true; renderModal(); },
+  'm-unconfirm': () => { ui.modal.d.confirm = false; renderModal(); },
+  'm-icon': el => { ui.modal.d.icon = el.dataset.v; renderModal(); },
+  'm-color': el => { ui.modal.d.color = el.dataset.v; renderModal(); },
+  'm-save-item': () => { const d = ui.modal.d; if (!d.groupId) return; ui.modal = null; Actions.saveItem(d); renderModal(); },
+  'm-del-item': () => { const id = ui.modal.d.id; ui.modal = null; Actions.deleteItem(id); renderModal(); },
+  'm-savings': () => { ui.modal.d.savings = !ui.modal.d.savings; renderModal(); },
+  'm-save-group': () => {
+    const d = ui.modal.d, back = d.returnTo; ui.modal = null;
+    const id = Actions.saveGroup(d);
+    if (back) { back.d.groupId = id; back.d.view = 'main'; back.d.slide = true; ui.modal = back; }
+    renderModal();
+  },
+  'm-del-group': () => { const id = ui.modal.d.id; ui.modal = null; Actions.deleteGroup(id); renderModal(); },
+  'm-save-account': () => { const d = ui.modal.d; ui.modal = null; Actions.saveAccount(d); renderModal(); },
+  'm-del-account': () => { const id = ui.modal.d.id; ui.modal = null; Actions.deleteAccount(id); renderModal(); },
+  'm-save-goal': () => { const d = ui.modal.d; ui.modal = null; Actions.saveGoal(d); renderModal(); },
+  'm-del-goal': () => { const id = ui.modal.d.id; ui.modal = null; Actions.deleteGoal(id); renderModal(); }
+};
+
+/* Drag items between groups (mouse: drag; touch: press and hold) */
+const Drag = { s: null, suppress: false };
+function dragStart() {
+  const s = Drag.s; if (!s) return;
+  s.active = true;
+  const r = s.row.getBoundingClientRect();
+  const w = Math.min(r.width, 320);
+  s.offX = Math.min(s.x - r.left, w - 30); s.offY = r.height / 2;
+  const gh = s.ghost = s.row.cloneNode(true);
+  gh.className = 'drag-ghost'; gh.style.width = w + 'px';
+  document.body.appendChild(gh);
+  s.row.classList.add('dragging'); document.body.classList.add('is-dragging');
+  try { navigator.vibrate?.(12); } catch (e) {}
+  dragMove(s.x, s.y); dragScroll();
+}
+function dragMove(x, y) {
+  const s = Drag.s; s.x = x; s.y = y;
+  s.ghost.style.transform = `translate(${x - s.offX}px,${y - s.offY}px)`;
+  const card = document.elementFromPoint(x, y)?.closest('.gcard');
+  let before = null, body = card?.querySelector('.gbody');
+  if (card && body) {
+    const rows = [...body.querySelectorAll('.row[data-act="edit-item"]')].filter(r => r !== s.row);
+    const inHead = y < body.getBoundingClientRect().top;
+    before = inHead ? (rows[0] || body.querySelector('.addrow')) : (rows.find(r => { const b = r.getBoundingClientRect(); return y < b.top + b.height / 2; }) || body.querySelector('.addrow'));
+  }
+  const tgt = card && card.dataset.gid !== s.from ? card : null;
+  if (tgt !== s.tgt) { s.tgt?.classList.remove('drop-on'); tgt?.classList.add('drop-on'); s.tgt = tgt; }
+  s.card = card || null;
+  s.before = before && before.classList.contains('row') ? before.dataset.id : null;
+  if (!s.line) { s.line = document.createElement('div'); s.line.className = 'drop-line'; }
+  if (card && body && before) {
+    s.line.style.setProperty('--c', getComputedStyle(card).getPropertyValue('--c'));
+    if (s.line.nextSibling !== before) body.insertBefore(s.line, before);
+  } else s.line.remove();
+}
+function dragScroll() {
+  const s = Drag.s; if (!s?.active) return;
+  const edge = 90, h = innerHeight;
+  if (s.y < edge) scrollBy(0, -Math.ceil((edge - s.y) / 6)); else if (s.y > h - edge) scrollBy(0, Math.ceil((s.y - (h - edge)) / 6));
+  if (s.y < edge || s.y > h - edge) dragMove(s.x, s.y);
+  requestAnimationFrame(dragScroll);
+}
+function dragEnd(drop) {
+  const s = Drag.s; if (!s) return;
+  clearTimeout(s.timer); Drag.s = null;
+  if (!s.active) return;
+  Drag.suppress = true; setTimeout(() => { Drag.suppress = false; }, 50);
+  if (drop) Sound.play('drop');
+  s.ghost.remove(); s.line?.remove(); s.row.classList.remove('dragging'); document.body.classList.remove('is-dragging'); s.tgt?.classList.remove('drop-on');
+  if (!drop || !s.card) return;
+  const it = db.items.find(i => i.id === s.id), to = s.card.dataset.gid, g = db.groups.find(x => x.id === to);
+  if (!it || !g) return;
+  const was = db.items.filter(i => i.groupId === to).map(i => i.id).join();
+  db.items = db.items.filter(i => i !== it); it.groupId = to;
+  if (s.before) db.items.splice(db.items.findIndex(i => i.id === s.before), 0, it);
+  else { let last = -1; db.items.forEach((i, k) => { if (i.groupId === to) last = k; }); db.items.splice(last + 1, 0, it); }
+  const moved = to !== s.from;
+  if (!moved && db.items.filter(i => i.groupId === to).map(i => i.id).join() === was) return;
+  if (!db.open.includes(to)) db.open.push(to);
+  ui.flash = it.id; db.dragTipSeen = true;
+  commit(moved ? `Moved to ${g.name}` : 'Order updated');
+}
+document.addEventListener('pointerdown', e => {
+  if (e.button > 0 || ui.modal) return;
+  const row = e.target.closest('.gbody .row[data-act="edit-item"]'); if (!row) return;
+  const s = Drag.s = { row, id: row.dataset.id, from: row.closest('.gcard')?.dataset.gid, x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, touch: e.pointerType !== 'mouse', active: false };
+  if (s.touch) s.timer = setTimeout(dragStart, 380); else e.preventDefault();
+});
+document.addEventListener('pointermove', e => {
+  const s = Drag.s; if (!s) return;
+  if (!s.active) {
+    const d = Math.hypot(e.clientX - s.x0, e.clientY - s.y0);
+    if (s.touch) { if (d > 10) { clearTimeout(s.timer); Drag.s = null; } }
+    else if (d > 6) { s.x = e.clientX; s.y = e.clientY; dragStart(); }
+    return;
+  }
+  e.preventDefault(); dragMove(e.clientX, e.clientY);
+});
+document.addEventListener('pointerup', () => dragEnd(true));
+document.addEventListener('pointercancel', () => dragEnd(false));
+document.addEventListener('touchmove', e => { if (Drag.s?.active) e.preventDefault(); }, { passive: false });
+document.addEventListener('contextmenu', e => { if (Drag.s) e.preventDefault(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && Drag.s?.active) dragEnd(false); });
+
+document.addEventListener('click', e => {
+  if (Drag.suppress) { e.preventDefault(); e.stopPropagation(); Drag.suppress = false; return; }
+  const el = e.target.closest('[data-act]');
+  if (ui.modal?.d.menu && (!el || !['m-menu', 'm-freq', 'm-note-open', 'm-dates-open'].includes(el.dataset.act))) { ui.modal.d.menu = false; renderModal(); if (!el) return; }
+  if (!el) { if (ui.menu) { ui.menu = null; render(); } return; }
+  const fn = handlers[el.dataset.act];
+  if (fn) { e.preventDefault(); fn(el); Sound.play(/savings|toggle-history|m-freq|toggle-sound/.test(el.dataset.act) ? 'toggle' : 'tap'); }
+  else if (el.matches('a[href^="#"]')) Sound.play('tap');
+});
+document.addEventListener('input', e => {
+  if (e.target.id === 'su-inc') { ui.su.inc = e.target.value; sizeAmt(e.target); const b = $('#setup .btn.primary'); if (b) b.textContent = parseAmt(e.target.value) ? 'Continue' : 'Skip for now'; return; }
+  if (e.target.id === 'fq') { ui.q = e.target.value; $('#sres').innerHTML = searchResults(ui.q); $('#gwrap')?.classList.toggle('hide', !!ui.q.trim()); return; }
+  const f = e.target.dataset.in;
+  if (!f) return;
+  if (f === 'profile') { db.profile.name = e.target.value; Store.save(); renderSide(); return; }
+  if (!ui.modal) return;
+  const d = ui.modal.d; d[f] = e.target.value;
+  if (e.target.classList.contains('bigamt')) sizeAmt(e.target);
+  if ((f === 'balance' || f === 'bdate') && ui.modal.kind === 'account') d.bTouched = true;
+  if (f === 'amount') { const h = $('#f-hint'); if (h) h.textContent = amountHint(d.freq, parseAmt(d.amount)); }
+  if (f === 'q') $('#pick-list').innerHTML = pickList(d);
+});
+document.addEventListener('focusout', e => { if (e.target.id === 'fq' && !e.target.value.trim()) setTimeout(() => { if (document.activeElement?.id !== 'fq' && !$('#fq')?.value.trim()) closeSearch(); }, 150); });
+document.addEventListener('change', e => { if (e.target.dataset.in === 'profile') render(); });
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && !ui.modal && !/INPUT|TEXTAREA/.test(e.target.tagName) && $('#fq')) { e.preventDefault(); openSearch(true); return; }
+  if (e.key === 'Escape' && e.target.id === 'fq') { closeSearch(); return; }
+  if (e.key === 'Escape') { if (ui.modal) closeModal(); else if (ui.menu) { ui.menu = null; render(); } }
+  if (e.key === 'Enter' && db.onboard && e.target.id === 'su-inc') { $('#setup .btn.primary')?.click(); return; }
+  if (e.key === 'Enter' && ui.modal && e.target.tagName === 'INPUT') {
+    const save = $('#modal .btn.primary'); if (save && !save.disabled) save.click();
+  }
+});
+window.addEventListener('hashchange', route);
+document.addEventListener('pointermove', e => {
+  const c = e.target.closest?.('#hchart'); if (!c) return;
+  const pts = JSON.parse(c.dataset.pts), r = c.getBoundingClientRect(), x = (e.clientX - r.left) / r.width;
+  let k = 0; pts.forEach((p, i) => { if (Math.abs(p[0] - x) < Math.abs(pts[k][0] - x)) k = i; });
+  const tip = $('#htip'), p = pts[k];
+  tip.innerHTML = p[2];
+  tip.style.left = p[0] * 100 + '%'; tip.style.top = `calc(${p[1] * 100}% - ${p[1] * 26}px)`; tip.classList.add('on');
+  c.querySelectorAll('.h-dot').forEach((d, i) => d.classList.toggle('hov', i === k));
+});
+document.addEventListener('pointerleave', e => { if (e.target.id === 'hchart') { $('#htip')?.classList.remove('on'); e.target.querySelectorAll('.h-dot').forEach(d => d.classList.remove('hov')); } }, true);
+
+/* =========================================================
+   12. START
+   ========================================================= */
+applyTheme();
+route();
+</script>
+
+</body></html>
