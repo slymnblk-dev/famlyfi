@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Famlyfi</title><meta name=description content="Famlyfi: a calm, simple way to plan your money, track accounts and reach your goals."><meta name=theme-color content="#0F1013"><link rel=icon href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230F1013'/%3E%3Ctext x='15' y='46' font-family='Arial' font-weight='900' font-size='38' fill='%23F3F2EE'%3EF%3C/text%3E%3Ccircle cx='47' cy='42' r='6' fill='%23FFB547'/%3E%3C/svg%3E">
+<title>Famlyfi</title><meta name=description content="Famlyfi: a calm, simple way to plan your money, track accounts and reach your goals."><meta name=theme-color content="#0F1013"><link rel=manifest href="/manifest.webmanifest"><link rel=apple-touch-icon href="/icons/apple-touch-icon.png"><meta name=apple-mobile-web-app-capable content=yes><meta name=mobile-web-app-capable content=yes><meta name=apple-mobile-web-app-status-bar-style content=black-translucent><meta name=apple-mobile-web-app-title content=Famlyfi><link rel=icon href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230F1013'/%3E%3Ctext x='15' y='46' font-family='Arial' font-weight='900' font-size='38' fill='%23F3F2EE'%3EF%3C/text%3E%3Ccircle cx='47' cy='42' r='6' fill='%23FFB547'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#0F1013">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -803,6 +803,21 @@ mark{background:color-mix(in srgb,var(--accent) 30%,transparent);color:inherit;b
 .fsx-x:hover{background:var(--surface2);color:var(--text)}
 .fsx-x svg.i{width:14px;height:14px}
 @media (max-width:899px){.sec-h.searching h2{display:none}.sec-h.searching .sec-r{flex:1;margin-left:0}.sec-h.searching .fsx{flex:1;width:auto}}
+.si-t{font-size:26px;font-weight:800;letter-spacing:-.035em;margin:16px 0 0;line-height:1.15}
+.si-s{color:var(--muted);font-size:14.5px;line-height:1.5;margin:10px 0 0}
+.si-s b{color:var(--text)}
+.si-email,.si-code{width:100%;height:56px;margin-top:20px;padding:0 18px;border-radius:16px;border:0;outline:0;background:var(--surface2);color:var(--text);font-size:17px;font-weight:600;box-shadow:inset 0 0 0 1.5px transparent;transition:box-shadow .2s}
+.si-email:focus,.si-code:focus{box-shadow:inset 0 0 0 1.5px var(--accent)}
+.si-code{font-size:26px;letter-spacing:.35em;text-align:center}
+.si-err{color:var(--danger);font-size:13.5px;font-weight:500;margin:10px 2px 0}
+.si-legal{color:var(--muted);font-size:12.5px;margin:14px 2px 0}.si-legal a{color:var(--text)}
+.si-ic{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);margin-top:14px}
+.si-ic svg.i{width:24px;height:24px}
+.su-signin{font-size:14px;color:var(--muted);padding:6px}.su-signin b{color:var(--text)}
+.sync{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--muted);margin-left:8px;white-space:nowrap}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.sync.ok i{background:var(--g-mint)}.sync.busy i{background:var(--accent);animation:pulse 1s ease-in-out infinite}.sync.warn i{background:var(--danger)}
+@keyframes pulse{50%{opacity:.3}}
 .sc-prog{display:block;height:6px;border-radius:6px;background:var(--surface2);margin-top:10px;overflow:hidden}
 .sc-prog span{display:block;height:100%;border-radius:6px;background:var(--g-violet);transform-origin:left;animation:grow 1s var(--ease) both;animation-delay:.2s}
 .grid2 .sp-donut{grid-template-columns:176px minmax(0,1fr);gap:18px;justify-content:stretch}
@@ -867,6 +882,7 @@ const UI = {
   wallet: 'M3 7a2 2 0 0 1 2-2h14v4M3 7v10a2 2 0 0 0 2 2h16V9H5a2 2 0 0 1-2-2zM16 14h.01',
   alert: 'M12 8v5M12 16.5v.01M10.3 3.9 2.6 17.3A2 2 0 0 0 4.3 20h15.4a2 2 0 0 0 1.7-2.7L13.7 3.9a2 2 0 0 0-3.4 0z',
   lock: 'M6 11h12v10H6zM8 11V7a4 4 0 0 1 8 0v4',
+  mail: 'M3 6h18v12H3zM3 7l9 6 9-6',
   hist: 'M3 3v18h18M7 15l4-4 3 3 6-7',
   pin: 'M12 16v5M9 3h6l-1 6 4 3v2H6v-2l4-3z',
   cash: 'M2.5 6h19v12h-19zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM6 9.5v.01M18 14.5v.01',
@@ -890,7 +906,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.54';
+const APP_VERSION = '0.55';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -977,7 +993,8 @@ const Store = {
     try { localStorage.setItem(STORE_KEY, JSON.stringify(d)); } catch (e) {}
     return d;
   },
-  save() { if (typeof syncGoals === 'function') syncGoals(); snapshot(); try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); } catch (e) {} }
+  saveLocal() { try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); } catch (e) {} },
+  save() { if (typeof syncGoals === 'function') syncGoals(); snapshot(); this.saveLocal(); if (typeof Cloud !== 'undefined') Cloud.queue(); }
 };
 let db = Store.load();
 /* One-time: mark obvious savings categories so savings stop counting as spending */
@@ -1337,7 +1354,7 @@ function setupView() {
       ${body}
       <div class="su-foot">${st ? '<button class="btn text" data-act="su-back">Back</button>' : '<span></span>'}
         <button class="btn primary" data-act="${last ? 'su-finish' : 'su-next'}" ${last && !su.cats.length ? 'disabled style="opacity:.5"' : ''}>${last ? "Let's go" : st === 1 && !parseAmt(su.inc) ? 'Skip for now' : 'Continue'}</button></div>
-    </div><button class="su-skip" data-act="su-skip">Skip and explore with example data</button></div>`;
+    </div>${Cloud.available && st === 0 ? '<button class="su-signin" data-act="open-signin">Already have an account? <b>Sign in</b></button>' : ''}<button class="su-skip" data-act="su-skip">Skip and explore with example data</button></div>`;
 }
 function renderSetup() {
   const el = $('#setup'); document.body.classList.toggle('onboarding', !!db.onboard);
@@ -1677,8 +1694,8 @@ const Views = {
         ${row('Example data', 'Explore the app with sample numbers', '<button class="st-btn" data-act="load-example">Load</button>')}
         ${row('Erase everything', 'Categories, entries, accounts and goals', '<button class="st-btn danger" data-act="danger" data-v="erase">Erase</button>')}
         ${danger}
-      </div><p class="st-note">${icon(UI.lock)}Saved only in this browser on this device.</p></section>
-      <p class="st-ver">Famlyfi v${APP_VERSION}</p>
+      </div><p class="st-note">${icon(UI.lock)}${Cloud.user ? `Synced to ${esc(Cloud.user.email)}` : 'Saved only in this browser on this device.'}${Cloud.user ? syncBadge() : Cloud.available ? ' <a href="#profile" style="color:inherit;font-weight:600">Sign in to sync</a>' : ''}</p></section>
+      <p class="st-ver"><a href="/privacy.html" target="_blank" rel="noopener" style="color:inherit">Privacy</a> · Famlyfi v${APP_VERSION}</p>
     </div>`;
   },
 
@@ -1698,7 +1715,10 @@ const Views = {
       </div>
       <div class="set-lbl" style="margin-top:36px">Account</div>
       <a class="set-row" href="#settings" style="text-decoration:none"><span class="nm">Settings<span class="sub">Accent, theme, currency and data</span></span>${icon(UI.right)}</a>
-      <div class="set-row"><span class="nm">Sign-in and cloud sync<span class="sub">Not set up yet. Your data stays on this device.</span></span></div>
+      ${!Cloud.available ? `<div class="set-row"><span class="nm">Sign-in and cloud sync<span class="sub">Available on famlyfi.com. Here your data stays in this browser.</span></span></div>`
+        : Cloud.user ? `<div class="set-row"><span class="nm">${esc(Cloud.user.email)}<span class="sub">Your data is saved to your account and syncs across devices</span></span>${syncBadge()}</div>
+          <div class="set-row"><span class="nm">Sign out<span class="sub">Your data stays safe in your account</span></span><button class="st-btn" data-act="sign-out">Sign out</button></div>`
+        : `<div class="set-row"><span class="nm">Sign in to sync<span class="sub">Keep your data safe and use Famlyfi on all your devices</span></span><button class="btn primary" data-act="open-signin">Sign in</button></div>`}
     </div>`;
   }
 };
@@ -1867,6 +1887,22 @@ const Modals = {
       ${confirm}
       <div class="d-foot">${d.id && !d.confirm ? `<button class="btn danger-text" data-act="m-confirm">Delete group</button>` : '<span></span>'}
         <div class="right"><button class="btn text" data-act="close">Cancel</button><button class="btn primary" data-act="m-save-agroup">${d.id ? 'Save' : 'Create group'}</button></div></div>`;
+  },
+  signin(d) {
+    if (d.step === 'sent') return `<div class="d-head"><div class="d-kicker">Check your email</div><button class="close" data-act="close" aria-label="Close">${icon(UI.x)}</button></div>
+      <div class="si-ic">${icon(UI.mail)}</div>
+      <h2 class="si-t">We sent you a login link</h2>
+      <p class="si-s">Open the email we sent to <b>${esc(d.email)}</b> and tap the link. Or enter the code from the email here:</p>
+      <input id="si-code" class="si-code num" data-in="code" value="${esc(d.code || '')}" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456" aria-label="Login code">
+      ${d.err ? `<p class="si-err">${esc(d.err)}</p>` : ''}
+      <div class="d-foot"><button class="btn text" data-act="si-back">Use another email</button><div class="right"><button class="btn primary" data-act="si-verify" ${d.busy ? 'disabled' : ''}>${d.busy ? 'Checking…' : 'Sign in'}</button></div></div>`;
+    return `<div class="d-head"><div class="d-kicker">Sign in</div><button class="close" data-act="close" aria-label="Close">${icon(UI.x)}</button></div>
+      <h2 class="si-t">Sign in or create your account</h2>
+      <p class="si-s">No password needed. We'll email you a one-tap login link.</p>
+      <input id="si-email" class="si-email" data-in="email" type="email" value="${esc(d.email || '')}" placeholder="you@example.com" autocomplete="email" aria-label="Email">
+      ${d.err ? `<p class="si-err">${esc(d.err)}</p>` : ''}
+      <p class="si-legal">By continuing you agree to our <a href="/privacy.html" target="_blank" rel="noopener">privacy policy</a>.</p>
+      <div class="d-foot"><span></span><div class="right"><button class="btn text" data-act="close">Cancel</button><button class="btn primary" data-act="si-send" ${d.busy ? 'disabled' : ''}>${d.busy ? 'Sending…' : 'Send login link'}</button></div></div>`;
   },
   goalAcct(d) {
     const list = db.accounts.filter(a => a.type !== 'credit').sort((a, b) => b.balance - a.balance);
@@ -2125,6 +2161,24 @@ const handlers = {
   },
   'h-year': el => { ui.hy = el.dataset.v; render(); },
   'h-cmp': () => { ui.hcmp = !ui.hcmp; render(); },
+  'open-signin': () => { if (!Cloud.sb) { toast('Sign-in is loading, try again in a moment'); return; } openModal('signin', { email: '', step: 'email' }); setTimeout(() => $('#si-email')?.focus(), 80); },
+  'si-send': async () => {
+    const d = ui.modal.d, email = (d.email || '').trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { d.err = 'Enter a valid email address'; renderModal(); return; }
+    d.busy = true; d.err = ''; renderModal();
+    try { await Cloud.sendLink(email); d.step = 'sent'; d.email = email; }
+    catch (e) { d.err = /rate|seconds/i.test(e.message) ? 'Too many emails. Please wait a minute and try again.' : 'Could not send the email. Please try again.'; }
+    d.busy = false; renderModal(); setTimeout(() => $('#si-code')?.focus(), 80);
+  },
+  'si-verify': async () => {
+    const d = ui.modal.d, code = (d.code || '').replace(/\D/g, '');
+    if (code.length < 6) { d.err = 'Enter the code from the email'; renderModal(); return; }
+    d.busy = true; d.err = ''; renderModal();
+    try { await Cloud.verifyCode(d.email, code); ui.modal = null; renderModal(); }
+    catch (e) { d.busy = false; d.err = 'That code didn\'t work. Check it or request a new link.'; renderModal(); }
+  },
+  'si-back': () => { const d = ui.modal.d; d.step = 'email'; d.err = ''; d.code = ''; renderModal(); },
+  'sign-out': () => { if (confirm('Sign out? Your data stays safe in your account and is removed from this device.')) Cloud.signOut(); },
   'search-open': () => openSearch(false),
   'search-close': () => closeSearch(),
   'toggle-sound': () => { db.settings.sound = db.settings.sound === false; commit(db.settings.sound ? 'Sounds on' : 'Sounds off'); },
@@ -2373,10 +2427,97 @@ document.addEventListener('pointermove', e => {
 document.addEventListener('pointerleave', e => { if (e.target.id === 'hchart') { $('#htip')?.classList.remove('on'); e.target.querySelectorAll('.h-dot').forEach(d => d.classList.remove('hov')); } }, true);
 
 /* =========================================================
+   11b. CLOUD (Supabase): email sign-in + sync of the whole data document
+   ========================================================= */
+const SB_URL = 'https://uavodkjsoebzzjikmedf.supabase.co';
+const SB_KEY = 'sb_publishable_6zzetPID5pZoMwmt90vnng_FP_zBa-0'; // public key; data is protected by row-level security
+var Cloud = {
+  sb: null, user: null, status: 'off', timer: null, remoteAt: null, busy: false,
+  // Sign-in only runs on the real website (not inside the Claude preview)
+  available: /(^|\.)famlyfi\.com$|\.netlify\.app$|^localhost$|^127\.0\.0\.1$/.test(location.hostname) && location.protocol !== 'file:',
+  async init() {
+    if (!this.available) return;
+    try {
+      await new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js'; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); });
+      this.sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { flowType: 'pkce', persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+      this.sb.auth.onAuthStateChange((ev, session) => {
+        const was = this.user?.id; this.user = session?.user || null;
+        if (this.user && this.user.id !== was) { this.setStatus('syncing'); this.pull(true); }
+        if (!this.user) this.setStatus('off');
+      });
+      const { data } = await this.sb.auth.getSession();
+      this.user = data.session?.user || null;
+      if (this.user) { this.setStatus('syncing'); await this.pull(true); }
+      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && this.user) this.pull(false); });
+      addEventListener('online', () => { if (this.user) this.push(); });
+      render();
+    } catch (e) { this.status = 'error'; }
+  },
+  setStatus(st) { this.status = st; const el = document.querySelector('[data-sync]'); if (el) el.outerHTML = syncBadge(); else if (ui.route === 'profile' || ui.route === 'settings') render(); },
+  async sendLink(email) {
+    const { error } = await this.sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + '/', shouldCreateUser: true } });
+    if (error) throw error;
+  },
+  async verifyCode(email, token) {
+    const { error } = await this.sb.auth.verifyOtp({ email, token, type: 'email' });
+    if (error) throw error;
+  },
+  // Load the account's data. First sign-in with no cloud data: upload what's on this device (if it's real data)
+  async pull(first) {
+    if (!this.user || this.busy) return;
+    this.busy = true;
+    try {
+      const { data, error } = await this.sb.from('user_data').select('data, updated_at').eq('user_id', this.user.id).maybeSingle();
+      if (error) throw error;
+      if (data) {
+        if (first || !this.remoteAt || data.updated_at > this.remoteAt) {
+          if (!first && this.timer) { this.busy = false; return; } // local edits waiting to upload win
+          this.remoteAt = data.updated_at;
+          const d = data.data || {};
+          if (d && d.items) { Object.keys(db).forEach(k => delete db[k]); Object.assign(db, d); db.onboard = false; Store.saveLocal(); if (first) toast('Signed in. Your data is up to date.'); render(); }
+        }
+        this.setStatus('synced');
+      } else {
+        if (!db.onboard && !db.example) await this.push(true); else this.setStatus('synced');
+        if (first) toast('Signed in');
+      }
+    } catch (e) { this.setStatus(navigator.onLine ? 'error' : 'offline'); }
+    this.busy = false;
+  },
+  queue() { if (!this.user) return; clearTimeout(this.timer); this.setStatus('syncing'); this.timer = setTimeout(() => this.push(), 1200); },
+  async push(now) {
+    if (!this.user) return;
+    clearTimeout(this.timer); this.timer = null;
+    if (!navigator.onLine) { this.setStatus('offline'); return; }
+    try {
+      const at = new Date().toISOString();
+      const { error } = await this.sb.from('user_data').upsert({ user_id: this.user.id, data: db, updated_at: at });
+      if (error) throw error;
+      this.remoteAt = at; this.setStatus('synced');
+    } catch (e) { this.setStatus('error'); }
+  },
+  async signOut() {
+    if (this.timer) await this.push(true);
+    await this.sb.auth.signOut();
+    this.user = null; this.remoteAt = null;
+    // Remove this account's data from the device; it stays safe in the account
+    const fresh = freshDb(); Object.keys(db).forEach(k => delete db[k]); Object.assign(db, fresh); Store.saveLocal();
+    location.hash = '#home'; render(); toast('Signed out');
+  }
+};
+function syncBadge() {
+  const m = { synced: ['ok', 'Synced'], syncing: ['busy', 'Saving…'], offline: ['warn', 'Offline · will sync later'], error: ['warn', "Couldn't sync · retrying"], off: ['', ''] }[Cloud.status] || ['', ''];
+  return m[1] ? `<span class="sync ${m[0]}" data-sync><i></i>${m[1]}</span>` : '<span data-sync></span>';
+}
+
+/* =========================================================
    12. START
    ========================================================= */
 applyTheme();
 route();
+Cloud.init();
+// Installable app: offline support on the real website only
+if (Cloud.available && 'serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
 </script>
 
 </body></html>
