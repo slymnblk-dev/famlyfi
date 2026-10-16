@@ -928,7 +928,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.57';
+const APP_VERSION = '0.58';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -1919,19 +1919,19 @@ const Modals = {
   signin(d) {
     if (d.step === 'sent') return `<div class="d-head"><div class="d-kicker">Check your email</div><button class="close" data-act="close" aria-label="Close">${icon(UI.x)}</button></div>
       <div class="si-ic">${icon(UI.mail)}</div>
-      <h2 class="si-t">We sent you a login link</h2>
-      <p class="si-s">Open the email we sent to <b>${esc(d.email)}</b> and tap <b>Sign in</b>. You'll come right back here, signed in.</p>
+      <h2 class="si-t">Enter your code</h2>
+      <p class="si-s">We sent a code to <b>${esc(d.email)}</b>. Type it below, or tap <b>Sign in</b> in the email if you're on the same device.</p>
       ${SHOW_CODE ? `<input id="si-code" class="si-code num" data-in="code" value="${esc(d.code || '')}" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456" aria-label="Login code">` : ''}
       <p class="si-hint">Can't find it? Check your spam folder. It can take a minute.</p>
       ${d.err ? `<p class="si-err">${esc(d.err)}</p>` : ''}
       <div class="d-foot"><button class="btn text" data-act="si-back">Use another email</button><div class="right">${SHOW_CODE ? `<button class="btn primary" data-act="si-verify" ${d.busy ? 'disabled' : ''}>${d.busy ? 'Checking…' : 'Sign in'}</button>` : '<button class="btn primary" data-act="close">Done</button>'}</div></div>`;
     return `<div class="d-head"><div class="d-kicker">Sign in</div><button class="close" data-act="close" aria-label="Close">${icon(UI.x)}</button></div>
       <h2 class="si-t">Sign in or create your account</h2>
-      <p class="si-s">No password needed. We'll email you a link that signs you in with one tap.</p>
+      <p class="si-s">No password needed. We'll email you a one-time code.</p>
       <input id="si-email" class="si-email" data-in="email" type="email" value="${esc(d.email || '')}" placeholder="you@example.com" autocomplete="email" aria-label="Email">
       ${d.err ? `<p class="si-err">${esc(d.err)}</p>` : ''}
       <p class="si-legal">By continuing you agree to our <a href="/privacy.html" target="_blank" rel="noopener">privacy policy</a>.</p>
-      <div class="d-foot"><span></span><div class="right"><button class="btn text" data-act="close">Cancel</button><button class="btn primary" data-act="si-send" ${d.busy ? 'disabled' : ''}>${d.busy ? 'Sending…' : 'Send login link'}</button></div></div>`;
+      <div class="d-foot"><span></span><div class="right"><button class="btn text" data-act="close">Cancel</button><button class="btn primary" data-act="si-send" ${d.busy ? 'disabled' : ''}>${d.busy ? 'Sending…' : 'Email me a code'}</button></div></div>`;
   },
   avatar() {
     const p = db.profile, name = p.name || 'You';
@@ -2214,7 +2214,7 @@ const handlers = {
     if (code.length < 6) { d.err = 'Enter the code from the email'; renderModal(); return; }
     d.busy = true; d.err = ''; renderModal();
     try { await Cloud.verifyCode(d.email, code); ui.modal = null; renderModal(); }
-    catch (e) { d.busy = false; d.err = 'That code didn\'t work. Check it or request a new link.'; renderModal(); }
+    catch (e) { d.busy = false; d.err = 'That code didn\'t work. Check it or request a new one.'; renderModal(); }
   },
   'si-back': () => { const d = ui.modal.d; d.step = 'email'; d.err = ''; d.code = ''; renderModal(); },
   'sign-out': () => { if (confirm('Sign out? Your data stays safe in your account and is removed from this device.')) Cloud.signOut(); },
@@ -2471,7 +2471,7 @@ document.addEventListener('pointerleave', e => { if (e.target.id === 'hchart') {
 /* =========================================================
    11b. CLOUD (Supabase): email sign-in + sync of the whole data document
    ========================================================= */
-const SHOW_CODE = false; // turn on once a custom email sender lets us put the 6-digit code in the email
+const SHOW_CODE = true; // email (via Resend) contains a 6-digit code + link
 const SB_URL = 'https://uavodkjsoebzzjikmedf.supabase.co';
 const SB_KEY = 'sb_publishable_6zzetPID5pZoMwmt90vnng_FP_zBa-0'; // public key; data is protected by row-level security
 var Cloud = {
