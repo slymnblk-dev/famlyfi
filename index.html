@@ -819,6 +819,27 @@ mark{background:color-mix(in srgb,var(--accent) 30%,transparent);color:inherit;b
 .sync i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
 .sync.ok i{background:var(--g-mint)}.sync.busy i{background:var(--accent);animation:pulse 1s ease-in-out infinite}.sync.warn i{background:var(--danger)}
 @keyframes pulse{50%{opacity:.3}}
+.avatar{--avc:var(--accent)}
+.avatar{background:var(--avc)}
+.avatar.emo{background:color-mix(in srgb,var(--avc) 24%,var(--surface2))}
+.av-emo{font-size:1.15em;line-height:1}
+.av-big{position:relative;width:112px;height:112px;border-radius:36px;font-size:52px;letter-spacing:-.05em;border:0;cursor:pointer;transition:transform .25s var(--spring)}
+.av-big:hover{transform:scale(1.04)}
+.av-big .av-emo{font-size:60px}
+.av-edit{position:absolute;right:-6px;bottom:-6px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--surface2);color:var(--text);box-shadow:0 0 0 4px var(--bg)}
+.av-edit svg.i{width:15px;height:15px}
+.av-prev{display:flex;justify-content:center;margin:10px 0 4px}
+.av-prev .avatar{width:96px;height:96px;border-radius:32px;font-size:44px;animation:pop .3s var(--spring)}
+.av-prev .av-emo{font-size:52px}
+.av-colors{display:flex;gap:10px;flex-wrap:wrap}
+.av-colors button{width:34px;height:34px;border-radius:50%;background:var(--c);transition:transform .2s var(--spring)}
+.av-colors button.on{box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--c)}
+.av-colors button:hover{transform:scale(1.1)}
+.av-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:6px;max-height:236px;overflow-y:auto;scrollbar-width:none}
+.av-opt{height:48px;border-radius:14px;font-size:26px;display:grid;place-items:center;background:var(--surface2);transition:transform .2s var(--spring),background-color .2s}
+.av-opt:hover{transform:scale(1.08)}
+.av-opt.on{background:color-mix(in srgb,var(--accent) 22%,var(--surface2));box-shadow:inset 0 0 0 2px var(--accent)}
+.av-opt b{font-size:20px;font-weight:800}
 .sc-prog{display:block;height:6px;border-radius:6px;background:var(--surface2);margin-top:10px;overflow:hidden}
 .sc-prog span{display:block;height:100%;border-radius:6px;background:var(--g-violet);transform-origin:left;animation:grow 1s var(--ease) both;animation-delay:.2s}
 .grid2 .sp-donut{grid-template-columns:176px minmax(0,1fr);gap:18px;justify-content:stretch}
@@ -907,7 +928,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.56';
+const APP_VERSION = '0.57';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -1410,6 +1431,12 @@ function closeSearch() {
   q.value = ''; q.blur(); q.tabIndex = -1; $('#sres').innerHTML = ''; $('#gwrap')?.classList.remove('hide');
   $('.fsx')?.classList.remove('open'); $('.sec-h')?.classList.remove('searching');
 }
+/* Profile picture: an emoji on a soft colour, or the first letter of the name */
+const AV_EMOJI = ['🦊', '🐼', '🐨', '🦁', '🐯', '🐸', '🐙', '🦄', '🐝', '🦋', '🐳', '🦉', '🌵', '🌸', '🌻', '🍀', '🌙', '⭐', '🔥', '🌊', '🍋', '🍑', '🥑', '☕', '🎧', '🎨', '🚀', '💎', '🪴', '🏡', '👑', '😎'];
+const AV_COLORS = ['amber', 'violet', 'mint', 'sky', 'pink', 'coral', 'lime', 'sand'];
+const avInner = name => db.profile.emoji ? `<span class="av-emo">${db.profile.emoji}</span>` : esc((name || 'Y').charAt(0).toUpperCase());
+const avCls = () => db.profile.emoji ? 'emo' : '';
+const avStyle = () => db.profile.avColor ? `--avc:var(--g-${db.profile.avColor})` : '';
 function statCard(c, ic, label, value, subline, valueCls = '', cls = '') {
   return `<div class="sc ${cls}"><div class="sc-h"><span class="tint" style="--c:${c}">${icon(ic)}</span>${label}</div>
     <div><div class="sc-v num ${valueCls}">${value}</div><div class="sc-s">${subline}</div></div></div>`;
@@ -1424,7 +1451,7 @@ function groupRow(g, act, cls = '') {
 function mobileTop(title) {
   const name = db.profile.name || 'You';
   return `<div class="mtop">${title ? `<h1 class="mtitle">${title}</h1>` : `<a class="brand" href="#home">Famlyfi<i></i></a>`}
-    <div class="right"><a class="avatar" href="#profile" aria-label="Profile">${esc(name.charAt(0).toUpperCase())}</a></div></div>`;
+    <div class="right"><a class="avatar ${avCls()}" style="${avStyle()}" href="#profile" aria-label="Profile">${avInner(name)}</a></div></div>`;
 }
 function exampleBanner() {
   if (!db.example) return '';
@@ -1705,7 +1732,7 @@ const Views = {
     return `${mobileTop('Profile')}
     <div style="max-width:760px;width:100%;margin:10px auto 0">
       <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
-        <div class="avatar" style="width:112px;height:112px;border-radius:36px;font-size:52px;letter-spacing:-.05em">${esc((name || 'Y').charAt(0).toUpperCase())}</div>
+        <button class="avatar av-big ${avCls()}" style="${avStyle()}" data-act="open-avatar" aria-label="Change profile picture">${avInner(name || 'Y')}<span class="av-edit">${icon(UI.pen)}</span></button>
         <div style="min-width:0;flex:1"><label for="pname" class="set-lbl" style="display:block">Your name</label>
           <input id="pname" class="bigname" data-in="profile" value="${esc(name)}" placeholder="Your name" style="margin:0;font-size:clamp(40px,7vw,72px);letter-spacing:-.06em"></div>
       </div>
@@ -1906,6 +1933,16 @@ const Modals = {
       <p class="si-legal">By continuing you agree to our <a href="/privacy.html" target="_blank" rel="noopener">privacy policy</a>.</p>
       <div class="d-foot"><span></span><div class="right"><button class="btn text" data-act="close">Cancel</button><button class="btn primary" data-act="si-send" ${d.busy ? 'disabled' : ''}>${d.busy ? 'Sending…' : 'Send login link'}</button></div></div>`;
   },
+  avatar() {
+    const p = db.profile, name = p.name || 'You';
+    return `<div class="d-head"><div class="d-kicker">Profile picture</div><button class="close" data-act="close" aria-label="Close">${icon(UI.x)}</button></div>
+      <div class="av-prev"><span class="avatar ${avCls()}" style="${avStyle()}">${avInner(name)}</span></div>
+      <span class="flbl">Colour</span>
+      <div class="av-colors">${AV_COLORS.map(c => `<button class="${(p.avColor || 'amber') === c ? 'on' : ''}" style="--c:var(--g-${c})" data-act="av-color" data-v="${c}" aria-label="${c}"></button>`).join('')}</div>
+      <span class="flbl">Emoji</span>
+      <div class="av-grid"><button class="av-opt ${!p.emoji ? 'on' : ''}" data-act="av-emoji" data-v="" aria-label="Use my initial"><b>${esc(name.charAt(0).toUpperCase())}</b></button>${AV_EMOJI.map(e => `<button class="av-opt ${p.emoji === e ? 'on' : ''}" data-act="av-emoji" data-v="${e}">${e}</button>`).join('')}</div>
+      <div class="d-foot"><span></span><div class="right"><button class="btn primary" data-act="close">Done</button></div></div>`;
+  },
   goalAcct(d) {
     const list = db.accounts.filter(a => a.type !== 'credit').sort((a, b) => b.balance - a.balance);
     return `<div class="slide"><div class="d-head"><div style="display:flex;align-items:center;gap:12px">
@@ -2031,7 +2068,7 @@ function renderSide() {
     if (r === k) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     a.querySelector('.cnt').textContent = counts[k] ?? '';
   });
-  $('#side-foot').innerHTML = `<a class="me ${r === 'profile' ? 'on' : ''}" href="#profile"><span class="avatar">${esc(name.charAt(0).toUpperCase())}</span><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(name)}</span></a>
+  $('#side-foot').innerHTML = `<a class="me ${r === 'profile' ? 'on' : ''}" href="#profile"><span class="avatar ${avCls()}" style="${avStyle()}">${avInner(name)}</span><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(name)}</span></a>
       <a class="iconbtn ${r === 'settings' ? 'on' : ''}" href="#settings" aria-label="Settings">${icon(UI.sliders)}</a>`;
 }
 function renderDock() {
@@ -2181,6 +2218,9 @@ const handlers = {
   },
   'si-back': () => { const d = ui.modal.d; d.step = 'email'; d.err = ''; d.code = ''; renderModal(); },
   'sign-out': () => { if (confirm('Sign out? Your data stays safe in your account and is removed from this device.')) Cloud.signOut(); },
+  'open-avatar': () => openModal('avatar', {}),
+  'av-emoji': el => { db.profile.emoji = el.dataset.v || null; Store.save(); render(); renderModal(); },
+  'av-color': el => { db.profile.avColor = el.dataset.v; Store.save(); render(); renderModal(); },
   'search-open': () => openSearch(false),
   'search-close': () => closeSearch(),
   'toggle-sound': () => { db.settings.sound = db.settings.sound === false; commit(db.settings.sound ? 'Sounds on' : 'Sounds off'); },
