@@ -1,6 +1,6 @@
 [package]
 name = "famlyfi"
-version = "0.57.0"
+version = "0.63.0"
 description = "Famlyfi for Windows"
 edition = "2021"
 
