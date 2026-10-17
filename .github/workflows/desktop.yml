@@ -1,7 +1,12 @@
 name: Windows app
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      test:
+        description: Test build (pre-release, not the official download)
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -26,10 +31,11 @@ jobs:
         with:
           tauriScript: npx --yes @tauri-apps/cli@2
           args: --bundles nsis
-          tagName: desktop-v__VERSION__
-          releaseName: Famlyfi for Windows v__VERSION__
-          releaseBody: Download the -setup.exe file below and double-click it to install.
+          tagName: ${{ inputs.test && 'desktop-test-v__VERSION__' || 'desktop-v__VERSION__' }}
+          releaseName: ${{ inputs.test && 'TEST · Famlyfi for Windows v__VERSION__' || 'Famlyfi for Windows v__VERSION__' }}
+          releaseBody: ${{ inputs.test && 'Test build, not live yet. Download the -setup.exe below and double-click it to install.' || 'Download the -setup.exe file below and double-click it to install.' }}
           releaseDraft: false
+          prerelease: ${{ inputs.test }}
       - uses: actions/upload-artifact@v4
         with:
           name: Famlyfi-Windows-installer
