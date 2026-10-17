@@ -206,6 +206,9 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .ghead{position:relative;display:flex;align-items:center}
 .gtoggle{flex:1;min-width:0;display:flex;align-items:center;gap:16px;padding:18px 8px 18px 22px;text-align:left;border-radius:22px}
 .gname{font-size:19px;font-weight:800;letter-spacing:-.03em}
+.gname .gn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}.gname .gpin{flex:none}
+.gcount{flex:none;display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 7px;margin-left:10px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:0;line-height:1;color:var(--c);background:color-mix(in srgb,var(--c) 15%,transparent)}
+.gcount.zero{color:var(--muted);background:var(--surface2)}
 .share{flex:1;max-width:200px;height:6px;border-radius:6px;background:var(--surface2);overflow:hidden;margin-left:auto}
 .share span{display:block;height:100%;border-radius:6px;background:var(--c)}
 .gnet{min-width:96px;text-align:right;font-size:20px;font-weight:800;letter-spacing:-.03em}
@@ -220,7 +223,7 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .gbody .row:hover .pen,.gbody .row:focus-visible .pen{opacity:1}
 .addrow{display:flex;align-items:center;gap:10px;padding:14px 0;border-top:1px solid var(--line);font-size:14px;font-weight:500;color:var(--muted);width:100%}
 .addrow:hover{color:var(--text)}
-@media (max-width:640px){.shr{display:none}.share{display:none}.gbody{padding:0 16px 6px 16px}.gtoggle{padding:14px 4px 14px 16px;gap:12px}.gnet{min-width:0;font-size:17px;margin-left:auto}.gname{font-size:17px}}
+@media (max-width:640px){.shr{display:none}.share{display:none}.gbody{padding:0 16px 6px 16px}.gtoggle{padding:14px 4px 14px 16px;gap:12px}.gnet{min-width:0;flex:none;font-size:17px;margin-left:auto}.gname{font-size:17px}}
 .menu{position:absolute;right:14px;top:62px;z-index:15;min-width:200px;background:var(--surface2);border:1px solid var(--line);border-radius:16px;padding:6px;box-shadow:0 20px 44px rgba(0,0,0,.35);animation:pop .16s ease-out;transform-origin:top right}
 .menu.up{top:auto;bottom:calc(100% - 10px);transform-origin:bottom right}
 .menu button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:11px 12px;border-radius:10px;font-size:14.5px;font-weight:500}
@@ -929,7 +932,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.60';
+const APP_VERSION = '0.61';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -1271,6 +1274,7 @@ try { matchMedia('(prefers-color-scheme: light)').addEventListener('change', () 
 /* =========================================================
    7. SHARED UI PIECES
    ========================================================= */
+const gCount = (n, w) => `<span class="gcount num${n ? '' : ' zero'}" title="${n} ${n === 1 ? w : w + 's'}" aria-label="${n} ${n === 1 ? w : w + 's'}">${n}</span>`;
 const NAV = [['home', 'Home', UI.home], ['accounts', 'Accounts', UI.wallet], ['overview', 'Finance', UI.receipt], ['goals', 'Goals', UI.target], ['history', 'History', UI.hist]];
 const navList = () => NAV.filter(([k]) => k !== 'history' || db.settings.showHistory === true);
 const cur = () => db.settings.currency;
@@ -1542,7 +1546,7 @@ const Views = {
       <div class="ghead">
         <button class="gtoggle" data-act="toggle-group" data-id="${g.id}" aria-expanded="${open}">
           <span class="tint tile" style="--c:${gc(g)};width:44px;height:44px;border-radius:14px">${icon(ICONS[g.icon] || ICONS.home)}</span>
-          <span style="min-width:0"><span class="gname" style="display:block">${esc(g.name)}${pinBadge('g', g.id)}</span><span class="sub">${items.length} ${items.length === 1 ? 'item' : 'items'}${g.savings ? `<span class="shr"> · Savings${share > 0 ? ` · ${share}% of income` : ''}</span>` : share > 0 ? `<span class="shr"> · ${share}% of expense</span>` : ''}</span></span>
+          <span style="min-width:0"><span class="gname" style="display:flex;align-items:center;min-width:0"><span class="gn">${esc(g.name)}</span>${gCount(items.length, 'item')}${pinBadge('g', g.id)}</span>${g.savings || share > 0 ? `<span class="sub shr">${g.savings ? `Savings${share > 0 ? ` · ${share}% of income` : ''}` : `${share}% of expense`}</span>` : ''}</span>
           <span class="share" style="--c:${gc(g)}"><span style="width:${Math.max(0, share)}%"></span></span>
           <span class="gnet num ${net >= 0 ? 'pos' : ''}">${signed(net)}</span>${icon(UI.chev, 'chev')}
         </button>
@@ -1576,7 +1580,7 @@ const Views = {
       <div class="ghead">
         <button class="gtoggle" data-act="toggle-agroup" data-id="${g.id}" aria-expanded="${open}">
           <span class="tint tile" style="--c:${gc(g)};width:44px;height:44px;border-radius:14px">${icon(ICONS[g.icon] || ICONS.savings)}</span>
-          <span style="min-width:0"><span class="gname" style="display:block">${esc(g.name)}${pinBadge('a', g.id)}</span><span class="sub">${list.length} ${list.length === 1 ? 'account' : 'accounts'}</span></span>
+          <span style="min-width:0"><span class="gname" style="display:flex;align-items:center;min-width:0"><span class="gn">${esc(g.name)}</span>${gCount(list.length, 'account')}${pinBadge('a', g.id)}</span></span>
           <span class="share" style="--c:${gc(g)}"><span style="width:${share}%"></span></span>
           <span class="gnet num ${sum >= 0 ? 'pos' : ''}" style="${sum < 0 ? 'color:var(--danger)' : ''}">${sum < 0 ? '−' : ''}${fmt(sum)}</span>${icon(UI.chev, 'chev')}
         </button>
