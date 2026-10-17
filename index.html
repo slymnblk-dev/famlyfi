@@ -190,6 +190,8 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .sec-h{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:44px 0 14px}
 .sec-h h2{margin:0;font-size:26px;font-weight:800;letter-spacing:-.04em}
 .sec-h .acts{display:flex;gap:8px;flex-wrap:wrap}
+.sec-cnt{margin-left:10px;font-size:15px;font-weight:500;letter-spacing:0;color:var(--muted)}
+@media (max-width:640px){.sec-h h2{min-width:0}.sec-cnt{display:block;margin:4px 0 0;font-size:13px}}
 .gsmenu{position:relative}.gsmenu .menu{top:52px;right:0}
 @media (max-width:899px){.sec-h{flex-wrap:nowrap}}
 
@@ -932,7 +934,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.61';
+const APP_VERSION = '0.62';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -1274,6 +1276,7 @@ try { matchMedia('(prefers-color-scheme: light)').addEventListener('change', () 
 /* =========================================================
    7. SHARED UI PIECES
    ========================================================= */
+const plural = (n, w) => `${n} ${n === 1 ? w : w + 's'}`;
 const gCount = (n, w) => `<span class="gcount num${n ? '' : ' zero'}" title="${n} ${n === 1 ? w : w + 's'}" aria-label="${n} ${n === 1 ? w : w + 's'}">${n}</span>`;
 const NAV = [['home', 'Home', UI.home], ['accounts', 'Accounts', UI.wallet], ['overview', 'Finance', UI.receipt], ['goals', 'Goals', UI.target], ['history', 'History', UI.hist]];
 const navList = () => NAV.filter(([k]) => k !== 'history' || db.settings.showHistory === true);
@@ -1507,7 +1510,7 @@ const Views = {
     ${outs.length ? breakdownCard('spend', { mt: 34, footer: savingsLine(t, f), title: 'Where your money goes', sub: `${cur()} ${fmt(t.out * f)} / ${per()}`,
       center: `<span>Total spending</span><b class="num">${fmt(t.out * f)}</b><small>${cur()} / ${per()}</small>`,
       fmtV: v => fmt(v * f), segs: outs.map(x => ({ name: x.g.name, v: x.v, shown: fmt(x.v * f), c: gc(x.g), icon: ICONS[x.g.icon] || ICONS.home, act: 'goto-group', id: x.g.id })) }) : ''}
-    <div class="sec-h ${ui.qOpen || ui.q ? 'searching' : ''}"><h2>Categories</h2>
+    <div class="sec-h ${ui.qOpen || ui.q ? 'searching' : ''}"><h2>Categories<span class="sec-cnt num">(${plural(db.groups.length, 'category').replace('categorys','categories')}, ${plural(db.items.length, 'item')})</span></h2>
       <div class="sec-r">
       ${db.items.length > 5 ? `<div class="fsx ${ui.qOpen || ui.q ? 'open' : ''}" role="search"><button class="fsx-btn" data-act="search-open" aria-label="Search entries">${icon(UI.search)}</button><input id="fq" type="search" value="${esc(ui.q || '')}" placeholder="Search ${db.items.length} entries" aria-label="Search entries" autocomplete="off" tabindex="${ui.qOpen || ui.q ? 0 : -1}"><button class="fsx-x" data-act="search-close" aria-label="Close search">${icon(UI.x)}</button></div>` : ''}
       <div class="m-only gsmenu"><button class="iconbtn" data-act="group-menu" data-id="__all" aria-label="Category options" aria-expanded="${ui.menu === '__all'}">${icon(UI.dots)}</button>
@@ -1598,7 +1601,7 @@ const Views = {
     <div class="topbar"><div class="eyebrow">Net worth</div><button class="btn primary" data-act="new-account">${icon(UI.plus)}Add account</button></div>
     <div class="hero-row" style="margin-top:6px"><h1 class="hero num">${numEl('nw', a.net, 'left')}</h1><div class="hero-unit">${cur()}</div></div>
     ${accountsBreakdown(a, 30)}
-    ${db.accounts.length || db.agroups.length ? `<div class="sec-h"><h2>Account groups</h2>
+    ${db.accounts.length || db.agroups.length ? `<div class="sec-h"><h2>Account groups<span class="sec-cnt num">(${plural(db.agroups.length, 'group')}, ${plural(db.accounts.length, 'account')})</span></h2>
       <div class="m-only gsmenu"><button class="iconbtn" data-act="agroup-menu" data-id="a:__all" aria-label="Group options" aria-expanded="${ui.menu === 'a:__all'}">${icon(UI.dots)}</button>
         ${ui.menu === 'a:__all' ? `<div class="menu" role="menu"><button role="menuitem" data-act="new-agroup">${icon(UI.plus)}New group</button>
           ${db.agroups.length ? `<button role="menuitem" data-act="${anyOpen ? 'a-collapse-all' : 'a-expand-all'}">${icon(anyOpen ? UI.collapse : UI.expand)}${anyOpen ? 'Collapse all' : 'Expand all'}</button>` : ''}</div>` : ''}</div>
