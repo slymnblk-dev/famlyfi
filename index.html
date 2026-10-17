@@ -908,6 +908,7 @@ const UI = {
   hist: 'M3 3v18h18M7 15l4-4 3 3 6-7',
   pin: 'M12 16v5M9 3h6l-1 6 4 3v2H6v-2l4-3z',
   cash: 'M2.5 6h19v12h-19zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM6 9.5v.01M18 14.5v.01',
+  receipt: 'M5 3h14v18l-2.33-1.5L14.33 21 12 19.5 9.67 21 7.33 19.5 5 21zM9 8h6M9 12h6M9 16h3.5',
   pie: 'M12 3v9h9M12 3a9 9 0 1 0 9 9', target: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 11.5v1',
   plus: 'M12 5v14M5 12h14', x: 'M6 6l12 12M18 6 6 18', check: 'M5 12l5 5 9-10', chev: 'm6 9 6 6 6-6', right: 'm9 6 6 6-6 6',
   back: 'M15 18l-6-6 6-6', dots: 'M5 12h.01M12 12h.01M19 12h.01', pen: 'M4 20h4L19 9l-4-4L4 16zM14 6l4 4',
@@ -928,7 +929,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.58';
+const APP_VERSION = '0.59';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -1270,7 +1271,7 @@ try { matchMedia('(prefers-color-scheme: light)').addEventListener('change', () 
 /* =========================================================
    7. SHARED UI PIECES
    ========================================================= */
-const NAV = [['home', 'Home', UI.home], ['overview', 'Finance', UI.cash], ['accounts', 'Accounts', UI.wallet], ['goals', 'Goals', UI.target], ['history', 'History', UI.hist]];
+const NAV = [['home', 'Home', UI.home], ['accounts', 'Accounts', UI.wallet], ['overview', 'Finance', UI.receipt], ['goals', 'Goals', UI.target], ['history', 'History', UI.hist]];
 const navList = () => NAV.filter(([k]) => k !== 'history' || db.settings.showHistory === true);
 const cur = () => db.settings.currency;
 const per = () => (db.settings.period === 'year' ? 'year' : 'month');
