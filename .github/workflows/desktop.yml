@@ -25,6 +25,19 @@ jobs:
           workspaces: './src-tauri -> target'
       - name: Generate app icons
         run: npx --yes @tauri-apps/cli@2 icon icons/icon-512.png -o src-tauri/icons
+      - name: Diagnostic build (errors as annotations)
+        shell: bash
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          set +e
+          echo "::warning::key length ${#TAURI_SIGNING_PRIVATE_KEY}, password length ${#TAURI_SIGNING_PRIVATE_KEY_PASSWORD}"
+          npx --yes @tauri-apps/cli@2 build --bundles nsis > build.log 2>&1
+          code=$?
+          grep -nE "^error|error\[|Error|failed|panicked|-->" build.log | head -40 | while IFS= read -r l; do echo "::error::$l"; done
+          tail -12 build.log | while IFS= read -r l; do echo "::warning::$l"; done
+          exit $code
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
