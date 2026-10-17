@@ -28,9 +28,12 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tauriScript: npx --yes @tauri-apps/cli@2
           args: --bundles nsis
+          includeUpdaterJson: true
           tagName: ${{ inputs.test && 'desktop-test-v__VERSION__' || 'desktop-v__VERSION__' }}
           releaseName: ${{ inputs.test && 'TEST · Famlyfi for Windows v__VERSION__' || 'Famlyfi for Windows v__VERSION__' }}
           releaseBody: ${{ inputs.test && 'Test build, not live yet. Download the -setup.exe below and double-click it to install.' || 'Download the -setup.exe file below and double-click it to install.' }}

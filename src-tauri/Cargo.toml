@@ -1,6 +1,6 @@
 [package]
 name = "famlyfi"
-version = "0.63.0"
+version = "0.64.0"
 description = "Famlyfi for Windows"
 edition = "2021"
 
@@ -9,6 +9,8 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 tauri = { version = "2", features = [] }
+tauri-plugin-updater = "2"
+tauri-plugin-dialog = "2"
 
 [profile.release]
 opt-level = "s"
