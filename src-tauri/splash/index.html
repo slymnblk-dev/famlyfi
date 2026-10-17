@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Famlyfi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0F1013;--text:#F3F2EE;--muted:#8C8D96;--line:rgba(255,255,255,.07);--track:rgba(255,255,255,.08);--accent:#FFB547;--shadow:0 18px 50px rgba(0,0,0,.45)}
+  @media (prefers-color-scheme: light){:root{--bg:#F4F4F0;--text:#121316;--muted:#62636B;--line:rgba(0,0,0,.07);--track:rgba(0,0,0,.08);--accent:#E09A1F;--shadow:0 18px 50px rgba(20,20,24,.18)}}
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%;background:transparent;overflow:hidden;user-select:none;cursor:default}
+  body{display:grid;place-items:center;padding:14px;font-family:"Bricolage Grotesque",ui-sans-serif,system-ui,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+  .card{width:100%;height:100%;border-radius:30px;background:var(--bg);box-shadow:var(--shadow),inset 0 0 0 1px var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;position:relative;
+        animation:cardIn .5s cubic-bezier(.2,.9,.3,1) both}
+  .mark{width:112px;height:112px}
+  .mark rect{fill:var(--text)}
+  .mark .v{transform-box:fill-box;transform-origin:top;animation:growY .55s cubic-bezier(.65,0,.35,1) .1s both}
+  .mark .h1,.mark .h2{transform-box:fill-box;transform-origin:left;animation:growX .45s cubic-bezier(.65,0,.35,1) both}
+  .mark .h1{animation-delay:.38s}.mark .h2{animation-delay:.5s}
+  .mark circle{fill:var(--accent);transform-box:fill-box;transform-origin:center;
+        animation:pop .6s cubic-bezier(.34,1.7,.5,1) .72s both, breathe 1.8s ease-in-out 1.6s infinite}
+  .word{font-size:30px;font-weight:800;letter-spacing:-.045em;color:var(--text);opacity:0;transform:translateY(6px);transition:opacity .45s ease,transform .45s ease}
+  .word i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-left:2px}
+  .word.in{opacity:1;transform:none}
+  .bar{position:absolute;bottom:46px;width:72px;height:3px;border-radius:3px;background:var(--track);overflow:hidden;opacity:0;animation:fade .4s ease 1.4s forwards}
+  .bar::after{content:"";position:absolute;inset:0;width:40%;border-radius:3px;background:var(--accent);animation:slide 1.1s cubic-bezier(.65,0,.35,1) infinite}
+  .note{position:absolute;bottom:20px;font:500 12px/1.3 ui-sans-serif,system-ui,"Segoe UI",sans-serif;color:var(--muted);opacity:0;transition:opacity .4s}
+  .note.show{opacity:1}
+  @keyframes cardIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+  @keyframes growY{from{transform:scaleY(0)}to{transform:none}}
+  @keyframes growX{from{transform:scaleX(0)}to{transform:none}}
+  @keyframes pop{from{transform:scale(0)}to{transform:none}}
+  @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(.82)}}
+  @keyframes fade{to{opacity:1}}
+  @keyframes slide{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
+  @media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+</style>
+</head>
+<body>
+  <div class="card" data-tauri-drag-region>
+    <svg class="mark" viewBox="120 115 290 290" aria-hidden="true">
+      <rect class="v" x="144" y="140" width="56" height="231"/>
+      <rect class="h1" x="144" y="140" width="156" height="55"/>
+      <rect class="h2" x="144" y="237" width="148" height="53"/>
+      <circle cx="357" cy="343" r="28"/>
+    </svg>
+    <div class="word" id="word">Famlyfi<i></i></div>
+    <div class="bar"></div>
+    <div class="note" id="note">Taking a little longer… check your connection</div>
+  </div>
+<script>
+  // Show the wordmark once the brand font is ready (or after a short wait), so it never flashes in a fallback font.
+  var w = document.getElementById('word'), shown = false;
+  function show(){ if (!shown) { shown = true; setTimeout(function(){ w.classList.add('in'); }, 420); } }
+  try { document.fonts.load('800 30px "Bricolage Grotesque"').then(show, show); } catch (e) { show(); }
+  setTimeout(show, 1200);
+  setTimeout(function(){ document.getElementById('note').classList.add('show'); }, 7000);
+</script>
+</body>
+</html>
