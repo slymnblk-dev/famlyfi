@@ -940,7 +940,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.66';
+const APP_VERSION = '0.67';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -1020,6 +1020,8 @@ function freshDb() {
     settings: { theme: 'dark', accent: 'amber', currency: 'CHF', period: 'month' }, open: [],
     groups: [], items: [], accounts: [], agroups: Object.values(AG_DEF).map(mkAg), aclosed: [], goals: [], history: [] };
 }
+// True when the user has entered their own data (sample numbers don't count). Example data must never replace it.
+const hasRealData = () => !db.example && !!(db.items.length || db.accounts.length || db.goals.length);
 const Store = {
   load() {
     try { const d = JSON.parse(localStorage.getItem(STORE_KEY)); if (d && d.v === 1) { if (d.settings && !CURRENCIES.includes(d.settings.currency)) d.settings.currency = 'CHF'; return migrateAccounts(d); } } catch (e) {}
@@ -1260,7 +1262,7 @@ const Actions = {
     if ((key === 'theme' || key === 'accent') && document.startViewTransition && !REDUCED) document.startViewTransition(run); else run();
   },
   startFresh() { Object.assign(db, { groups: [], items: [], accounts: [], agroups: [], aclosed: [], goals: [], open: [], example: false, history: [], histSeeded: true, onboard: true }); ui.su = null; commit('Started fresh'); },
-  loadExample() { const d = exampleData(); Object.assign(db, d, { example: true, open: [d.groups[0].id], histSeeded: false, history: (db.history || []).filter(x => !x.ex) }); commit('Example data loaded'); }
+  loadExample() { if (hasRealData()) { toast('Example data is only available when the app is empty'); return; } const d = exampleData(); Object.assign(db, d, { example: true, open: [d.groups[0].id], histSeeded: false, history: (db.history || []).filter(x => !x.ex) }); commit('Example data loaded'); }
 };
 
 /* =========================================================
@@ -1733,7 +1735,8 @@ const Views = {
         <button class="st-row st-tog" data-act="toggle-history" role="switch" aria-checked="${s.showHistory === true}"><span class="st-nm">History<small>Show it in the menu. Your history is tracked either way.</small></span><span class="im-switch ${s.showHistory === true ? 'on' : ''}"><i></i></span></button>
       </div></section>
       <section class="st-sec"><h2>Your data</h2><div class="st-card">
-        ${row('Example data', 'Explore the app with sample numbers', '<button class="st-btn" data-act="load-example">Load</button>')}
+        ${db.example ? row('Example data', "You're looking at sample numbers", '<button class="st-btn" data-act="start-fresh">Clear</button>')
+          : !hasRealData() ? row('Example data', 'Explore the app with sample numbers', '<button class="st-btn" data-act="load-example">Load</button>') : ''}
         ${row('Reset everything', 'Delete all categories, entries, accounts and goals', '<button class="st-btn danger" data-act="open-reset">Reset</button>')}
         ${danger}
       </div><p class="st-note">${icon(UI.lock)}${Cloud.user ? `Synced to ${esc(Cloud.user.email)}` : 'Saved only in this browser on this device.'}${Cloud.user ? syncBadge() : Cloud.available ? ' <a href="#profile" style="color:inherit;font-weight:600">Sign in to sync</a>' : ''}</p></section>
