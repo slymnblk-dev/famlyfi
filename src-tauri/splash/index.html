@@ -29,6 +29,8 @@
   .bar::after{content:"";position:absolute;inset:0;width:40%;border-radius:3px;background:var(--accent);animation:slide 1.1s cubic-bezier(.65,0,.35,1) infinite}
   .note{position:absolute;bottom:20px;font:500 12px/1.3 ui-sans-serif,system-ui,"Segoe UI",sans-serif;color:var(--muted);opacity:0;transition:opacity .4s}
   .note.show{opacity:1}
+  .card.leave{animation:cardOut .42s cubic-bezier(.4,0,.2,1) forwards}
+  @keyframes cardOut{to{opacity:0;transform:scale(.97)}}
   @keyframes cardIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
   @keyframes growY{from{transform:scaleY(0)}to{transform:none}}
   @keyframes growX{from{transform:scaleX(0)}to{transform:none}}
@@ -52,12 +54,56 @@
     <div class="note" id="note">Taking a little longer… check your connection</div>
   </div>
 <script>
-  // Show the wordmark once the brand font is ready (or after a short wait), so it never flashes in a fallback font.
+  // Wordmark appears once the brand font is ready (never flashes a fallback font)
   var w = document.getElementById('word'), shown = false;
   function show(){ if (!shown) { shown = true; setTimeout(function(){ w.classList.add('in'); }, 420); } }
   try { document.fonts.load('800 30px "Bricolage Grotesque"').then(show, show); } catch (e) { show(); }
   setTimeout(show, 1200);
   setTimeout(function(){ document.getElementById('note').classList.add('show'); }, 7000);
+
+  // Calm opening chime, synced to the logo: F draws (C), bars (G), dot pops (D). Respects the app's Sounds setting.
+  (function chime() {
+    try { var st = JSON.parse(localStorage.getItem('famlyfi.v1') || 'null'); if (st && st.settings && st.settings.sound === false) return; } catch (e) {}
+    var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    var c = new AC(); if (c.state === 'suspended') c.resume();
+    var master = c.createGain(); master.gain.value = 0.14; master.connect(c.destination);
+    var tone = c.createBiquadFilter(); tone.type = 'lowpass'; tone.frequency.value = 3200; tone.connect(master);
+    // soft room: a filtered feedback echo
+    var d = c.createDelay(); d.delayTime.value = 0.21; var fb = c.createGain(); fb.gain.value = 0.28;
+    var wet = c.createGain(); wet.gain.value = 0.35; var lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1800;
+    tone.connect(d); d.connect(lp); lp.connect(fb); fb.connect(d); lp.connect(wet); wet.connect(master);
+    var t0 = c.currentTime + 0.05;
+    function bell(f, at, len, vol) {
+      [[1, 1], [2, 0.18], [3, 0.05]].forEach(function (h) {
+        var o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.value = f * h[0];
+        g.gain.setValueAtTime(0.0001, t0 + at); g.gain.exponentialRampToValueAtTime(vol * h[1], t0 + at + 0.025);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + at + len / h[0]);
+        o.connect(g); g.connect(tone); o.start(t0 + at); o.stop(t0 + at + len + 0.1);
+      });
+    }
+    // warm bed underneath
+    var pad = c.createOscillator(), pg = c.createGain(); pad.type = 'sine'; pad.frequency.value = 130.81;
+    pg.gain.setValueAtTime(0.0001, t0); pg.gain.exponentialRampToValueAtTime(0.18, t0 + 0.5); pg.gain.exponentialRampToValueAtTime(0.0001, t0 + 2.6);
+    pad.connect(pg); pg.connect(tone); pad.start(t0); pad.stop(t0 + 2.7);
+    bell(523.25, 0.10, 2.0, 0.55);   // C5  - the F draws
+    bell(783.99, 0.42, 2.0, 0.42);   // G5  - the bars slide in
+    bell(1174.66, 0.74, 2.4, 0.34);  // D6  - the dot pops
+  })();
+
+  // Calm handover: let the animation finish, wait until the app is ready, fade out, then reveal the app.
+  (function handover() {
+    var core = window.__TAURI__ && window.__TAURI__.core; if (!core) return;
+    var started = Date.now(), MIN = 2300, card = document.querySelector('.card');
+    function tick() {
+      core.invoke('app_is_ready').then(function (ready) {
+        if (ready && Date.now() - started >= MIN) {
+          card.classList.add('leave');
+          setTimeout(function () { core.invoke('splash_done'); }, 420);
+        } else setTimeout(tick, 120);
+      }, function () { setTimeout(tick, 300); });
+    }
+    setTimeout(tick, 400);
+  })();
 </script>
 </body>
 </html>
