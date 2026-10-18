@@ -958,7 +958,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.68';
+const APP_VERSION = '0.69';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -1538,7 +1538,7 @@ const Views = {
     ${outs.length ? breakdownCard('spend', { mt: 34, footer: savingsLine(t, f), title: 'Where your money goes', sub: `${cur()} ${fmt(t.out * f)} / ${per()}`,
       center: `<span>Total spending</span><b class="num">${fmt(t.out * f)}</b><small>${cur()} / ${per()}</small>`,
       fmtV: v => fmt(v * f), segs: outs.map(x => ({ name: x.g.name, v: x.v, shown: fmt(x.v * f), c: gc(x.g), icon: ICONS[x.g.icon] || ICONS.home, act: 'goto-group', id: x.g.id })) }) : ''}
-    <div class="sec-h ${ui.qOpen || ui.q ? 'searching' : ''}"><h2>Categories<span class="sec-cnt num">(${plural(db.groups.length, 'category').replace('categorys','categories')}, ${plural(db.items.length, 'item')})</span></h2>
+    <div class="sec-h ${ui.qOpen || ui.q ? 'searching' : ''}"><h2>Categories<span class="sec-cnt num">${plural(db.groups.length, 'category').replace('categorys','categories')}, ${plural(db.items.length, 'item')}</span></h2>
       <div class="sec-r">
       ${db.items.length > 5 ? `<div class="fsx ${ui.qOpen || ui.q ? 'open' : ''}" role="search"><button class="fsx-btn" data-act="search-open" aria-label="Search entries">${icon(UI.search)}</button><input id="fq" type="search" value="${esc(ui.q || '')}" placeholder="Search ${db.items.length} entries" aria-label="Search entries" autocomplete="off" tabindex="${ui.qOpen || ui.q ? 0 : -1}"><button class="fsx-x" data-act="search-close" aria-label="Close search">${icon(UI.x)}</button></div>` : ''}
       <div class="m-only gsmenu"><button class="iconbtn" data-act="group-menu" data-id="__all" aria-label="Category options" aria-expanded="${ui.menu === '__all'}">${icon(UI.dots)}</button>
@@ -1629,7 +1629,7 @@ const Views = {
     <div class="topbar"><div class="eyebrow">Net worth</div><button class="btn primary" data-act="new-account">${icon(UI.plus)}Add account</button></div>
     <div class="hero-row" style="margin-top:6px"><h1 class="hero num">${numEl('nw', a.net, 'left')}</h1><div class="hero-unit">${cur()}</div></div>
     ${accountsBreakdown(a, 30)}
-    ${db.accounts.length || db.agroups.length ? `<div class="sec-h"><h2>Account groups<span class="sec-cnt num">(${plural(db.agroups.length, 'group')}, ${plural(db.accounts.length, 'account')})</span></h2>
+    ${db.accounts.length || db.agroups.length ? `<div class="sec-h"><h2>Account groups<span class="sec-cnt num">${plural(db.agroups.length, 'group')}, ${plural(db.accounts.length, 'account')}</span></h2>
       <div class="m-only gsmenu"><button class="iconbtn" data-act="agroup-menu" data-id="a:__all" aria-label="Group options" aria-expanded="${ui.menu === 'a:__all'}">${icon(UI.dots)}</button>
         ${ui.menu === 'a:__all' ? `<div class="menu" role="menu"><button role="menuitem" data-act="new-agroup">${icon(UI.plus)}New group</button>
           ${db.agroups.length ? `<button role="menuitem" data-act="${anyOpen ? 'a-collapse-all' : 'a-expand-all'}">${icon(anyOpen ? UI.collapse : UI.expand)}${anyOpen ? 'Collapse all' : 'Expand all'}</button>` : ''}</div>` : ''}</div>
