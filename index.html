@@ -1000,7 +1000,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.75';
+const APP_VERSION = '0.76';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -1532,7 +1532,7 @@ function closeSearch() {
   $('.fsx')?.classList.remove('open'); $('.sec-h')?.classList.remove('searching');
 }
 /* Profile picture: an emoji on a soft colour, or the first letter of the name */
-const AV_EMOJI = ['🦊', '🐼', '🐨', '🦁', '🐯', '🐸', '🐙', '🦄', '🐝', '🦋', '🐳', '🦉', '🌵', '🌸', '🌻', '🍀', '🌙', '⭐', '🔥', '🌊', '🍋', '🍑', '🥑', '☕', '🎧', '🎨', '🚀', '💎', '🪴', '🏡', '👑', '😎'];
+const AV_EMOJI = ['🦊', '🐼', '🐨', '🦁', '🐯', '🐸', '🐙', '🦄', '🐝', '🦋', '🐳', '🦉', '🌵', '🌸', '🌻', '🍀', '🌙', '⭐', '🔥', '🌊', '🍋', '🍑', '🥑', '☕', '🎧', '🎨', '🚀', '💎', '🪴', '🏡', '👑', '😎', '❤️', '🌈', '🐶'];
 const AV_COLORS = ['amber', 'violet', 'mint', 'sky', 'pink', 'coral', 'lime', 'sand'];
 const avInner = name => db.profile.emoji ? `<span class="av-emo">${db.profile.emoji}</span>` : esc((name || 'Y').charAt(0).toUpperCase());
 const avCls = () => db.profile.emoji ? 'emo' : '';
@@ -2716,6 +2716,7 @@ document.addEventListener('pointerdown', e => {
 }, true);
 // ---- "What's new" note, shown once after the app updates (newest first; keep each line short) ----
 const WHATS_NEW = {
+  '0.76': ['New profile emojis: heart, rainbow and puppy'],
   '0.75': ['A softer, warmer start-up sound and a slightly quicker splash'],
   '0.74': ['A calm opening chime and a smoother start-up'],
   '0.73': ['A short "What\'s new" note after each update, like this one'],
