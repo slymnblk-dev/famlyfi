@@ -23,6 +23,13 @@ jobs:
       - uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
+      - name: Pack the app into the desktop build
+        shell: bash
+        run: |
+          mkdir -p src-tauri/dist
+          cp index.html privacy.html manifest.webmanifest src-tauri/dist/
+          cp -r icons src-tauri/dist/
+          cp src-tauri/splash/index.html src-tauri/dist/splash.html
       - name: Generate app icons
         run: npx --yes @tauri-apps/cli@2 icon icons/icon-512.png -o src-tauri/icons
       - name: Prepare update signing key

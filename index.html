@@ -934,7 +934,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.62';
+const APP_VERSION = '0.65';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -2484,8 +2484,8 @@ const SB_URL = 'https://uavodkjsoebzzjikmedf.supabase.co';
 const SB_KEY = 'sb_publishable_6zzetPID5pZoMwmt90vnng_FP_zBa-0'; // public key; data is protected by row-level security
 var Cloud = {
   sb: null, user: null, status: 'off', timer: null, remoteAt: null, busy: false,
-  // Sign-in only runs on the real website (not inside the Claude preview)
-  available: /(^|\.)famlyfi\.com$|\.netlify\.app$|^localhost$|^127\.0\.0\.1$/.test(location.hostname) && location.protocol !== 'file:',
+  // Sign-in runs on the real website and in the desktop app (not inside the Claude preview)
+  available: /(^|\.)famlyfi\.com$|\.netlify\.app$|^localhost$|^127\.0\.0\.1$|^tauri\.localhost$/.test(location.hostname) && location.protocol !== 'file:',
   async init() {
     if (!this.available) return;
     try {
