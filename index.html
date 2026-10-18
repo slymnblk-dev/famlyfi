@@ -127,6 +127,10 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .btn.text{padding:0 14px}
 .btn.danger{background:var(--danger);color:#fff}
 .btn:disabled{opacity:.35;cursor:not-allowed;filter:none}
+html.desk-boot body{opacity:0}
+html.desk-boot.shown body{opacity:1;transition:opacity .6s cubic-bezier(.2,.7,.2,1)}
+html.desk-boot.shown .main{animation:deskIn .7s cubic-bezier(.2,.7,.2,1) both}
+@keyframes deskIn{from{transform:translateY(8px)}to{transform:none}}
 .wn{position:fixed;right:24px;bottom:24px;z-index:60;width:min(340px,calc(100vw - 32px));padding:16px 16px 14px;border-radius:20px;background:var(--surface2);box-shadow:0 22px 50px rgba(0,0,0,.35),inset 0 0 0 1px var(--line);animation:wnIn .45s var(--spring) both}
 .wn.out{animation:wnOut .25s ease forwards}
 @keyframes wnIn{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
@@ -996,7 +1000,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.73';
+const APP_VERSION = '0.74';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -1091,6 +1095,8 @@ const Store = {
   save() { if (typeof syncGoals === 'function') syncGoals(); snapshot(); this.saveLocal(); if (typeof Cloud !== 'undefined') Cloud.queue(); }
 };
 let db = Store.load();
+// Desktop app: stay invisible until the window is revealed, then fade in calmly (the shell adds .shown)
+if (window.__TAURI__ && window.__famlyfiLoader) document.documentElement.classList.add('desk-boot');
 /* One-time: mark obvious savings categories so savings stop counting as spending */
 if (!db.savMig) { db.groups.forEach(g => { if (g.icon === 'savings' || /sav|pension|3a|invest/i.test(g.name)) g.savings = true; }); db.savMig = true; }
 /* Monthly snapshot: keeps one entry per month, updated with the latest numbers (feeds the History page) */
@@ -2710,6 +2716,7 @@ document.addEventListener('pointerdown', e => {
 }, true);
 // ---- "What's new" note, shown once after the app updates (newest first; keep each line short) ----
 const WHATS_NEW = {
+  '0.74': ['A calm opening chime and a smoother start-up'],
   '0.73': ['A short "What\'s new" note after each update, like this one'],
   '0.72': ['Goal % now sits where your progress ends', 'Cleaner goal editor: currency and account under ⋯'],
   '0.71': ['Goals can have their own currency', 'Choose your own milestone steps and starting amount']
@@ -2774,7 +2781,9 @@ var Updater = {
 Cloud.init();
 WhatsNew.run();
 if (Updater.on) {
-  try { window.__TAURI__.core.invoke('app_ready').catch(() => {}); } catch (e) {}
+  const shown = () => document.documentElement.classList.add('shown');
+  try { window.__TAURI__.core.invoke('app_ready').then(r => { if (r !== false) shown(); }, shown); } catch (e) { shown(); }
+  setTimeout(shown, 13000); // safety net
   setTimeout(() => Updater.check(false), 2500);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !Updater.appNew) Updater.appCheck(); });
 }
