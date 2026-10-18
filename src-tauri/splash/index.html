@@ -61,39 +61,32 @@
   setTimeout(show, 1200);
   setTimeout(function(){ document.getElementById('note').classList.add('show'); }, 7000);
 
-  // Calm opening chime, synced to the logo: F draws (C), bars (G), dot pops (D). Respects the app's Sounds setting.
+  // Warm swell, synced to the logo: low C as the F draws, G as the bars slide in, E as the dot pops. ~1.9 s. Respects the Sounds setting.
   (function chime() {
     try { var st = JSON.parse(localStorage.getItem('famlyfi.v1') || 'null'); if (st && st.settings && st.settings.sound === false) return; } catch (e) {}
     var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
     var c = new AC(); if (c.state === 'suspended') c.resume();
-    var master = c.createGain(); master.gain.value = 0.14; master.connect(c.destination);
-    var tone = c.createBiquadFilter(); tone.type = 'lowpass'; tone.frequency.value = 3200; tone.connect(master);
-    // soft room: a filtered feedback echo
-    var d = c.createDelay(); d.delayTime.value = 0.21; var fb = c.createGain(); fb.gain.value = 0.28;
-    var wet = c.createGain(); wet.gain.value = 0.35; var lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1800;
-    tone.connect(d); d.connect(lp); lp.connect(fb); fb.connect(d); lp.connect(wet); wet.connect(master);
-    var t0 = c.currentTime + 0.05;
-    function bell(f, at, len, vol) {
-      [[1, 1], [2, 0.18], [3, 0.05]].forEach(function (h) {
-        var o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.value = f * h[0];
-        g.gain.setValueAtTime(0.0001, t0 + at); g.gain.exponentialRampToValueAtTime(vol * h[1], t0 + at + 0.025);
-        g.gain.exponentialRampToValueAtTime(0.0001, t0 + at + len / h[0]);
-        o.connect(g); g.connect(tone); o.start(t0 + at); o.stop(t0 + at + len + 0.1);
-      });
+    var m = c.createGain(); m.gain.value = 0.16; m.connect(c.destination);
+    var f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 1400; f.connect(m);
+    var d = c.createDelay(); d.delayTime.value = 0.19; var fb = c.createGain(); fb.gain.value = 0.3;
+    var dl = c.createBiquadFilter(); dl.type = 'lowpass'; dl.frequency.value = 1500; var wet = c.createGain(); wet.gain.value = 0.25;
+    f.connect(d); d.connect(dl); dl.connect(fb); fb.connect(d); dl.connect(wet); wet.connect(m);
+    var t0 = c.currentTime + 0.05, END = 1.95;
+    function swell(freq, at, peak) {
+      var o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, t0 + at); g.gain.exponentialRampToValueAtTime(peak, t0 + at + 0.45);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + END);
+      o.connect(g); g.connect(f); o.start(t0 + at); o.stop(t0 + END + 0.05);
     }
-    // warm bed underneath
-    var pad = c.createOscillator(), pg = c.createGain(); pad.type = 'sine'; pad.frequency.value = 130.81;
-    pg.gain.setValueAtTime(0.0001, t0); pg.gain.exponentialRampToValueAtTime(0.18, t0 + 0.5); pg.gain.exponentialRampToValueAtTime(0.0001, t0 + 2.6);
-    pad.connect(pg); pg.connect(tone); pad.start(t0); pad.stop(t0 + 2.7);
-    bell(523.25, 0.10, 2.0, 0.55);   // C5  - the F draws
-    bell(783.99, 0.42, 2.0, 0.42);   // G5  - the bars slide in
-    bell(1174.66, 0.74, 2.4, 0.34);  // D6  - the dot pops
+    swell(130.81, 0.10, 0.35); // C3 - the F draws
+    swell(196.00, 0.38, 0.32); // G3 - the bars slide in
+    swell(329.63, 0.72, 0.30); // E4 - the dot pops
   })();
 
   // Calm handover: let the animation finish, wait until the app is ready, fade out, then reveal the app.
   (function handover() {
     var core = window.__TAURI__ && window.__TAURI__.core; if (!core) return;
-    var started = Date.now(), MIN = 2300, card = document.querySelector('.card');
+    var started = Date.now(), MIN = 1900, card = document.querySelector('.card');
     function tick() {
       core.invoke('app_is_ready').then(function (ready) {
         if (ready && Date.now() - started >= MIN) {
