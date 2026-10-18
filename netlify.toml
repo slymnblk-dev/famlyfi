@@ -1,8 +1,8 @@
 [build]
   publish = "."
-  # Website goes live ONLY when the commit message contains [website] (saves Netlify credits).
+  # Website goes live ONLY when a line of the commit message is exactly [website] (saves Netlify credits).
   # Deploy Previews (pull requests / test links) always build, and they are free.
-  ignore = "[ \"$CONTEXT\" = \"production\" ] && ! git log -1 --pretty=%B | grep -qF '[website]'"
+  ignore = "[ \"$CONTEXT\" = \"production\" ] && ! git log -1 --pretty=%B | grep -qxF '[website]'"
 
 [[headers]]
   for = "/*"
