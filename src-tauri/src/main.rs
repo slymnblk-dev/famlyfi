@@ -1,7 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::{sync::Mutex, time::Duration};
-use tauri::{webview::PageLoadEvent, AppHandle, Manager, State};
+use tauri::{AppHandle, Manager, State};
 use tauri_plugin_updater::{Update, UpdaterExt};
 
 /// The update found by the last check, waiting for the user to install it.
@@ -50,6 +50,12 @@ async fn install_update(app: AppHandle, pending: State<'_, PendingUpdate>) -> Re
     app.restart();
 }
 
+/// Called by the app once its first screen is drawn.
+#[tauri::command]
+fn app_ready(app: AppHandle) {
+    reveal(&app);
+}
+
 /// Show the main window and close the splash (safe to call more than once).
 fn reveal(app: &AppHandle) {
     if let Some(main) = app.get_webview_window("main") {
@@ -65,18 +71,12 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(PendingUpdate::default())
-        .invoke_handler(tauri::generate_handler![check_update, install_update])
-        // As soon as the app has loaded in the (hidden) main window, swap it in.
-        .on_page_load(|webview, payload| {
-            if webview.label() == "main" && matches!(payload.event(), PageLoadEvent::Finished) {
-                reveal(webview.app_handle());
-            }
-        })
+        .invoke_handler(tauri::generate_handler![check_update, install_update, app_ready])
         .setup(|app| {
             // Safety net: never leave the user stuck on the splash.
             let handle = app.handle().clone();
             std::thread::spawn(move || {
-                std::thread::sleep(Duration::from_secs(15));
+                std::thread::sleep(Duration::from_secs(10));
                 let h = handle.clone();
                 let _ = handle.run_on_main_thread(move || reveal(&h));
             });

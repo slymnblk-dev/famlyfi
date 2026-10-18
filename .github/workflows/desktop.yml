@@ -31,7 +31,9 @@ jobs:
         shell: bash
         run: |
           mkdir -p src-tauri/dist
-          cp index.html privacy.html manifest.webmanifest src-tauri/dist/
+          cp privacy.html manifest.webmanifest src-tauri/dist/
+          cp index.html src-tauri/dist/app.html
+          cp src-tauri/loader.html src-tauri/dist/index.html
           cp -r icons src-tauri/dist/
           cp src-tauri/splash/index.html src-tauri/dist/splash.html
       - name: Generate app icons

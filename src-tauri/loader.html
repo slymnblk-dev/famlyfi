@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Famlyfi</title>
+<style>html,body{margin:0;height:100%;background:#0F1013}@media (prefers-color-scheme: light){html,body{background:#F4F4F0}}</style></head>
+<body>
+<script>
+/* Famlyfi desktop loader
+   1. Fetch the newest app from GitHub Pages (free, updates ~1 min after "go live").
+   2. Otherwise use the last copy saved on this computer.
+   3. Otherwise use the copy built into the app (works fully offline).
+   Only the real app (it contains APP_VERSION) is ever accepted. */
+(async function () {
+  window.__famlyfiLoader = 1;
+  var URL = 'https://slymnblk-dev.github.io/famlyfi/index.html', KEY = 'famlyfi.appcache', html = null;
+  function ver(h) { var m = h && h.match(/const APP_VERSION = '([\d.]+)'/); return m ? m[1] : null; }
+  function newer(a, b) { a = String(a).split('.').map(Number); b = String(b).split('.').map(Number); for (var i = 0; i < Math.max(a.length, b.length); i++) { if ((a[i] || 0) !== (b[i] || 0)) return (a[i] || 0) > (b[i] || 0); } return false; }
+  try {
+    var ctl = new AbortController(), t = setTimeout(function () { ctl.abort(); }, 3500);
+    var r = await fetch(URL + '?t=' + Date.now(), { cache: 'no-store', signal: ctl.signal });
+    clearTimeout(t);
+    if (r.ok) { var h = await r.text(); if (ver(h)) { html = h; try { localStorage.setItem(KEY, h); } catch (e) {} } }
+  } catch (e) {}
+  var bundled = null;
+  try { bundled = await (await fetch('app.html')).text(); } catch (e) {}
+  if (!html) { var c = null; try { c = localStorage.getItem(KEY); } catch (e) {} html = ver(c) ? c : null; }
+  // Never go backwards: if the built-in copy is newer than what we have, use it.
+  if (bundled && ver(bundled) && (!html || newer(ver(bundled), ver(html)))) html = bundled;
+  document.open(); document.write(html || '<p style="font-family:sans-serif;padding:40px">Famlyfi could not start. Please reopen the app.</p>'); document.close();
+})();
+</script>
+</body></html>

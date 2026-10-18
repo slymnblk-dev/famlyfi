@@ -958,7 +958,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.69';
+const APP_VERSION = '0.70';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -1755,7 +1755,7 @@ const Views = {
         <button class="st-row st-tog" data-act="toggle-history" role="switch" aria-checked="${s.showHistory === true}"><span class="st-nm">History<small>Show it in the menu. Your history is tracked either way.</small></span><span class="im-switch ${s.showHistory === true ? 'on' : ''}"><i></i></span></button>
       </div></section>
       ${UP().on ? `<section class="st-sec"><h2>App</h2><div class="st-card">
-        ${row('App version', UP().info ? `Famlyfi v${APP_VERSION} · version ${esc(String(UP().info.version).replace(/\.0$/, ''))} is ready` : `Famlyfi v${APP_VERSION} for Windows`,
+        ${UP().appNew ? row('App version', `Famlyfi v${APP_VERSION} · version ${esc(UP().appNew)} is ready`, '<button class="st-btn up-cta" data-act="app-reload">Refresh</button>') : row('App version', UP().info ? `Famlyfi v${APP_VERSION} · version ${esc(String(UP().info.version).replace(/\.0$/, ''))} is ready` : `Famlyfi v${APP_VERSION} for Windows`,
           UP().info ? '<button class="st-btn up-cta" data-act="up-open">Update</button>' : `<button class="st-btn" data-act="up-check" ${UP().checking ? 'disabled' : ''}>${UP().checking ? 'Checking…' : 'Check for updates'}</button>`)}
       </div></section>` : ''}
       <section class="st-sec"><h2>Your data</h2><div class="st-card">
@@ -2128,7 +2128,7 @@ function renderSide() {
     if (r === k) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     a.querySelector('.cnt').textContent = counts[k] ?? '';
   });
-  $('#side-foot').innerHTML = (UP().info ? `<button class="up-pill" data-act="up-open"><i></i>Update ready · v${esc(String(UP().info.version).replace(/\.0$/, ''))}</button>` : '') + `<a class="me ${r === 'profile' ? 'on' : ''}" href="#profile"><span class="avatar ${avCls()}" style="${avStyle()}">${avInner(name)}</span><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(name)}</span></a>
+  $('#side-foot').innerHTML = (UP().appNew ? `<button class="up-pill" data-act="app-reload"><i></i>New version v${esc(UP().appNew)} · Refresh</button>` : '') + (UP().info ? `<button class="up-pill" data-act="up-open"><i></i>Update ready · v${esc(String(UP().info.version).replace(/\.0$/, ''))}</button>` : '') + `<a class="me ${r === 'profile' ? 'on' : ''}" href="#profile"><span class="avatar ${avCls()}" style="${avStyle()}">${avInner(name)}</span><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(name)}</span></a>
       <a class="iconbtn ${r === 'settings' ? 'on' : ''}" href="#settings" aria-label="Settings">${icon(UI.sliders)}</a>`;
 }
 function renderDock() {
@@ -2351,6 +2351,7 @@ const handlers = {
   'danger-cancel': () => { ui.danger = null; render(); },
   'start-fresh': () => { ui.danger = null; Actions.startFresh(); },
   'up-install': () => Updater.install(),
+  'app-reload': () => Updater.reloadApp(),
   'up-check': () => Updater.check(true),
   'up-open': () => openModal('update', {}),
   'open-reset': () => { openModal('reset', { word: '' }); setTimeout(() => $('#reset-in')?.focus(), 80); },
@@ -2627,10 +2628,26 @@ route();
 // Desktop app updates (only inside the Windows app; the website updates itself)
 var Updater = {
   on: !!(window.__TAURI__ && window.__TAURI__.core),
-  info: null, checking: false, busy: false,
+  info: null, checking: false, busy: false, appNew: null,
+  // App screens come from GitHub Pages (free, ~1 min after "go live"); the desktop loader caches the newest copy.
+  PAGES: 'https://slymnblk-dev.github.io/famlyfi/index.html',
+  newer(a, b) { const x = String(a).split('.').map(Number), y = String(b).split('.').map(Number); for (let i = 0; i < Math.max(x.length, y.length); i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); } return false; },
+  async appCheck() {
+    if (!window.__famlyfiLoader) return null;
+    try {
+      const r = await fetch(this.PAGES + '?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) return null;
+      const html = await r.text(), m = html.match(/const APP_VERSION = '([\d.]+)'/);
+      if (!m || !this.newer(m[1], APP_VERSION)) return null;
+      try { localStorage.setItem('famlyfi.appcache', html); } catch (e) {}
+      this.appNew = m[1]; renderSide(); return m[1];
+    } catch (e) { return null; }
+  },
+  async reloadApp() { if (Cloud.timer) await Cloud.push(true); location.reload(); },
   async check(manual) {
     if (!this.on || this.checking) return;
     this.checking = true; if (manual) render();
+    const fresh = await this.appCheck();
+    if (fresh && manual) { this.checking = false; toast(`Updating to v${fresh}…`); setTimeout(() => this.reloadApp(), 700); return; }
     try {
       this.info = await window.__TAURI__.core.invoke('check_update');
       if (this.info) { renderSide(); if (manual || !ui.modal) openModal('update', {}); }
@@ -2651,7 +2668,11 @@ var Updater = {
   }
 };
 Cloud.init();
-if (Updater.on) setTimeout(() => Updater.check(false), 2500);
+if (Updater.on) {
+  try { window.__TAURI__.core.invoke('app_ready').catch(() => {}); } catch (e) {}
+  setTimeout(() => Updater.check(false), 2500);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !Updater.appNew) Updater.appCheck(); });
+}
 // Installable app: offline support on the real website only
 if (Cloud.available && 'serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
 </script>
