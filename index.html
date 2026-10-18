@@ -127,6 +127,18 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .btn.text{padding:0 14px}
 .btn.danger{background:var(--danger);color:#fff}
 .btn:disabled{opacity:.35;cursor:not-allowed;filter:none}
+.wn{position:fixed;right:24px;bottom:24px;z-index:60;width:min(340px,calc(100vw - 32px));padding:16px 16px 14px;border-radius:20px;background:var(--surface2);box-shadow:0 22px 50px rgba(0,0,0,.35),inset 0 0 0 1px var(--line);animation:wnIn .45s var(--spring) both}
+.wn.out{animation:wnOut .25s ease forwards}
+@keyframes wnIn{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes wnOut{to{opacity:0;transform:translateY(10px)}}
+.wn-h{display:flex;align-items:center;gap:10px}.wn-h b{flex:1;font-size:15.5px;font-weight:800;letter-spacing:-.02em}
+.wn-ic{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:color-mix(in srgb,var(--g-mint) 18%,transparent);color:var(--g-mint)}.wn-ic svg.i{width:15px;height:15px;stroke-width:2.6}
+.wn-x{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:var(--muted)}.wn-x:hover{background:var(--surface3)}.wn-x svg.i{width:14px;height:14px}
+.wn ul{margin:10px 0 0;padding:0 0 0 38px;display:grid;gap:5px;font-size:14px;line-height:1.4;color:var(--text)}
+.wn li::marker{color:var(--accent)}
+.wn p{margin:8px 0 0 38px;font-size:14px;color:var(--muted)}
+.wn-ok{margin:12px 0 0 38px;padding:7px 14px;border-radius:999px;font-size:13.5px;font-weight:700;background:var(--surface3)}.wn-ok:hover{filter:brightness(1.15)}
+@media (max-width:899px){.wn{right:16px;bottom:110px}}
 .up-hero{display:flex;align-items:center;gap:16px;margin-top:14px}
 .up-ic{width:56px;height:56px;flex:none;border-radius:18px;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent)}
 .up-ic svg.i{width:26px;height:26px}
@@ -984,7 +996,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.72';
+const APP_VERSION = '0.73';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -2696,6 +2708,28 @@ document.addEventListener('pointerdown', e => {
   const d = ui.modal && ui.modal.d; if (!d || !d.menu) return;
   if (!e.target.closest('.gmenu, [data-act=m-gmenu]')) { d.menu = false; $('.gmenu')?.remove(); $('[data-act=m-gmenu]')?.setAttribute('aria-expanded', 'false'); }
 }, true);
+// ---- "What's new" note, shown once after the app updates (newest first; keep each line short) ----
+const WHATS_NEW = {
+  '0.73': ['A short "What\'s new" note after each update, like this one'],
+  '0.72': ['Goal % now sits where your progress ends', 'Cleaner goal editor: currency and account under ⋯'],
+  '0.71': ['Goals can have their own currency', 'Choose your own milestone steps and starting amount']
+};
+const WhatsNew = {
+  KEY: 'famlyfi.seenVersion',
+  run() {
+    let seen = null; try { seen = localStorage.getItem(this.KEY); localStorage.setItem(this.KEY, APP_VERSION); } catch (e) { return; }
+    if (seen === APP_VERSION || db.onboard) return; // nothing new, or a brand-new user
+    if (!seen) { const vs = Object.keys(WHATS_NEW); seen = vs[1] || '0.0'; } // existing user from before this feature: show this version's notes
+    const newer = (a, b) => { a = a.split('.').map(Number); b = b.split('.').map(Number); return a[0] !== b[0] ? a[0] > b[0] : (a[1] || 0) > (b[1] || 0); };
+    const notes = Object.keys(WHATS_NEW).filter(v => newer(v, seen) && !newer(v, APP_VERSION)).flatMap(v => WHATS_NEW[v]).slice(0, 4);
+    const el = document.createElement('div'); el.className = 'wn'; el.setAttribute('role', 'status');
+    el.innerHTML = `<div class="wn-h"><span class="wn-ic">${icon(UI.check)}</span><b>Updated to v${APP_VERSION}</b><button class="wn-x" aria-label="Close">${icon(UI.x)}</button></div>
+      ${notes.length ? `<ul>${notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul>` : '<p>Small improvements and fixes.</p>'}<button class="wn-ok">Got it</button>`;
+    const close = () => { el.classList.add('out'); setTimeout(() => el.remove(), 260); };
+    el.querySelector('.wn-x').onclick = close; el.querySelector('.wn-ok').onclick = close;
+    setTimeout(() => document.body.appendChild(el), 900);
+  }
+};
 var Updater = {
   on: !!(window.__TAURI__ && window.__TAURI__.core),
   info: null, checking: false, busy: false, appNew: null,
@@ -2738,6 +2772,7 @@ var Updater = {
   }
 };
 Cloud.init();
+WhatsNew.run();
 if (Updater.on) {
   try { window.__TAURI__.core.invoke('app_ready').catch(() => {}); } catch (e) {}
   setTimeout(() => Updater.check(false), 2500);
