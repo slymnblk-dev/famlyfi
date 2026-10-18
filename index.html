@@ -126,6 +126,12 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .btn.ghost{background:var(--surface2)}
 .btn.text{padding:0 14px}
 .btn.danger{background:var(--danger);color:#fff}
+.btn:disabled{opacity:.35;cursor:not-allowed;filter:none}
+.si-ic.rs-ic{background:color-mix(in srgb,var(--danger) 15%,transparent);color:var(--danger)}
+.rs-lbl{display:block;margin-top:22px;font-size:13.5px;color:var(--muted)}.rs-lbl b{color:var(--text);letter-spacing:.06em}
+.rs-in{margin-top:8px;text-transform:uppercase;letter-spacing:.18em;font-weight:700}
+.rs-in::placeholder{letter-spacing:.18em;opacity:.35}
+.si-email.rs-in:focus{box-shadow:inset 0 0 0 1.5px var(--danger)}
 .btn.danger-text{color:var(--danger);padding:0 6px}
 .btn svg.i{width:16px;height:16px;stroke-width:2.6}
 .chip{height:40px;padding:0 16px;border-radius:var(--r-pill);background:var(--surface);font-size:14px;font-weight:500;display:inline-flex;align-items:center;gap:8px}
@@ -934,7 +940,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.65';
+const APP_VERSION = '0.66';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -1728,7 +1734,7 @@ const Views = {
       </div></section>
       <section class="st-sec"><h2>Your data</h2><div class="st-card">
         ${row('Example data', 'Explore the app with sample numbers', '<button class="st-btn" data-act="load-example">Load</button>')}
-        ${row('Erase everything', 'Categories, entries, accounts and goals', '<button class="st-btn danger" data-act="danger" data-v="erase">Erase</button>')}
+        ${row('Reset everything', 'Delete all categories, entries, accounts and goals', '<button class="st-btn danger" data-act="open-reset">Reset</button>')}
         ${danger}
       </div><p class="st-note">${icon(UI.lock)}${Cloud.user ? `Synced to ${esc(Cloud.user.email)}` : 'Saved only in this browser on this device.'}${Cloud.user ? syncBadge() : Cloud.available ? ' <a href="#profile" style="color:inherit;font-weight:600">Sign in to sync</a>' : ''}</p></section>
       <p class="st-ver"><a href="/privacy.html" target="_blank" rel="noopener" style="color:inherit">Privacy</a> · Famlyfi v${APP_VERSION}</p>
@@ -1923,6 +1929,16 @@ const Modals = {
       ${confirm}
       <div class="d-foot">${d.id && !d.confirm ? `<button class="btn danger-text" data-act="m-confirm">Delete group</button>` : '<span></span>'}
         <div class="right"><button class="btn text" data-act="close">Cancel</button><button class="btn primary" data-act="m-save-agroup">${d.id ? 'Save' : 'Create group'}</button></div></div>`;
+  },
+  reset(d) {
+    const ok = (d.word || '').trim().toUpperCase() === 'RESET', who = Cloud.user && Cloud.user.email;
+    return `<div class="d-head"><div class="d-kicker">Reset everything</div><button class="close" data-act="close" aria-label="Close">${icon(UI.x)}</button></div>
+      <div class="si-ic rs-ic">${icon(UI.alert)}</div>
+      <h2 class="si-t">Start over from zero?</h2>
+      <p class="si-s">This permanently deletes every category, entry, account and goal${who ? ` on all your devices and in your account <b>${esc(who)}</b>` : ' on this device'}. It can't be undone.</p>
+      <label class="rs-lbl" for="reset-in">Type <b>RESET</b> to confirm</label>
+      <input id="reset-in" class="si-email rs-in" data-in="word" value="${esc(d.word || '')}" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="RESET" aria-label="Type RESET to confirm">
+      <div class="d-foot"><span></span><div class="right"><button class="btn text" data-act="close">Cancel</button><button class="btn danger" id="reset-go" data-act="do-reset" data-enter ${ok ? '' : 'disabled'}>Reset</button></div></div>`;
   },
   signin(d) {
     if (d.step === 'sent') return `<div class="d-head"><div class="d-kicker">Check your email</div><button class="close" data-act="close" aria-label="Close">${icon(UI.x)}</button></div>
@@ -2298,6 +2314,8 @@ const handlers = {
   danger: el => { ui.danger = el.dataset.v; render(); },
   'danger-cancel': () => { ui.danger = null; render(); },
   'start-fresh': () => { ui.danger = null; Actions.startFresh(); },
+  'open-reset': () => { openModal('reset', { word: '' }); setTimeout(() => $('#reset-in')?.focus(), 80); },
+  'do-reset': () => { const d = ui.modal && ui.modal.d; if (!d || (d.word || '').trim().toUpperCase() !== 'RESET') return; ui.modal = null; renderModal(); Actions.startFresh(); },
   'load-example': () => Actions.loadExample(),
   /* modal actions */
   close: () => closeModal(),
@@ -2448,6 +2466,7 @@ document.addEventListener('input', e => {
   if (f === 'profile') { db.profile.name = e.target.value; Store.save(); renderSide(); return; }
   if (!ui.modal) return;
   const d = ui.modal.d; d[f] = e.target.value;
+  if (e.target.id === 'reset-in') { const b = $('#reset-go'); if (b) b.disabled = d.word.trim().toUpperCase() !== 'RESET'; return; }
   if (e.target.classList.contains('bigamt')) sizeAmt(e.target);
   if ((f === 'balance' || f === 'bdate') && ui.modal.kind === 'account') d.bTouched = true;
   if (f === 'amount') { const h = $('#f-hint'); if (h) h.textContent = amountHint(d.freq, parseAmt(d.amount)); }
@@ -2461,7 +2480,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { if (ui.modal) closeModal(); else if (ui.menu) { ui.menu = null; render(); } }
   if (e.key === 'Enter' && db.onboard && e.target.id === 'su-inc') { $('#setup .btn.primary')?.click(); return; }
   if (e.key === 'Enter' && ui.modal && e.target.tagName === 'INPUT') {
-    const save = $('#modal .btn.primary'); if (save && !save.disabled) save.click();
+    const save = $('#modal .btn.primary, #modal [data-enter]'); if (save && !save.disabled) save.click();
   }
 });
 window.addEventListener('hashchange', route);
