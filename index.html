@@ -315,6 +315,32 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .node.on i svg.i{opacity:1}
 .node:hover i{transform:scale(1.12)}
 .ticks{display:flex;justify-content:space-between;margin-top:8px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.ticks2{position:relative;height:18px;margin:8px 23px 0;font-size:12.5px;font-weight:600;color:var(--muted)}
+.ticks2 span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.ticks2 span.first{transform:translateX(-23px)}.ticks2 span.last{transform:translateX(calc(-100% + 23px))}
+.ticks2 span.hide{display:none}
+.track.dense .node{width:30px;height:30px;margin:0 -8px}.track.dense .node i{width:16px;height:16px}.track.dense .node i svg.i{width:9px;height:9px}
+.track.dense .seg2{height:6px}
+.gtrack{position:relative;margin-top:14px;padding-top:38px;--p:0}
+.gtrack .track{margin-top:0}
+.gpct{position:absolute;top:2px;left:calc(23px + (100% - 46px) * var(--p));transform:translateX(-50%);padding:3px 9px;border-radius:999px;font-size:13px;font-weight:800;color:var(--accent);background:color-mix(in srgb,var(--accent) 15%,transparent);white-space:nowrap;transition:left .4s var(--ease)}
+.gpct::after{content:"";position:absolute;left:50%;bottom:-4px;width:8px;height:8px;margin-left:-4px;transform:rotate(45deg);border-radius:2px;background:inherit}
+.d-acts{display:flex;gap:8px}
+.gmenu{top:56px;right:0}
+.gmenu .mlbl{padding:8px 12px 4px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.gmenu .msep{height:1px;margin:6px 4px;background:var(--line)}
+.gmenu button[aria-checked=true]{font-weight:700}
+.gmenu button[aria-checked=true] svg.i{color:var(--accent)}
+.mi-sp{width:16px;flex:none}
+.glinked{display:flex;align-items:center;gap:8px;margin:0 0 12px;padding:8px 12px;border-radius:12px;font-size:13.5px;color:var(--muted);background:color-mix(in srgb,var(--g-sky) 12%,transparent)}
+.glinked svg.i{width:15px;height:15px;color:var(--g-sky)}.glinked b{color:var(--text);font-weight:600}
+.gtiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:6px}
+.gtile{display:flex;flex-direction:column;gap:4px;padding:11px 13px;border-radius:14px;background:var(--surface2);cursor:text;min-width:0;box-shadow:inset 0 0 0 1.5px transparent;transition:box-shadow .2s}
+.gtile:focus-within{box-shadow:inset 0 0 0 1.5px var(--accent)}
+.gtile span{font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gtile input,.gtile b{width:100%;padding:0;border:0;outline:0;background:transparent;color:var(--text);font-size:17px;font-weight:700;min-width:0}
+.gtile input::placeholder{color:var(--muted);font-weight:500}
+.gtile.auto{cursor:default}.gtile.auto b{color:var(--g-sky)}
 .gmini{background:var(--surface);border-radius:var(--r-card);padding:22px 24px;text-align:left;width:100%}
 .gmini:hover{background:var(--surface2)}
 .prog{height:8px;border-radius:8px;background:var(--surface2);overflow:hidden;margin-top:18px}
@@ -958,7 +984,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.70';
+const APP_VERSION = '0.72';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -1262,16 +1288,17 @@ const Actions = {
   deleteAgroup(id) { db.agroups = db.agroups.filter(g => g.id !== id); db.accounts = db.accounts.filter(a => a.groupId !== id); commit('Group deleted'); },
   deleteAccount(id) { db.accounts = db.accounts.filter(a => a.id !== id); commit('Account deleted'); },
   saveGoal(d) {
-    const data = { title: d.title.trim() || 'Goal', target: Math.max(1, parseAmt(d.target)), current: parseAmt(d.current), date: d.date, accountId: d.accountId || null };
+    const start = parseAmt(d.start), step = parseAmt(d.step);
+    const data = { title: d.title.trim() || 'Goal', target: Math.max(start + 1, parseAmt(d.target)), current: parseAmt(d.current), date: d.date, accountId: d.accountId || null, currency: d.currency && d.currency !== cur() ? d.currency : (d.currency || null), start: start > 0 ? start : 0, step: step > 0 ? step : null };
     if (!data.accountId) data.current = Math.min(data.current, data.target);
     if (d.id) Object.assign(db.goals.find(g => g.id === d.id), data); else db.goals.push(Object.assign({ id: uid() }, data));
     commit(d.id ? 'Goal saved' : 'Goal added');
   },
   deleteGoal(id) { db.goals = db.goals.filter(g => g.id !== id); commit('Goal deleted'); },
   milestone(id, k) {
-    const g = db.goals.find(x => x.id === id), step = g.target / 4, reached = Math.floor(g.current / step + 1e-9);
+    const g = db.goals.find(x => x.id === id), { pts, reached } = goalPlan(g);
     if (linkedAcct(g)) { toast(`This goal follows ${linkedAcct(g).name}. Update the account balance instead.`); return; }
-    g.current = k === 0 ? 0 : (reached === k ? step * (k - 1) : step * k);
+    g.current = k === 0 ? pts[0] : (reached === k ? pts[k - 1] : pts[k]);
     Sound.play(k > reached ? 'milestone' : 'toggle');
     ui.pop = k;
     commit();
@@ -1309,6 +1336,25 @@ const gCount = (n, w) => `<span class="gcount num${n ? '' : ' zero'}" title="${n
 const NAV = [['home', 'Home', UI.home], ['accounts', 'Accounts', UI.wallet], ['overview', 'Finance', UI.receipt], ['goals', 'Goals', UI.target], ['history', 'History', UI.hist]];
 const navList = () => NAV.filter(([k]) => k !== 'history' || db.settings.showHistory === true);
 const cur = () => db.settings.currency;
+// ---- Goals: own currency, custom start + milestone step ----
+const GOAL_CURS = CURRENCIES;
+const goalCur = g => g.currency || cur();
+const niceStep = span => { const raw = Math.max(span, 1) / 6, p = 10 ** Math.floor(Math.log10(raw)); for (const m of [1, 2, 2.5, 5, 10]) if (raw <= m * p + 1e-9) return m * p; return 10 * p; };
+function goalPlan(g) {
+  const start = Math.max(0, +g.start || 0), target = Math.max(start + 1, +g.target || 1), span = target - start;
+  let step = +g.step > 0 ? +g.step : niceStep(span);
+  if (span / step > 60) step = niceStep(span); // safety: never draw hundreds of dots
+  const pts = [start]; for (let v = start + step; v < target - 1e-9; v += step) pts.push(v); pts.push(target);
+  const cur0 = +g.current || 0; let reached = 0; pts.forEach((v, i) => { if (cur0 >= v - 1e-9) reached = i; });
+  const pct = Math.max(0, Math.min(100, Math.round((cur0 - start) / span * 100)));
+  return { start, target, step, pts, reached, pct, auto: !(+g.step > 0) };
+}
+const goalPct = g => goalPlan(g).pct;
+function goalHint(d) {
+  const t = parseAmt(d.target); if (!t) return 'Target amount. Set your own milestone step below.';
+  const P = goalPlan({ start: parseAmt(d.start), target: t, step: parseAmt(d.step) }), n = P.pts.length - 1;
+  return `${n} milestone${n === 1 ? '' : 's'} of ${fmt(P.step)} ${esc(d.currency || cur())}, from ${fmt(P.start)} to ${fmt(P.target)}.`;
+}
 const per = () => (db.settings.period === 'year' ? 'year' : 'month');
 
 function periodSeg() {
@@ -1326,8 +1372,8 @@ function mobileCards(t, f, a, goal) {
   h += card('var(--g-sky)', UI.wallet, 'Net worth', numEl('mnw', a.net, 'left'), `Cash ${fmt(a.cash)} · Invested ${fmt(a.invested)}${a.debt > 0 ? ` · Debt ${fmt(a.debt)}` : ''}`,
     seg.length ? `<div class="mseg">${seg.map(x => `<span style="--c:${x[1]};flex:${x[0]}"></span>`).join('')}</div>` : '');
   if (goal && goal.target > 0) {
-    const p = Math.min(100, Math.min(100, Math.round(goal.current / goal.target * 100)));
-    h += card('var(--g-violet)', UI.target, esc(goal.title), `${p}%`, `${fmt(goal.current)} of ${fmt(goal.target)} ${cur()}`,
+    const p = goalPct(goal);
+    h += card('var(--g-violet)', UI.target, esc(goal.title), `${p}%`, `${fmt(goal.current)} of ${fmt(goal.target)} ${goalCur(goal)}`,
       `<div class="prog"><span style="--c:var(--g-violet);width:${p}%"></span></div>`);
   }
   return h;
@@ -1515,7 +1561,7 @@ const Views = {
       ${statCard('var(--g-mint)', UI.up, 'Income', numEl('in', t.inn * f, 'signed'), `${t.nIn} ${t.nIn === 1 ? 'item' : 'items'}`, 'pos')}
       ${statCard('var(--g-coral)', UI.down, 'Expense', numEl('out', -t.out * f, 'signed'), `${t.nOut} ${t.nOut === 1 ? 'item' : 'items'}`)}
       ${statCard('var(--g-sky)', UI.wallet, 'Net worth', numEl('nw2', a.net, 'left'), `${db.accounts.length} ${db.accounts.length === 1 ? 'account' : 'accounts'}`)}
-      ${goal && goal.target > 0 ? statCard('var(--g-violet)', UI.target, 'Goal progress', Math.min(100, Math.round(goal.current / goal.target * 100)) + '%', `${esc(goal.title)}<span class="sc-prog"><span style="width:${Math.min(100, goal.current / goal.target * 100)}%"></span></span>`) : statCard('var(--g-violet)', UI.target, 'Goal progress', '—', 'No goals yet')}
+      ${goal && goal.target > 0 ? statCard('var(--g-violet)', UI.target, 'Goal progress', goalPct(goal) + '%', `${esc(goal.title)}<span class="sc-prog"><span style="width:${goalPct(goal)}%"></span></span>`) : statCard('var(--g-violet)', UI.target, 'Goal progress', '—', 'No goals yet')}
     </div>
     <div class="grid2 home-charts dt-only">
       <div class="dt-only">${outs.length ? breakdownCard('h-spend', { compact: true, href: '#overview', mt: .1, footer: savingsLine(t, f), center: t.inn > 0 ? `<span>Spent</span><b class="num" style="${t.out > t.inn ? 'color:var(--danger)' : ''}">${Math.round(t.out / t.inn * 100)}%</b><small>of income</small>` : `<span>Spending</span><b class="num">${fmt(t.out * f)}</b><small>${cur()} / ${per()}</small>`, title: 'Where your money goes', sub: `${cur()} ${fmt(t.out * f)} / ${per()}`,
@@ -1640,30 +1686,33 @@ const Views = {
   goals() {
     const [main, ...rest] = db.goals;
     const total = db.goals.reduce((s, g) => s + Math.min(g.current, g.target), 0), target = db.goals.reduce((s, g) => s + g.target, 0);
+    const curs = [...new Set(db.goals.map(goalCur))], done = db.goals.filter(g => goalPct(g) >= 100).length;
     const mainCard = main ? (() => {
-      const step = main.target / 4, reached = Math.floor(main.current / step + 1e-9);
+      const P = goalPlan(main), n = P.pts.length - 1, dense = n > 10, every = n <= 8 ? 1 : Math.ceil(n / 6);
       let track = '';
-      for (let k = 0; k <= 4; k++) {
-        if (k > 0) track += `<span class="seg2 ${k <= reached ? 'on' : ''}"></span>`;
-        const on = k <= reached, label = k === 0 ? 'Reset to start' : (k === reached ? `Undo ${fmt(step * k)}` : `Mark ${fmt(step * k)} reached`);
+      for (let k = 0; k <= n; k++) {
+        if (k > 0) track += `<span class="seg2 ${k <= P.reached ? 'on' : ''}" style="flex:${(P.pts[k] - P.pts[k - 1]) / P.step}"></span>`;
+        const on = k <= P.reached, label = k === 0 ? 'Reset to start' : (k === P.reached ? `Undo ${fmt(P.pts[k])}` : `Mark ${fmt(P.pts[k])} reached`);
         track += `<button class="node ${on ? 'on' : ''} ${ui.pop === k ? 'pop' : ''}" data-act="milestone" data-id="${main.id}" data-k="${k}" aria-label="${label}"><i>${icon(UI.check)}</i></button>`;
       }
+      const ticks = P.pts.map((v, k) => `<span style="left:${(v - P.start) / (P.target - P.start) * 100}%" class="${k === 0 ? 'first' : k === n ? 'last' : ''} ${k === 0 || k === n || k % every === 0 && n - k >= every / 2 ? '' : 'hide'}">${k === 0 && !P.start ? 'Start' : fmt(v)}</span>`).join('');
       return `<section class="goal" style="margin-top:28px">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div class="eyebrow" style="font-weight:600">${esc(main.title)}${autoBadge(main)}</div>
           <div style="display:flex;align-items:center;gap:12px"><span class="muted" style="font-size:13.5px">${main.date ? 'Target ' + monthName(main.date) : ''}</span><button class="iconbtn" data-act="edit-goal" data-id="${main.id}" aria-label="Edit ${esc(main.title)}">${icon(UI.pen)}</button></div></div>
-        <div class="hero-row" style="margin-top:10px"><div class="goal-amt num">${numEl('goal-' + main.id, main.current, 'abs')}</div><div class="hero-unit"><span>of ${fmt(main.target)} · ${Math.min(100, Math.round(main.current / main.target * 100))}%</span></div></div>
-        <div class="track">${track}</div>
-        <div class="ticks num"><span>Start</span>${[1, 2, 3, 4].map(k => `<span>${fmt(step * k)}</span>`).join('')}</div>
+        <div class="hero-row" style="margin-top:10px"><div class="goal-amt num">${numEl('goal-' + main.id, main.current, 'abs')}</div><div class="hero-unit">${goalCur(main)}<span> of ${fmt(main.target)}</span></div></div>
+        <div class="gtrack" style="--p:${P.pct / 100}"><span class="gpct num">${P.pct}%</span>
+          <div class="track ${dense ? 'dense' : ''}">${track}</div>
+          <div class="ticks2 num">${ticks}</div></div>
         ${linkedAcct(main) ? `<p class="note" style="margin:18px 0 0">Fills up automatically from ${esc(linkedAcct(main).name)}.</p>` : db.hintSeen ? '' : '<p class="note" style="margin:18px 0 0">Tap a milestone when you reach it. Tap the last filled one to undo.</p>'}</section>`;
     })() : '';
     const minis = rest.map(g => `<button class="gmini" data-act="edit-goal" data-id="${g.id}">
-      <div class="card-h"><div class="card-t">${esc(g.title)}${autoBadge(g)}</div><span class="link">${Math.min(100, Math.round(g.current / g.target * 100))}%</span></div>
-      <div style="display:flex;align-items:baseline;gap:8px"><span class="num" style="font-size:34px;font-weight:800;letter-spacing:-.05em;line-height:1">${fmt(g.current)}</span><span class="muted" style="font-size:14px">of ${fmt(g.target)}</span></div>
-      <div class="prog" style="--c:var(--g-sky)"><span style="width:${Math.min(100, g.current / g.target * 100)}%"></span></div>
+      <div class="card-h"><div class="card-t">${esc(g.title)}${autoBadge(g)}</div><span class="link">${goalPct(g)}%</span></div>
+      <div style="display:flex;align-items:baseline;gap:8px"><span class="num" style="font-size:34px;font-weight:800;letter-spacing:-.05em;line-height:1">${fmt(g.current)}</span><span class="muted" style="font-size:14px">of ${fmt(g.target)} ${goalCur(g)}</span></div>
+      <div class="prog" style="--c:var(--g-sky)"><span style="width:${goalPct(g)}%"></span></div>
       ${g.date ? `<div class="sub" style="margin-top:12px">Target ${monthName(g.date)}</div>` : ''}</button>`).join('');
     return `${mobileTop('Goals')}
     <div class="topbar" style="align-items:flex-end"><h1 class="title dt-only">Goals</h1><button class="btn primary" data-act="new-goal">${icon(UI.plus)}New goal</button></div>
-    <div class="eyebrow" style="margin-top:14px">${db.goals.length ? `${cur()} ${fmt(total)} saved of ${fmt(target)}` : 'Save toward something'}</div>
+    <div class="eyebrow" style="margin-top:14px">${db.goals.length ? (curs.length === 1 ? `${curs[0]} ${fmt(total)} saved of ${fmt(target)}` : `${db.goals.length} goals · ${done} reached`) : 'Save toward something'}</div>
     ${main ? mainCard : `<div class="empty" style="margin-top:28px"><h3>Set your first goal</h3><p>Pick something you're saving for and track it with milestones.</p><button class="btn primary" data-act="new-goal">${icon(UI.plus)}New goal</button></div>`}
     ${rest.length ? `<div class="grid2" style="margin-top:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))">${minis}</div>` : ''}`;
   },
@@ -2014,18 +2063,32 @@ const Modals = {
   },
   goal(d) {
     if (d.view === 'acct') return Modals.goalAcct(d);
+    d.currency = d.currency || cur();
     const sl = d.slide; d.slide = false;
     const acc = d.accountId ? db.accounts.find(a => a.id === d.accountId) : null;
     const confirm = d.confirm ? `<div class="confirm" style="margin-top:20px"><span>Delete ${esc(d.title)}?</span><button class="btn ghost" data-act="m-unconfirm">Keep</button><button class="btn danger" data-act="m-del-goal">Delete</button></div>` : '';
-    return `<div class="${sl ? 'slide' : ''}"><div class="d-head"><div class="d-kicker">${d.id ? 'Edit goal' : 'New goal'}</div><button class="close" data-act="close" aria-label="Close">${icon(UI.x)}</button></div>
+    const gc = d.currency || cur(), autoStep = fmt(goalPlan({ start: parseAmt(d.start), target: parseAmt(d.target) || 1 }).step);
+    const menu = d.menu ? `<div class="menu gmenu" role="menu">
+        <div class="mlbl">Currency</div>
+        ${GOAL_CURS.map(c => `<button data-act="m-gcur" data-v="${c}" role="menuitemradio" aria-checked="${gc === c}">${gc === c ? icon(UI.check) : '<i class="mi-sp"></i>'}${c}</button>`).join('')}
+        <div class="msep"></div>
+        <button data-act="m-goal-acct">${icon(UI.wallet)}${acc ? `Linked: ${esc(acc.name)}` : 'Link an account'}</button>
+        ${d.id ? `<button class="warn" data-act="m-confirm">${icon(UI.trash)}Delete goal</button>` : ''}</div>` : '';
+    return `<div class="${sl ? 'slide' : ''}" style="position:relative"><div class="d-head"><div class="d-kicker">${d.id ? 'Edit goal' : 'New goal'}</div>
+        <div class="d-acts"><button class="close" data-act="m-gmenu" aria-label="Goal options" aria-expanded="${!!d.menu}">${icon(UI.dots)}</button><button class="close" data-act="close" aria-label="Close">${icon(UI.x)}</button></div></div>
+      ${menu}
       <input id="f-title" class="bigname" data-in="title" value="${esc(d.title)}" placeholder="Goal name" aria-label="Goal name">
-      <label class="amtrow"><input id="f-target" class="bigamt num pos" data-in="target" value="${esc(d.target)}" inputmode="decimal" placeholder="0" aria-label="Target amount"><span class="cur">${cur()}</span></label>
-      <div class="hint">Target amount. Milestones are set every 25%.</div>
-      <button class="im-grp" data-act="m-goal-acct" style="--c:var(--g-sky);margin-top:22px"><span class="im-grp-l">Linked account</span>${acc ? `<i></i><b>${esc(acc.name)}</b>` : '<b style="color:var(--muted);font-weight:500">Not linked</b>'}${icon(UI.chev, 'chev')}</button>
-      ${acc ? `<div class="frow"><span class="lbl">Saved so far</span><span class="num auto-val">${fmt(acc.balance)} ${cur()}<em>Auto</em></span></div>` : `<div class="frow"><label class="lbl" for="f-cur">Saved so far</label><input id="f-cur" class="plain num" data-in="current" value="${esc(d.current)}" inputmode="decimal" placeholder="0"></div>`}
+      <label class="amtrow"><input id="f-target" class="bigamt num pos" data-in="target" value="${esc(d.target)}" inputmode="decimal" placeholder="0" aria-label="Target amount"><span class="cur">${esc(gc)}</span></label>
+      <div class="hint" id="g-hint" style="margin-bottom:14px">${goalHint(d)}</div>
+      ${acc ? `<button class="glinked" data-act="m-goal-acct">${icon(UI.wallet)}Fills up from <b>${esc(acc.name)}</b></button>` : ''}
+      <div class="gtiles">
+        <label class="gtile ${acc ? 'auto' : ''}"><span>Saved so far</span>${acc ? `<b class="num">${fmt(acc.balance)}</b>` : `<input id="f-cur" class="num" data-in="current" value="${esc(d.current)}" inputmode="decimal" placeholder="0">`}</label>
+        <label class="gtile"><span>Starts from</span><input id="f-start" class="num" data-in="start" value="${esc(d.start || '')}" inputmode="decimal" placeholder="0"></label>
+        <label class="gtile"><span>Milestone every</span><input id="f-step" class="num" data-in="step" value="${esc(d.step || '')}" inputmode="decimal" placeholder="${autoStep}"></label>
+      </div>
       ${dpField(d, { key: 'date', kind: 'month', label: 'Target month', placeholder: 'No deadline', min: curYM() })}
       ${confirm}
-      <div class="d-foot">${d.id && !d.confirm ? `<button class="btn danger-text" data-act="m-confirm">Delete goal</button>` : '<span></span>'}
+      <div class="d-foot"><span></span>
         <div class="right"><button class="btn text" data-act="close">Cancel</button><button class="btn primary" data-act="m-save-goal">${d.id ? 'Save' : 'Add goal'}</button></div></div></div>`;
   }
 };
@@ -2339,8 +2402,10 @@ const handlers = {
   'm-save-agroup': () => { const d = ui.modal.d; ui.modal = null; Actions.saveAgroup(d); renderModal(); },
   'm-del-agroup': () => { const id = ui.modal.d.id; ui.modal = null; Actions.deleteAgroup(id); renderModal(); },
   'new-goal': () => openModal('goal', { title: '', target: '', current: '', date: '' }),
-  'edit-goal': el => { const g = db.goals.find(x => x.id === el.dataset.id); openModal('goal', { id: g.id, title: g.title, target: fmt(g.target), current: fmt(g.current), date: g.date, accountId: g.accountId || null }); },
-  'm-goal-acct': () => { ui.modal.d.view = 'acct'; renderModal(); },
+  'edit-goal': el => { const g = db.goals.find(x => x.id === el.dataset.id); openModal('goal', { id: g.id, title: g.title, target: fmt(g.target), current: fmt(g.current), date: g.date, accountId: g.accountId || null, currency: goalCur(g), start: g.start ? fmt(g.start) : '', step: g.step ? fmt(g.step) : '' }); },
+  'm-goal-acct': () => { ui.modal.d.menu = false; ui.modal.d.view = 'acct'; renderModal(); },
+  'm-gmenu': () => { ui.modal.d.menu = !ui.modal.d.menu; renderModal(); },
+  'm-gcur': el => { const d = ui.modal.d; d.currency = el.dataset.v; d.menu = false; renderModal(); },
   'm-goal-pick': el => { const d = ui.modal.d; d.accountId = el.dataset.id || null; d.view = 'main'; d.slide = true; renderModal(); },
   'm-goal-back': () => { ui.modal.d.view = 'main'; ui.modal.d.slide = true; renderModal(); },
   milestone: el => { db.hintSeen = true; Actions.milestone(el.dataset.id, +el.dataset.k); },
@@ -2385,7 +2450,7 @@ const handlers = {
   'm-unpick': () => { ui.modal.d.view = 'main'; ui.modal.d.slide = true; renderModal(); },
   'm-choose': el => { ui.modal.d.gAuto = false; ui.modal.d.groupId = el.dataset.id; ui.modal.d.view = 'main'; ui.modal.d.slide = true; renderModal(); },
   'm-newgroup': () => { const back = ui.modal; ui.modal = { kind: 'group', d: { name: back.d.q || '', icon: 'home', color: 'violet', returnTo: back, slide: true } }; renderModal(); $('#f-gname')?.focus(); },
-  'm-confirm': () => { ui.modal.d.confirm = true; renderModal(); },
+  'm-confirm': () => { ui.modal.d.menu = false; ui.modal.d.confirm = true; renderModal(); },
   'm-unconfirm': () => { ui.modal.d.confirm = false; renderModal(); },
   'm-icon': el => { ui.modal.d.icon = el.dataset.v; renderModal(); },
   'm-color': el => { ui.modal.d.color = el.dataset.v; renderModal(); },
@@ -2509,6 +2574,7 @@ document.addEventListener('input', e => {
   if (e.target.id === 'reset-in') { const b = $('#reset-go'); if (b) b.disabled = d.word.trim().toUpperCase() !== 'RESET'; return; }
   if (e.target.classList.contains('bigamt')) sizeAmt(e.target);
   if ((f === 'balance' || f === 'bdate') && ui.modal.kind === 'account') d.bTouched = true;
+  if (ui.modal.kind === 'goal' && ['target', 'start', 'step'].includes(f)) { const h = $('#g-hint'); if (h) h.innerHTML = goalHint(d); const st = $('#f-step'); if (st && f !== 'step') st.placeholder = fmt(goalPlan({ start: parseAmt(d.start), target: parseAmt(d.target) || 1 }).step); }
   if (f === 'amount') { const h = $('#f-hint'); if (h) h.textContent = amountHint(d.freq, parseAmt(d.amount)); }
   if (f === 'q') $('#pick-list').innerHTML = pickList(d);
 });
@@ -2626,6 +2692,10 @@ function syncBadge() {
 applyTheme();
 route();
 // Desktop app updates (only inside the Windows app; the website updates itself)
+document.addEventListener('pointerdown', e => {
+  const d = ui.modal && ui.modal.d; if (!d || !d.menu) return;
+  if (!e.target.closest('.gmenu, [data-act=m-gmenu]')) { d.menu = false; $('.gmenu')?.remove(); $('[data-act=m-gmenu]')?.setAttribute('aria-expanded', 'false'); }
+}, true);
 var Updater = {
   on: !!(window.__TAURI__ && window.__TAURI__.core),
   info: null, checking: false, busy: false, appNew: null,
