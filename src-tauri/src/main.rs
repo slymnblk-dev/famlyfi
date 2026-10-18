@@ -1,9 +1,54 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::time::Duration;
-use tauri::{webview::PageLoadEvent, AppHandle, Manager};
-use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
-use tauri_plugin_updater::UpdaterExt;
+use std::{sync::Mutex, time::Duration};
+use tauri::{webview::PageLoadEvent, AppHandle, Manager, State};
+use tauri_plugin_updater::{Update, UpdaterExt};
+
+/// The update found by the last check, waiting for the user to install it.
+#[derive(Default)]
+struct PendingUpdate(Mutex<Option<Update>>);
+
+#[derive(serde::Serialize)]
+struct UpdateInfo {
+    version: String,
+    current: String,
+    notes: Option<String>,
+}
+
+/// Called by the app (on start and from Settings > Check for updates).
+#[tauri::command]
+async fn check_update(
+    app: AppHandle,
+    pending: State<'_, PendingUpdate>,
+) -> Result<Option<UpdateInfo>, String> {
+    let update = app
+        .updater()
+        .map_err(|e| e.to_string())?
+        .check()
+        .await
+        .map_err(|e| e.to_string())?;
+    let info = update.as_ref().map(|u| UpdateInfo {
+        version: u.version.clone(),
+        current: u.current_version.clone(),
+        notes: u.body.clone(),
+    });
+    *pending.0.lock().unwrap() = update;
+    Ok(info)
+}
+
+/// Called when the user clicks "Update & restart".
+#[tauri::command]
+async fn install_update(app: AppHandle, pending: State<'_, PendingUpdate>) -> Result<(), String> {
+    let update = pending.0.lock().unwrap().take();
+    let Some(update) = update else {
+        return Err("No update is ready".into());
+    };
+    update
+        .download_and_install(|_, _| {}, || {})
+        .await
+        .map_err(|e| e.to_string())?;
+    app.restart();
+}
 
 /// Show the main window and close the splash (safe to call more than once).
 fn reveal(app: &AppHandle) {
@@ -16,38 +61,12 @@ fn reveal(app: &AppHandle) {
     }
 }
 
-/// Look for a newer desktop version. If there is one, download it quietly,
-/// then ask the user whether to restart now or later.
-async fn check_for_update(app: AppHandle) -> Result<(), tauri_plugin_updater::Error> {
-    let Some(update) = app.updater()?.check().await? else {
-        return Ok(());
-    };
-    let bytes = update.download(|_, _| {}, || {}).await?;
-    let version = update.version.clone();
-    let handle = app.clone();
-    app.dialog()
-        .message(format!(
-            "A new version of Famlyfi ({version}) is ready.\nRestart now to finish updating?"
-        ))
-        .title("Update ready")
-        .kind(MessageDialogKind::Info)
-        .buttons(MessageDialogButtons::OkCancelCustom(
-            "Restart now".into(),
-            "Later".into(),
-        ))
-        .show(move |restart| {
-            if restart && update.install(bytes).is_ok() {
-                handle.restart();
-            }
-        });
-    Ok(())
-}
-
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
-        .plugin(tauri_plugin_dialog::init())
-        // As soon as famlyfi.com has finished loading in the (hidden) main window, swap it in.
+        .manage(PendingUpdate::default())
+        .invoke_handler(tauri::generate_handler![check_update, install_update])
+        // As soon as the app has loaded in the (hidden) main window, swap it in.
         .on_page_load(|webview, payload| {
             if webview.label() == "main" && matches!(payload.event(), PageLoadEvent::Finished) {
                 reveal(webview.app_handle());
@@ -60,11 +79,6 @@ fn main() {
                 std::thread::sleep(Duration::from_secs(15));
                 let h = handle.clone();
                 let _ = handle.run_on_main_thread(move || reveal(&h));
-            });
-            // Check for desktop updates in the background.
-            let handle = app.handle().clone();
-            tauri::async_runtime::spawn(async move {
-                let _ = check_for_update(handle).await;
             });
             Ok(())
         })

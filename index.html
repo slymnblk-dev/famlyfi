@@ -127,6 +127,23 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .btn.text{padding:0 14px}
 .btn.danger{background:var(--danger);color:#fff}
 .btn:disabled{opacity:.35;cursor:not-allowed;filter:none}
+.up-hero{display:flex;align-items:center;gap:16px;margin-top:14px}
+.up-ic{width:56px;height:56px;flex:none;border-radius:18px;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent)}
+.up-ic svg.i{width:26px;height:26px}
+.up-new{margin-top:22px;padding:16px 18px;border-radius:18px;background:var(--surface2)}
+.up-lbl{font-size:12.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.up-new ul{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:9px}
+.up-new li{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;line-height:1.45}
+.up-new li svg.i{width:16px;height:16px;margin-top:2px;color:var(--g-mint);stroke-width:2.6}
+.up-bar{position:relative;height:4px;margin-top:22px;border-radius:4px;background:var(--surface2);overflow:hidden}
+.up-bar i{position:absolute;inset:0;width:35%;border-radius:4px;background:var(--accent);animation:upSlide 1.1s cubic-bezier(.65,0,.35,1) infinite}
+@keyframes upSlide{from{transform:translateX(-100%)}to{transform:translateX(300%)}}
+.up-wait{margin:10px 0 0;font-size:13.5px;color:var(--muted)}
+.up-pill{display:flex;align-items:center;gap:8px;width:100%;margin-bottom:10px;padding:10px 14px;border-radius:14px;font-size:13.5px;font-weight:700;color:var(--accent);background:color-mix(in srgb,var(--accent) 13%,transparent);transition:filter .2s}
+.up-pill:hover{filter:brightness(1.12)}
+.up-pill i{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 1.6s ease-in-out infinite}
+.side-foot:has(.up-pill){flex-wrap:wrap}
+.st-btn.up-cta{background:var(--accent);color:var(--on-accent)}
 .si-ic.rs-ic{background:color-mix(in srgb,var(--danger) 15%,transparent);color:var(--danger)}
 .rs-lbl{display:block;margin-top:22px;font-size:13.5px;color:var(--muted)}.rs-lbl b{color:var(--text);letter-spacing:.06em}
 .rs-in{margin-top:8px;text-transform:uppercase;letter-spacing:.18em;font-weight:700}
@@ -913,6 +930,7 @@ const ICONS = {
 const UI = {
   home: 'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z', list: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01',
   wallet: 'M3 7a2 2 0 0 1 2-2h14v4M3 7v10a2 2 0 0 0 2 2h16V9H5a2 2 0 0 1-2-2zM16 14h.01',
+  dl: 'M12 4v11M7 10.5l5 5 5-5M5 20h14',
   alert: 'M12 8v5M12 16.5v.01M10.3 3.9 2.6 17.3A2 2 0 0 0 4.3 20h15.4a2 2 0 0 0 1.7-2.7L13.7 3.9a2 2 0 0 0-3.4 0z',
   lock: 'M6 11h12v10H6zM8 11V7a4 4 0 0 1 8 0v4',
   mail: 'M3 6h18v12H3zM3 7l9 6 9-6',
@@ -940,7 +958,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.67';
+const APP_VERSION = '0.68';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -1021,6 +1039,8 @@ function freshDb() {
     groups: [], items: [], accounts: [], agroups: Object.values(AG_DEF).map(mkAg), aclosed: [], goals: [], history: [] };
 }
 // True when the user has entered their own data (sample numbers don't count). Example data must never replace it.
+// Desktop updater may not exist yet during the first render
+const UP = () => window.Updater || {};
 const hasRealData = () => !db.example && !!(db.items.length || db.accounts.length || db.goals.length);
 const Store = {
   load() {
@@ -1734,6 +1754,10 @@ const Views = {
       <section class="st-sec"><h2>Pages</h2><div class="st-card">
         <button class="st-row st-tog" data-act="toggle-history" role="switch" aria-checked="${s.showHistory === true}"><span class="st-nm">History<small>Show it in the menu. Your history is tracked either way.</small></span><span class="im-switch ${s.showHistory === true ? 'on' : ''}"><i></i></span></button>
       </div></section>
+      ${UP().on ? `<section class="st-sec"><h2>App</h2><div class="st-card">
+        ${row('App version', UP().info ? `Famlyfi v${APP_VERSION} · version ${esc(String(UP().info.version).replace(/\.0$/, ''))} is ready` : `Famlyfi v${APP_VERSION} for Windows`,
+          UP().info ? '<button class="st-btn up-cta" data-act="up-open">Update</button>' : `<button class="st-btn" data-act="up-check" ${UP().checking ? 'disabled' : ''}>${UP().checking ? 'Checking…' : 'Check for updates'}</button>`)}
+      </div></section>` : ''}
       <section class="st-sec"><h2>Your data</h2><div class="st-card">
         ${db.example ? row('Example data', "You're looking at sample numbers", '<button class="st-btn" data-act="start-fresh">Clear</button>')
           : !hasRealData() ? row('Example data', 'Explore the app with sample numbers', '<button class="st-btn" data-act="load-example">Load</button>') : ''}
@@ -1933,6 +1957,15 @@ const Modals = {
       <div class="d-foot">${d.id && !d.confirm ? `<button class="btn danger-text" data-act="m-confirm">Delete group</button>` : '<span></span>'}
         <div class="right"><button class="btn text" data-act="close">Cancel</button><button class="btn primary" data-act="m-save-agroup">${d.id ? 'Save' : 'Create group'}</button></div></div>`;
   },
+  update() {
+    const u = Updater.info || {}, notes = Updater.notes(), busy = Updater.busy;
+    return `<div class="d-head"><div class="d-kicker">Update</div>${busy ? '' : `<button class="close" data-act="close" aria-label="Close">${icon(UI.x)}</button>`}</div>
+      <div class="up-hero"><span class="up-ic">${icon(UI.dl)}</span><div><h2 class="si-t" style="margin:0">Famlyfi ${esc(String(u.version || '').replace(/\.0$/, ''))} is ready</h2>
+        <p class="si-s" style="margin-top:4px">You have v${APP_VERSION}. It takes a few seconds and your data stays safe.</p></div></div>
+      ${notes.length ? `<div class="up-new"><span class="up-lbl">What's new</span><ul>${notes.map(n => `<li>${icon(UI.check)}<span>${esc(n)}</span></li>`).join('')}</ul></div>` : ''}
+      ${busy ? `<div class="up-bar"><i></i></div><p class="up-wait">Updating… Famlyfi will restart in a moment.</p>` : ''}
+      <div class="d-foot"><span></span><div class="right">${busy ? '' : '<button class="btn text" data-act="close">Later</button>'}<button class="btn primary" data-act="up-install" ${busy ? 'disabled' : ''}>${busy ? 'Updating…' : 'Update &amp; restart'}</button></div></div>`;
+  },
   reset(d) {
     const ok = (d.word || '').trim().toUpperCase() === 'RESET', who = Cloud.user && Cloud.user.email;
     return `<div class="d-head"><div class="d-kicker">Reset everything</div><button class="close" data-act="close" aria-label="Close">${icon(UI.x)}</button></div>
@@ -2024,7 +2057,7 @@ function pickList(d) {
 }
 
 function openModal(kind, data) { ui.modal = { kind, d: data }; ui.menu = null; Sound.play('open'); renderModal(true); }
-function closeModal() {
+function closeModal() { if (ui.modal && ui.modal.kind === 'update' && UP().busy) return;
   const m = ui.modal; Sound.play('close');
   if (m && m.kind === 'group' && m.d.returnTo) { ui.modal = m.d.returnTo; ui.modal.d.slide = true; renderModal(); return; }
   ui.modal = null; renderModal();
@@ -2095,7 +2128,7 @@ function renderSide() {
     if (r === k) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     a.querySelector('.cnt').textContent = counts[k] ?? '';
   });
-  $('#side-foot').innerHTML = `<a class="me ${r === 'profile' ? 'on' : ''}" href="#profile"><span class="avatar ${avCls()}" style="${avStyle()}">${avInner(name)}</span><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(name)}</span></a>
+  $('#side-foot').innerHTML = (UP().info ? `<button class="up-pill" data-act="up-open"><i></i>Update ready · v${esc(String(UP().info.version).replace(/\.0$/, ''))}</button>` : '') + `<a class="me ${r === 'profile' ? 'on' : ''}" href="#profile"><span class="avatar ${avCls()}" style="${avStyle()}">${avInner(name)}</span><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(name)}</span></a>
       <a class="iconbtn ${r === 'settings' ? 'on' : ''}" href="#settings" aria-label="Settings">${icon(UI.sliders)}</a>`;
 }
 function renderDock() {
@@ -2317,6 +2350,9 @@ const handlers = {
   danger: el => { ui.danger = el.dataset.v; render(); },
   'danger-cancel': () => { ui.danger = null; render(); },
   'start-fresh': () => { ui.danger = null; Actions.startFresh(); },
+  'up-install': () => Updater.install(),
+  'up-check': () => Updater.check(true),
+  'up-open': () => openModal('update', {}),
   'open-reset': () => { openModal('reset', { word: '' }); setTimeout(() => $('#reset-in')?.focus(), 80); },
   'do-reset': () => { const d = ui.modal && ui.modal.d; if (!d || (d.word || '').trim().toUpperCase() !== 'RESET') return; ui.modal = null; renderModal(); Actions.startFresh(); },
   'load-example': () => Actions.loadExample(),
@@ -2588,7 +2624,34 @@ function syncBadge() {
    ========================================================= */
 applyTheme();
 route();
+// Desktop app updates (only inside the Windows app; the website updates itself)
+var Updater = {
+  on: !!(window.__TAURI__ && window.__TAURI__.core),
+  info: null, checking: false, busy: false,
+  async check(manual) {
+    if (!this.on || this.checking) return;
+    this.checking = true; if (manual) render();
+    try {
+      this.info = await window.__TAURI__.core.invoke('check_update');
+      if (this.info) { renderSide(); if (manual || !ui.modal) openModal('update', {}); }
+      else if (manual) toast(`You're up to date · v${APP_VERSION}`);
+    } catch (e) { if (manual) toast("Couldn't check for updates. Check your connection."); }
+    this.checking = false; if (manual) render();
+  },
+  async install() {
+    if (!this.info || this.busy) return;
+    this.busy = true; renderModal();
+    if (Cloud.timer) await Cloud.push(true); // save any unsynced changes first
+    try { await window.__TAURI__.core.invoke('install_update'); }
+    catch (e) { this.busy = false; renderModal(); toast("Update didn't finish. Please try again."); }
+  },
+  notes() {
+    const raw = (this.info && this.info.notes) || '';
+    return raw.split(/\n+/).map(l => l.replace(/^\s*[-•*]\s*/, '').trim()).filter(Boolean).slice(0, 6);
+  }
+};
 Cloud.init();
+if (Updater.on) setTimeout(() => Updater.check(false), 2500);
 // Installable app: offline support on the real website only
 if (Cloud.available && 'serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
 </script>
