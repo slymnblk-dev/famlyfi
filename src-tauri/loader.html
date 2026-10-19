@@ -10,20 +10,33 @@
    Only the real app (it contains APP_VERSION) is ever accepted. */
 (async function () {
   window.__famlyfiLoader = 1;
-  var URL = 'https://slymnblk-dev.github.io/famlyfi/index.html', KEY = 'famlyfi.appcache', html = null;
+  /* Newest app comes straight from the GitHub project (no publishing queue):
+     1. ask GitHub for the latest version id of the "gh-pages" branch,
+     2. download that exact version (never stale),
+     3. fall back to GitHub Pages, then the last saved copy, then the built-in copy. */
+  var REPO = 'slymnblk-dev/famlyfi', PAGES = 'https://slymnblk-dev.github.io/famlyfi/index.html', KEY = 'famlyfi.appcache';
   function ver(h) { var m = h && h.match(/const APP_VERSION = '([\d.]+)'/); return m ? m[1] : null; }
   function newer(a, b) { a = String(a).split('.').map(Number); b = String(b).split('.').map(Number); for (var i = 0; i < Math.max(a.length, b.length); i++) { if ((a[i] || 0) !== (b[i] || 0)) return (a[i] || 0) > (b[i] || 0); } return false; }
-  try {
-    var ctl = new AbortController(), t = setTimeout(function () { ctl.abort(); }, 3500);
-    var r = await fetch(URL + '?t=' + Date.now(), { cache: 'no-store', signal: ctl.signal });
-    clearTimeout(t);
-    if (r.ok) { var h = await r.text(); if (ver(h)) { html = h; try { localStorage.setItem(KEY, h); } catch (e) {} } }
-  } catch (e) {}
-  var bundled = null;
-  try { bundled = await (await fetch('app.html')).text(); } catch (e) {}
-  if (!html) { var c = null; try { c = localStorage.getItem(KEY); } catch (e) {} html = ver(c) ? c : null; }
-  // Never go backwards: if the built-in copy is newer than what we have, use it.
-  if (bundled && ver(bundled) && (!html || newer(ver(bundled), ver(html)))) html = bundled;
+  function get(url, opts, ms) {
+    var ctl = new AbortController(), t = setTimeout(function () { ctl.abort(); }, ms || 3000);
+    opts = opts || {}; opts.signal = ctl.signal; opts.cache = 'no-store';
+    return fetch(url, opts).then(function (r) { clearTimeout(t); if (!r.ok) throw new Error(r.status); return r.text(); });
+  }
+  async function fromRepo() {
+    var sha = (await get('https://api.github.com/repos/' + REPO + '/commits/gh-pages', { headers: { Accept: 'application/vnd.github.sha' } }, 2500)).trim();
+    if (!/^[0-9a-f]{40}$/.test(sha)) throw new Error('no sha');
+    return get('https://raw.githubusercontent.com/' + REPO + '/' + sha + '/index.html', null, 3500);
+  }
+  var found = await Promise.all([
+    fromRepo().catch(function () { return null; }),
+    get(PAGES + '?t=' + Date.now(), null, 3500).catch(function () { return null; })
+  ]);
+  var cached = null; try { cached = localStorage.getItem(KEY); } catch (e) {}
+  var bundled = null; try { bundled = await (await fetch('app.html')).text(); } catch (e) {}
+  // Pick the newest real app among everything we have.
+  var html = null;
+  [found[0], found[1], cached, bundled].forEach(function (h) { if (ver(h) && (!html || newer(ver(h), ver(html)))) html = h; });
+  if (html && html !== cached) { try { localStorage.setItem(KEY, html); } catch (e) {} }
   document.open(); document.write(html || '<p style="font-family:sans-serif;padding:40px">Famlyfi could not start. Please reopen the app.</p>'); document.close();
 })();
 </script>
