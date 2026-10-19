@@ -1009,7 +1009,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.78';
+const APP_VERSION = '0.79';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -2780,6 +2780,7 @@ document.addEventListener('pointerdown', e => {
 }, true);
 // ---- "What's new" note, shown once after the app updates (newest first; keep each line short) ----
 const WHATS_NEW = {
+  '0.79': ['Updates now reach the desktop app within seconds'],
   '0.78': ['Sign in with a password (optional)', 'Forgot your password? Reset it with an email code', 'Sign in from the welcome screen works again'],
   '0.77': ['Famlyfi can now be installed as an app on Android'],
   '0.76': ['New profile emojis: heart, rainbow and puppy'],
@@ -2814,12 +2815,21 @@ var Updater = {
   async appCheck() {
     if (!window.__famlyfiLoader) return null;
     try {
-      const r = await fetch(this.PAGES + '?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) return null;
-      const html = await r.text(), m = html.match(/const APP_VERSION = '([\d.]+)'/);
+      const html = await this.latest(); if (!html) return null;
+      const m = html.match(/const APP_VERSION = '([\d.]+)'/);
       if (!m || !this.newer(m[1], APP_VERSION)) return null;
       try { localStorage.setItem('famlyfi.appcache', html); } catch (e) {}
       this.appNew = m[1]; renderSide(); return m[1];
     } catch (e) { return null; }
+  },
+  // Newest app straight from the GitHub project (no publishing queue); GitHub Pages as a fallback.
+  async latest() {
+    const get = async (u, o) => { const r = await fetch(u, { cache: 'no-store', ...(o || {}) }); if (!r.ok) throw 0; return r.text(); };
+    try {
+      const sha = (await get('https://api.github.com/repos/slymnblk-dev/famlyfi/commits/gh-pages', { headers: { Accept: 'application/vnd.github.sha' } })).trim();
+      if (/^[0-9a-f]{40}$/.test(sha)) return await get(`https://raw.githubusercontent.com/slymnblk-dev/famlyfi/${sha}/index.html`);
+    } catch (e) {}
+    try { return await get(this.PAGES + '?t=' + Date.now()); } catch (e) { return null; }
   },
   async reloadApp() { if (Cloud.timer) await Cloud.push(true); location.reload(); },
   async check(manual) {
