@@ -1,9 +1,10 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Famlyfi</title><meta name=description content="Famlyfi: a calm, simple way to plan your money, track accounts and reach your goals."><meta name=theme-color content="#0F1013"><link rel=manifest href="/manifest.webmanifest"><link rel=apple-touch-icon href="/icons/apple-touch-icon.png"><meta name=apple-mobile-web-app-capable content=yes><meta name=mobile-web-app-capable content=yes><meta name=apple-mobile-web-app-status-bar-style content=black-translucent><meta name=apple-mobile-web-app-title content=Famlyfi><link rel=icon href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230F1013'/%3E%3Ctext x='15' y='46' font-family='Arial' font-weight='900' font-size='38' fill='%23F3F2EE'%3EF%3C/text%3E%3Ccircle cx='47' cy='42' r='6' fill='%23FFB547'/%3E%3C/svg%3E">
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>Famlyfi</title><meta name=description content="Famlyfi: a calm, simple way to plan your money, track accounts and reach your goals."><meta name=theme-color content="#0F1013"><link rel=manifest href="manifest.webmanifest"><link rel=apple-touch-icon href="icons/apple-touch-icon.png"><meta name=apple-mobile-web-app-capable content=yes><meta name=mobile-web-app-capable content=yes><meta name=apple-mobile-web-app-status-bar-style content=black-translucent><meta name=apple-mobile-web-app-title content=Famlyfi><link rel=icon href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230F1013'/%3E%3Ctext x='15' y='46' font-family='Arial' font-weight='900' font-size='38' fill='%23F3F2EE'%3EF%3C/text%3E%3Ccircle cx='47' cy='42' r='6' fill='%23FFB547'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#0F1013">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,800&display=swap">
+</head><body>
+
 <style>
 /* =========================================================
    1. DESIGN TOKENS
@@ -388,9 +389,9 @@ html.desk-boot.shown .main{animation:deskIn .7s cubic-bezier(.2,.7,.2,1) both}
 /* =========================================================
    5. MODALS (dialog on desktop, bottom sheet on phones)
    ========================================================= */
-.scrim{position:fixed;inset:0;z-index:40;background:var(--scrim);animation:fade .25s ease-out;will-change:opacity}
+.scrim{position:fixed;inset:0;z-index:85;background:var(--scrim);animation:fade .25s ease-out;will-change:opacity}
 button,a,[data-act]{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.dialog{position:fixed;z-index:41;left:50%;top:max(48px,8vh);transform:translateX(-50%);width:min(540px,calc(100% - 32px));max-height:calc(100vh - 96px);overflow-y:auto;
+.dialog{position:fixed;z-index:86;left:50%;top:max(48px,8vh);transform:translateX(-50%);width:min(540px,calc(100% - 32px));max-height:calc(100vh - 96px);overflow-y:auto;
   background:var(--surface);border-radius:30px;padding:26px 30px;box-shadow:0 40px 80px rgba(0,0,0,.45);animation:popIn .3s cubic-bezier(.2,.8,.2,1);scrollbar-width:none}
 .dialog::-webkit-scrollbar{display:none}
 @media (max-width:640px){
@@ -450,7 +451,7 @@ button,a,[data-act]{touch-action:manipulation;-webkit-tap-highlight-color:transp
 .chipset button{height:36px;padding:0 14px;border-radius:var(--r-pill);background:var(--surface2);font-size:14px;font-weight:500;color:var(--muted)}
 .chipset button.on{background:var(--text);color:var(--bg);font-weight:600}
 
-.toast{position:fixed;left:50%;bottom:110px;transform:translate(-50%,20px);z-index:60;background:var(--text);color:var(--bg);padding:12px 20px;border-radius:var(--r-pill);font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:110px;transform:translate(-50%,20px);z-index:95;background:var(--text);color:var(--bg);padding:12px 20px;border-radius:var(--r-pill);font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;white-space:nowrap}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 .toast{max-width:calc(100vw - 32px);width:max-content;text-align:center;line-height:1.35;white-space:normal;border-radius:18px}
 @media (min-width:900px){.toast{bottom:32px}}
@@ -881,6 +882,12 @@ mark{background:color-mix(in srgb,var(--accent) 30%,transparent);color:inherit;b
 .si-code{font-size:26px;letter-spacing:.35em;text-align:center}
 .si-hint{color:var(--muted);font-size:13px;margin:16px 2px 0}
 .si-err{color:var(--danger);font-size:13.5px;font-weight:500;margin:10px 2px 0}
+.si-pw{position:relative;display:block;margin-top:10px}.si-s + .si-pw{margin-top:20px}.si-pw .si-email{margin-top:0;padding-right:56px}
+.si-eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--muted)}.si-eye:hover{color:var(--text);background:var(--surface3)}
+.si-row{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:12px 2px 0}
+.si-link{font-size:13.5px;font-weight:600;color:var(--muted)}.si-link:hover{color:var(--text)}.si-link.strong{color:var(--accent);font-weight:700}
+.si-main{width:100%;height:54px;margin-top:20px;font-size:16px}
+.si-new{margin:18px 0 4px;text-align:center;font-size:14px;color:var(--muted)}
 .si-legal{color:var(--muted);font-size:12.5px;margin:14px 2px 0}.si-legal a{color:var(--text)}
 .si-ic{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);margin-top:14px}
 .si-ic svg.i{width:24px;height:24px}
@@ -976,6 +983,8 @@ const UI = {
   alert: 'M12 8v5M12 16.5v.01M10.3 3.9 2.6 17.3A2 2 0 0 0 4.3 20h15.4a2 2 0 0 0 1.7-2.7L13.7 3.9a2 2 0 0 0-3.4 0z',
   lock: 'M6 11h12v10H6zM8 11V7a4 4 0 0 1 8 0v4',
   mail: 'M3 6h18v12H3zM3 7l9 6 9-6',
+  eye: 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z',
+  eyeOff: 'M3 3l18 18M10.6 5.1A10.7 10.7 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6C3.9 8.3 2 12 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2',
   hist: 'M3 3v18h18M7 15l4-4 3 3 6-7',
   pin: 'M12 16v5M9 3h6l-1 6 4 3v2H6v-2l4-3z',
   cash: 'M2.5 6h19v12h-19zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM6 9.5v.01M18 14.5v.01',
@@ -1000,7 +1009,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.76';
+const APP_VERSION = '0.78';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -1476,7 +1485,7 @@ function setupView() {
       ${body}
       <div class="su-foot">${st ? '<button class="btn text" data-act="su-back">Back</button>' : '<span></span>'}
         <button class="btn primary" data-act="${last ? 'su-finish' : 'su-next'}" ${last && !su.cats.length ? 'disabled style="opacity:.5"' : ''}>${last ? "Let's go" : st === 1 && !parseAmt(su.inc) ? 'Skip for now' : 'Continue'}</button></div>
-    </div>${Cloud.available && st === 0 ? '<button class="su-signin" data-act="open-signin">Already have an account? <b>Sign in</b></button>' : ''}<button class="su-skip" data-act="su-skip">Skip and explore with example data</button></div>`;
+    </div>${Cloud.available && !Cloud.user && st === 0 ? '<button class="su-signin" data-act="open-signin">Already have an account? <b>Sign in</b></button>' : ''}<button class="su-skip" data-act="su-skip">Skip and explore with example data</button></div>`;
 }
 function renderSetup() {
   const el = $('#setup'); document.body.classList.toggle('onboarding', !!db.onboard);
@@ -1831,7 +1840,7 @@ const Views = {
         ${row('Reset everything', 'Delete all categories, entries, accounts and goals', '<button class="st-btn danger" data-act="open-reset">Reset</button>')}
         ${danger}
       </div><p class="st-note">${icon(UI.lock)}${Cloud.user ? `Synced to ${esc(Cloud.user.email)}` : 'Saved only in this browser on this device.'}${Cloud.user ? syncBadge() : Cloud.available ? ' <a href="#profile" style="color:inherit;font-weight:600">Sign in to sync</a>' : ''}</p></section>
-      <p class="st-ver"><a href="/privacy.html" target="_blank" rel="noopener" style="color:inherit">Privacy</a> · Famlyfi v${APP_VERSION}</p>
+      <p class="st-ver"><a href="privacy.html" target="_blank" rel="noopener" style="color:inherit">Privacy</a> · Famlyfi v${APP_VERSION}</p>
     </div>`;
   },
 
@@ -1853,6 +1862,7 @@ const Views = {
       <a class="set-row" href="#settings" style="text-decoration:none"><span class="nm">Settings<span class="sub">Accent, theme, currency and data</span></span>${icon(UI.right)}</a>
       ${!Cloud.available ? `<div class="set-row"><span class="nm">Sign-in and cloud sync<span class="sub">Available on famlyfi.com. Here your data stays in this browser.</span></span></div>`
         : Cloud.user ? `<div class="set-row"><span class="nm">${esc(Cloud.user.email)}<span class="sub">Your data is saved to your account and syncs across devices</span></span>${syncBadge()}</div>
+          <div class="set-row"><span class="nm">Password<span class="sub">${Cloud.user.user_metadata?.has_password ? 'Sign in with your email and password, or an email code' : 'Optional. Sign in faster without waiting for a code'}</span></span><button class="st-btn" data-act="open-setpw">${Cloud.user.user_metadata?.has_password ? 'Change' : 'Set password'}</button></div>
           <div class="set-row"><span class="nm">Sign out<span class="sub">Your data stays safe in your account</span></span><button class="st-btn" data-act="sign-out">Sign out</button></div>`
         : `<div class="set-row"><span class="nm">Sign in to sync<span class="sub">Keep your data safe and use Famlyfi on all your devices</span></span><button class="btn primary" data-act="open-signin">Sign in</button></div>`}
     </div>`;
@@ -2044,21 +2054,42 @@ const Modals = {
       <div class="d-foot"><span></span><div class="right"><button class="btn text" data-act="close">Cancel</button><button class="btn danger" id="reset-go" data-act="do-reset" data-enter ${ok ? '' : 'disabled'}>Reset</button></div></div>`;
   },
   signin(d) {
-    if (d.step === 'sent') return `<div class="d-head"><div class="d-kicker">Check your email</div><button class="close" data-act="close" aria-label="Close">${icon(UI.x)}</button></div>
+    const X = `<button class="close" data-act="close" aria-label="Close">${icon(UI.x)}</button>`;
+    const err = d.err ? `<p class="si-err">${esc(d.err)}</p>` : '';
+    const pwField = (id, ph, ac) => `<label class="si-pw"><input id="${id}" class="si-email" data-in="pw" type="${d.show ? 'text' : 'password'}" value="${esc(d.pw || '')}" placeholder="${ph}" autocomplete="${ac}" aria-label="Password"><button type="button" class="si-eye" data-act="si-eye" aria-label="${d.show ? 'Hide' : 'Show'} password">${icon(d.show ? UI.eyeOff : UI.eye)}</button></label>`;
+    if (d.step === 'sent') return `<div class="d-head"><div class="d-kicker">Check your email</div>${X}</div>
       <div class="si-ic">${icon(UI.mail)}</div>
       <h2 class="si-t">Enter your code</h2>
-      <p class="si-s">We sent a code to <b>${esc(d.email)}</b>. Type it below, or tap <b>Sign in</b> in the email if you're on the same device.</p>
-      ${SHOW_CODE ? `<input id="si-code" class="si-code num" data-in="code" value="${esc(d.code || '')}" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456" aria-label="Login code">` : ''}
-      <p class="si-hint">Can't find it? Check your spam folder. It can take a minute.</p>
-      ${d.err ? `<p class="si-err">${esc(d.err)}</p>` : ''}
-      <div class="d-foot"><button class="btn text" data-act="si-back">Use another email</button><div class="right">${SHOW_CODE ? `<button class="btn primary" data-act="si-verify" ${d.busy ? 'disabled' : ''}>${d.busy ? 'Checking…' : 'Sign in'}</button>` : '<button class="btn primary" data-act="close">Done</button>'}</div></div>`;
-    return `<div class="d-head"><div class="d-kicker">Sign in</div><button class="close" data-act="close" aria-label="Close">${icon(UI.x)}</button></div>
-      <h2 class="si-t">Sign in or create your account</h2>
-      <p class="si-s">No password needed. We'll email you a one-time code.</p>
-      <input id="si-email" class="si-email" data-in="email" type="email" value="${esc(d.email || '')}" placeholder="you@example.com" autocomplete="email" aria-label="Email">
-      ${d.err ? `<p class="si-err">${esc(d.err)}</p>` : ''}
-      <p class="si-legal">By continuing you agree to our <a href="/privacy.html" target="_blank" rel="noopener">privacy policy</a>.</p>
-      <div class="d-foot"><span></span><div class="right"><button class="btn text" data-act="close">Cancel</button><button class="btn primary" data-act="si-send" ${d.busy ? 'disabled' : ''}>${d.busy ? 'Sending…' : 'Email me a code'}</button></div></div>`;
+      <p class="si-s">We sent a code to <b>${esc(d.email)}</b>. Type it below${d.intent && d.intent !== 'signin' ? '' : `, or tap <b>Sign in</b> in the email if you're on the same device`}.</p>
+      <input id="si-code" class="si-code num" data-in="code" value="${esc(d.code || '')}" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456" aria-label="Code from the email">
+      <p class="si-hint">Can't find it? Check your spam folder. It can take a minute.</p>${err}
+      <div class="d-foot"><button class="btn text" data-act="si-back">Use another email</button><div class="right"><button class="btn primary" data-act="si-verify" ${d.busy ? 'disabled' : ''}>${d.busy ? 'Checking…' : 'Continue'}</button></div></div>`;
+    if (d.step === 'setpw') {
+      const t = { create: ['Create a password', 'Next time, sign in with your email and this password.'], reset: ['Choose a new password', 'Use it the next time you sign in.'], change: ['Change your password', 'Use it the next time you sign in on any device.'] }[d.intent] || ['Set a password', 'Next time, sign in with your email and this password.'];
+      return `<div class="d-head"><div class="d-kicker">Password</div>${X}</div>
+      <div class="si-ic">${icon(UI.lock)}</div>
+      <h2 class="si-t">${t[0]}</h2>
+      <p class="si-s">${t[1]} At least 8 characters.</p>
+      ${pwField('si-pw', 'New password', 'new-password')}${err}
+      <div class="d-foot">${d.intent === 'create' ? '<button class="btn text" data-act="close">Skip for now</button>' : '<span></span>'}<div class="right"><button class="btn primary" data-act="si-setpw" ${d.busy ? 'disabled' : ''}>${d.busy ? 'Saving…' : 'Save password'}</button></div></div>`;
+    }
+    if (d.step === 'email') {
+      const t = { create: ['Create your account', "We'll email you a code to confirm it's you. Then you can set a password."], reset: ['Reset your password', "We'll email you a code. Then you can choose a new password."] }[d.intent] || ['Sign in with a code', "No password needed. We'll email you a one-time code."];
+      return `<div class="d-head"><div class="d-kicker">${d.intent === 'create' ? 'New account' : d.intent === 'reset' ? 'Forgot password' : 'Sign in'}</div>${X}</div>
+      <h2 class="si-t">${t[0]}</h2>
+      <p class="si-s">${t[1]}</p>
+      <input id="si-email" class="si-email" data-in="email" type="email" value="${esc(d.email || '')}" placeholder="you@example.com" autocomplete="email" aria-label="Email">${err}
+      ${d.intent === 'create' ? '<p class="si-legal">By continuing you agree to our <a href="privacy.html" target="_blank" rel="noopener">privacy policy</a>.</p>' : ''}
+      <div class="d-foot"><button class="btn text" data-act="si-mode-pw">Back</button><div class="right"><button class="btn primary" data-act="si-send" ${d.busy ? 'disabled' : ''}>${d.busy ? 'Sending…' : 'Email me a code'}</button></div></div>`;
+    }
+    return `<div class="d-head"><div class="d-kicker">Sign in</div>${X}</div>
+      <h2 class="si-t">Welcome back</h2>
+      <p class="si-s">Sign in to sync your money across your devices.</p>
+      <input id="si-email" class="si-email" data-in="email" type="email" value="${esc(d.email || '')}" placeholder="you@example.com" autocomplete="username" aria-label="Email">
+      ${pwField('si-pw', 'Password', 'current-password')}
+      <div class="si-row"><button class="si-link" data-act="si-mode-code">Use an email code instead</button><button class="si-link" data-act="si-forgot">Forgot password?</button></div>${err}
+      <button class="btn primary si-main" data-act="si-pw-signin" ${d.busy ? 'disabled' : ''}>${d.busy ? 'Signing in…' : 'Sign in'}</button>
+      <p class="si-new">New to Famlyfi? <button class="si-link strong" data-act="si-create">Create an account</button></p>`;
   },
   avatar() {
     const p = db.profile, name = p.name || 'You';
@@ -2341,23 +2372,47 @@ const handlers = {
   },
   'h-year': el => { ui.hy = el.dataset.v; render(); },
   'h-cmp': () => { ui.hcmp = !ui.hcmp; render(); },
-  'open-signin': () => { if (!Cloud.sb) { toast('Sign-in is loading, try again in a moment'); return; } openModal('signin', { email: '', step: 'email' }); setTimeout(() => $('#si-email')?.focus(), 80); },
+  'open-signin': () => { if (!Cloud.sb) { toast('Sign-in is loading, try again in a moment'); return; } openModal('signin', { email: '', step: 'pw', pw: '' }); setTimeout(() => $('#si-email')?.focus(), 80); },
   'si-send': async () => {
     const d = ui.modal.d, email = (d.email || '').trim();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { d.err = 'Enter a valid email address'; renderModal(); return; }
     d.busy = true; d.err = ''; renderModal();
-    try { await Cloud.sendLink(email); d.step = 'sent'; d.email = email; }
-    catch (e) { d.err = /rate|seconds/i.test(e.message) ? 'Too many emails. Please wait a minute and try again.' : 'Could not send the email. Please try again.'; }
+    try { await Cloud.sendLink(email, d.intent !== 'reset'); d.step = 'sent'; d.email = email; d.code = ''; }
+    catch (e) { d.err = /rate|seconds/i.test(e.message) ? 'Too many emails. Please wait a minute and try again.' : /not allowed|signups|not found/i.test(e.message) ? 'There is no account with this email yet. Create one instead.' : 'Could not send the email. Please try again.'; }
     d.busy = false; renderModal(); setTimeout(() => $('#si-code')?.focus(), 80);
   },
   'si-verify': async () => {
     const d = ui.modal.d, code = (d.code || '').replace(/\D/g, '');
     if (code.length < 6) { d.err = 'Enter the code from the email'; renderModal(); return; }
     d.busy = true; d.err = ''; renderModal();
-    try { await Cloud.verifyCode(d.email, code); ui.modal = null; renderModal(); }
-    catch (e) { d.busy = false; d.err = 'That code didn\'t work. Check it or request a new one.'; renderModal(); }
+    try {
+      await Cloud.verifyCode(d.email, code);
+      if (d.intent === 'create' || d.intent === 'reset') { d.step = 'setpw'; d.busy = false; d.pw = ''; renderModal(); setTimeout(() => $('#si-pw')?.focus(), 80); }
+      else { ui.modal = null; renderModal(); }
+    } catch (e) { d.busy = false; d.err = 'That code didn\'t work. Check it or request a new one.'; renderModal(); }
   },
   'si-back': () => { const d = ui.modal.d; d.step = 'email'; d.err = ''; d.code = ''; renderModal(); },
+  'si-mode-code': () => { const d = ui.modal.d; Object.assign(d, { step: 'email', intent: 'signin', err: '' }); renderModal(); setTimeout(() => $('#si-email')?.focus(), 80); },
+  'si-mode-pw': () => { const d = ui.modal.d; Object.assign(d, { step: 'pw', intent: null, err: '' }); renderModal(); },
+  'si-forgot': () => { const d = ui.modal.d; Object.assign(d, { step: 'email', intent: 'reset', err: '' }); renderModal(); setTimeout(() => $('#si-email')?.focus(), 80); },
+  'si-create': () => { const d = ui.modal.d; Object.assign(d, { step: 'email', intent: 'create', err: '' }); renderModal(); setTimeout(() => $('#si-email')?.focus(), 80); },
+  'si-eye': () => { const d = ui.modal.d, el = $('#si-pw'); d.pw = el ? el.value : d.pw; d.show = !d.show; renderModal(); const n = $('#si-pw'); if (n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); } },
+  'si-pw-signin': async () => {
+    const d = ui.modal.d, email = (d.email || '').trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { d.err = 'Enter a valid email address'; renderModal(); return; }
+    if (!d.pw) { d.err = 'Enter your password'; renderModal(); return; }
+    d.busy = true; d.err = ''; renderModal();
+    try { await Cloud.signInPassword(email, d.pw); ui.modal = null; renderModal(); }
+    catch (e) { d.busy = false; d.err = /invalid/i.test(e.message) ? "Wrong email or password. If you've only used email codes so far, use a code once and then set a password." : /rate|many/i.test(e.message) ? 'Too many tries. Please wait a minute.' : 'Could not sign in. Check your connection and try again.'; renderModal(); }
+  },
+  'si-setpw': async () => {
+    const d = ui.modal.d, pw = d.pw || '';
+    if (pw.length < 8) { d.err = 'Use at least 8 characters'; renderModal(); return; }
+    d.busy = true; d.err = ''; renderModal();
+    try { await Cloud.setPassword(pw); ui.modal = null; renderModal(); toast('Password saved'); render(); }
+    catch (e) { d.busy = false; d.err = /reauth/i.test(e.message) ? 'For your security, sign out and sign in again with an email code, then change your password.' : /different|same/i.test(e.message) ? 'Choose a password different from your current one.' : /weak|short|length/i.test(e.message) ? 'That password is too weak. Try a longer one.' : 'Could not save the password. Please try again.'; renderModal(); }
+  },
+  'open-setpw': () => { openModal('signin', { step: 'setpw', intent: Cloud.user?.user_metadata?.has_password ? 'change' : 'set', pw: '' }); setTimeout(() => $('#si-pw')?.focus(), 80); },
   'sign-out': () => { if (confirm('Sign out? Your data stays safe in your account and is removed from this device.')) Cloud.signOut(); },
   'open-avatar': () => openModal('avatar', {}),
   'av-emoji': el => { db.profile.emoji = el.dataset.v || null; Store.save(); render(); renderModal(); },
@@ -2648,8 +2703,17 @@ var Cloud = {
     } catch (e) { this.status = 'error'; }
   },
   setStatus(st) { this.status = st; const el = document.querySelector('[data-sync]'); if (el) el.outerHTML = syncBadge(); else if (ui.route === 'profile' || ui.route === 'settings') render(); },
-  async sendLink(email) {
-    const { error } = await this.sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + '/', shouldCreateUser: true } });
+  async signInPassword(email, password) {
+    const { error } = await this.sb.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+  },
+  async setPassword(password) {
+    const { data, error } = await this.sb.auth.updateUser({ password, data: { has_password: true } });
+    if (error) throw error;
+    if (data && data.user) this.user = data.user;
+  },
+  async sendLink(email, create = true) {
+    const { error } = await this.sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + '/', shouldCreateUser: create } });
     if (error) throw error;
   },
   async verifyCode(email, token) {
@@ -2716,6 +2780,8 @@ document.addEventListener('pointerdown', e => {
 }, true);
 // ---- "What's new" note, shown once after the app updates (newest first; keep each line short) ----
 const WHATS_NEW = {
+  '0.78': ['Sign in with a password (optional)', 'Forgot your password? Reset it with an email code', 'Sign in from the welcome screen works again'],
+  '0.77': ['Famlyfi can now be installed as an app on Android'],
   '0.76': ['New profile emojis: heart, rainbow and puppy'],
   '0.75': ['A softer, warmer start-up sound and a slightly quicker splash'],
   '0.74': ['A calm opening chime and a smoother start-up'],
@@ -2790,7 +2856,7 @@ if (Updater.on) {
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !Updater.appNew) Updater.appCheck(); });
 }
 // Installable app: offline support on the real website only
-if (Cloud.available && 'serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+if (Cloud.available && 'serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 </script>
 
 </body></html>
