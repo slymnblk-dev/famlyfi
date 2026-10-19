@@ -4,7 +4,7 @@
   "description": "Plan your money, track your accounts and reach your goals.",
   "start_url": "./",
   "scope": "./",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "portrait",
   "background_color": "#0F1013",
   "theme_color": "#0F1013",
@@ -26,5 +26,9 @@
       "purpose": "maskable"
     }
   ],
-  "id": "famlyfi"
+  "id": "famlyfi",
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ]
 }
