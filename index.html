@@ -1,9 +1,10 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Famlyfi</title><meta name=description content="Famlyfi: a calm, simple way to plan your money, track accounts and reach your goals."><meta name=theme-color content="#0F1013"><link rel=manifest href="/manifest.webmanifest"><link rel=apple-touch-icon href="/icons/apple-touch-icon.png"><meta name=apple-mobile-web-app-capable content=yes><meta name=mobile-web-app-capable content=yes><meta name=apple-mobile-web-app-status-bar-style content=black-translucent><meta name=apple-mobile-web-app-title content=Famlyfi><link rel=icon href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230F1013'/%3E%3Ctext x='15' y='46' font-family='Arial' font-weight='900' font-size='38' fill='%23F3F2EE'%3EF%3C/text%3E%3Ccircle cx='47' cy='42' r='6' fill='%23FFB547'/%3E%3C/svg%3E">
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>Famlyfi</title><meta name=description content="Famlyfi: a calm, simple way to plan your money, track accounts and reach your goals."><meta name=theme-color content="#0F1013"><link rel=manifest href="manifest.webmanifest"><link rel=apple-touch-icon href="icons/apple-touch-icon.png"><meta name=apple-mobile-web-app-capable content=yes><meta name=mobile-web-app-capable content=yes><meta name=apple-mobile-web-app-status-bar-style content=black-translucent><meta name=apple-mobile-web-app-title content=Famlyfi><link rel=icon href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230F1013'/%3E%3Ctext x='15' y='46' font-family='Arial' font-weight='900' font-size='38' fill='%23F3F2EE'%3EF%3C/text%3E%3Ccircle cx='47' cy='42' r='6' fill='%23FFB547'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#0F1013">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,800&display=swap">
+</head><body>
+
 <style>
 /* =========================================================
    1. DESIGN TOKENS
@@ -1000,7 +1001,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.76';
+const APP_VERSION = '0.77';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -1831,7 +1832,7 @@ const Views = {
         ${row('Reset everything', 'Delete all categories, entries, accounts and goals', '<button class="st-btn danger" data-act="open-reset">Reset</button>')}
         ${danger}
       </div><p class="st-note">${icon(UI.lock)}${Cloud.user ? `Synced to ${esc(Cloud.user.email)}` : 'Saved only in this browser on this device.'}${Cloud.user ? syncBadge() : Cloud.available ? ' <a href="#profile" style="color:inherit;font-weight:600">Sign in to sync</a>' : ''}</p></section>
-      <p class="st-ver"><a href="/privacy.html" target="_blank" rel="noopener" style="color:inherit">Privacy</a> · Famlyfi v${APP_VERSION}</p>
+      <p class="st-ver"><a href="privacy.html" target="_blank" rel="noopener" style="color:inherit">Privacy</a> · Famlyfi v${APP_VERSION}</p>
     </div>`;
   },
 
@@ -2057,7 +2058,7 @@ const Modals = {
       <p class="si-s">No password needed. We'll email you a one-time code.</p>
       <input id="si-email" class="si-email" data-in="email" type="email" value="${esc(d.email || '')}" placeholder="you@example.com" autocomplete="email" aria-label="Email">
       ${d.err ? `<p class="si-err">${esc(d.err)}</p>` : ''}
-      <p class="si-legal">By continuing you agree to our <a href="/privacy.html" target="_blank" rel="noopener">privacy policy</a>.</p>
+      <p class="si-legal">By continuing you agree to our <a href="privacy.html" target="_blank" rel="noopener">privacy policy</a>.</p>
       <div class="d-foot"><span></span><div class="right"><button class="btn text" data-act="close">Cancel</button><button class="btn primary" data-act="si-send" ${d.busy ? 'disabled' : ''}>${d.busy ? 'Sending…' : 'Email me a code'}</button></div></div>`;
   },
   avatar() {
@@ -2716,6 +2717,7 @@ document.addEventListener('pointerdown', e => {
 }, true);
 // ---- "What's new" note, shown once after the app updates (newest first; keep each line short) ----
 const WHATS_NEW = {
+  '0.77': ['Famlyfi can now be installed as an app on Android'],
   '0.76': ['New profile emojis: heart, rainbow and puppy'],
   '0.75': ['A softer, warmer start-up sound and a slightly quicker splash'],
   '0.74': ['A calm opening chime and a smoother start-up'],
@@ -2790,7 +2792,7 @@ if (Updater.on) {
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !Updater.appNew) Updater.appCheck(); });
 }
 // Installable app: offline support on the real website only
-if (Cloud.available && 'serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+if (Cloud.available && 'serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 </script>
 
 </body></html>
