@@ -265,7 +265,7 @@ html.desk-boot.shown .main{animation:deskIn .7s cubic-bezier(.2,.7,.2,1) both}
 .gbody .row:hover .pen,.gbody .row:focus-visible .pen{opacity:1}
 .addrow{display:flex;align-items:center;gap:10px;padding:14px 0;border-top:1px solid var(--line);font-size:14px;font-weight:500;color:var(--muted);width:100%}
 .addrow:hover{color:var(--text)}
-@media (max-width:640px){.shr{display:none}.share{display:none}.gbody{padding:0 16px 6px 16px}.gtoggle{padding:14px 4px 14px 16px;gap:12px}.gnet{min-width:0;flex:none;font-size:17px;margin-left:auto}.gname{font-size:17px}}
+@media (max-width:640px){.shr{display:none}.share{display:none}.gbody{padding:0 16px 6px 16px}.gtoggle{padding:14px 4px 14px 16px;gap:12px}.gnet{min-width:0;flex:none;font-size:17px;margin-left:auto}.gname{font-size:17px}.gname .gn{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-height:1.15;overflow-wrap:break-word}}
 .menu{position:absolute;right:14px;top:62px;z-index:15;min-width:200px;background:var(--surface2);border:1px solid var(--line);border-radius:16px;padding:6px;box-shadow:0 20px 44px rgba(0,0,0,.35);animation:pop .16s ease-out;transform-origin:top right}
 .menu.up{top:auto;bottom:calc(100% - 10px);transform-origin:bottom right}
 .menu button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:11px 12px;border-radius:10px;font-size:14.5px;font-weight:500}
@@ -634,6 +634,7 @@ body.is-dragging .gbody .row:hover .pen{opacity:0}
 .sp-mini{flex:1;display:flex;gap:3px;height:8px;max-width:260px;margin-left:auto}
 .sp-mini span{border-radius:4px;min-width:4px;background:var(--c)}
 .sp-head .chev{margin-left:auto;flex:none}
+.h-range{margin-left:auto;flex:none}@media (max-width:400px){.gtoggle .gcount{display:none}}.sp-head:has(.h-range){flex-wrap:wrap;row-gap:12px}@media (max-width:640px){.h-range{margin-left:0}}.h-dot.faint:not(.hov){opacity:0}.sp-ttl small .hd svg.i{width:13px;height:13px}
 .sp-mini+.chev{margin-left:0}
 .spend.open .chev{transform:rotate(180deg)}
 .sp-body{padding:0 22px 20px;animation:expand .32s var(--ease)}
@@ -925,7 +926,7 @@ mark{background:color-mix(in srgb,var(--accent) 30%,transparent);color:inherit;b
 .grid2 .sp-ring{max-width:176px}
 .grid2 .sp-center{padding:0 26px}
 .grid2 .sp-center b{font-size:30px}
-.sp-keys{display:flex;flex-direction:column;gap:2px}
+.sp-keys{display:flex;flex-direction:column;gap:2px;min-width:0}.sp-donut>*{min-width:0}
 .sp-key{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:14px;text-align:left;width:100%;transition:background-color .2s,opacity .25s}
 .sp-key:hover,.sp-key.sel{background:var(--surface2)}
 .sp-key i{width:12px;height:12px;border-radius:4px;background:var(--c);flex:none}
@@ -1009,7 +1010,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.79';
+const APP_VERSION = '0.80';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -1022,7 +1023,17 @@ const icon = (d, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hi
 const nf = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 const fmt = n => nf.format(Math.round(Math.abs(n)));
 const signed = n => (Math.round(n) === 0 ? '' : n > 0 ? '+' : '−') + fmt(n);
-const parseAmt = v => { const n = parseFloat(String(v).replace(/[^0-9.]/g, '')); return isFinite(n) ? n : 0; };
+// Amounts as people type them: 1,234.50 · 1'234.50 · 1.234,50 · 47,50 (comma decimals) · 1 234
+const parseAmt = v => {
+  let t = String(v ?? '').trim().replace(/[\s'’`]/g, '').replace(/[^0-9.,]/g, '');
+  const lc = t.lastIndexOf(','), ld = t.lastIndexOf('.');
+  if (lc > -1 && ld > -1) t = lc > ld ? t.replace(/\./g, '').replace(',', '.') : t.replace(/,/g, ''); // both: the last one is the decimal mark
+  else if (lc > -1) t = /^\d{1,3}(,\d{3})+$/.test(t) ? t.replace(/,/g, '') : t.replace(/,/g, '.').replace(/\.(?=.*\.)/g, ''); // 1,234 = thousands; 47,50 = decimals
+  else if ((t.match(/\./g) || []).length > 1) t = t.replace(/\./g, ''); // 1.234.567 = thousands
+  const n = parseFloat(t); return isFinite(n) ? Math.round(n * 100) / 100 : 0;
+};
+// Amount for an edit field: keeps cents (47.50), no cents for whole numbers (2,150)
+const fmtIn = n => { const a = Math.abs(+n || 0); return new Intl.NumberFormat('en-US', { minimumFractionDigits: a % 1 ? 2 : 0, maximumFractionDigits: 2 }).format(a); };
 const gc = g => `var(--g-${g ? g.color : 'violet'})`;
 const REDUCED = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const fmtKind = (v, k) => k === 'signed' ? signed(v) : k === 'left' ? (Math.round(v) < 0 ? '−' : '') + fmt(v) : fmt(v);
@@ -1316,7 +1327,7 @@ const Actions = {
   deleteAccount(id) { db.accounts = db.accounts.filter(a => a.id !== id); commit('Account deleted'); },
   saveGoal(d) {
     const start = parseAmt(d.start), step = parseAmt(d.step);
-    const data = { title: d.title.trim() || 'Goal', target: Math.max(start + 1, parseAmt(d.target)), current: parseAmt(d.current), date: d.date, accountId: d.accountId || null, currency: d.currency && d.currency !== cur() ? d.currency : (d.currency || null), start: start > 0 ? start : 0, step: step > 0 ? step : null };
+    const data = { title: d.title.trim() || 'Goal', target: Math.max(start + 1, parseAmt(d.target)), current: parseAmt(d.current), date: d.date, accountId: d.accountId || null, currency: d.accountId ? null : d.currency && d.currency !== cur() ? d.currency : (d.currency || null), start: start > 0 ? start : 0, step: step > 0 ? step : null };
     if (!data.accountId) data.current = Math.min(data.current, data.target);
     if (d.id) Object.assign(db.goals.find(g => g.id === d.id), data); else db.goals.push(Object.assign({ id: uid() }, data));
     commit(d.id ? 'Goal saved' : 'Goal added');
@@ -1377,6 +1388,31 @@ function goalPlan(g) {
   return { start, target, step, pts, reached, pct, auto: !(+g.step > 0) };
 }
 const goalPct = g => goalPlan(g).pct;
+// Compact amount for tight spaces: 950 · 15k · 2.5k · 1.25M
+const fmtShort = v => { const a = Math.abs(v), t = (x, u) => (Math.round(x * 100) / 100).toString() + u; return a >= 1e6 ? t(a / 1e6, 'M') : a >= 1e3 ? t(a / 1e3, 'k') : fmt(a); };
+/* Goal milestone labels: never overlap. Use full numbers when they fit, compact ones (15k) when tight,
+   then hide in-between labels so each visible one has room. Start and end always stay. */
+function fitTicks() {
+  document.querySelectorAll('.ticks2').forEach(box => {
+    const W = box.clientWidth, sp = [...box.children]; if (!W || !sp.length) return;
+    const edges = el => { const x = parseFloat(el.style.left) / 100 * W, w = el.offsetWidth;
+      const l = el.classList.contains('first') ? x - 23 : el.classList.contains('last') ? x - w + 23 : x - w / 2; return [l, l + w]; };
+    let E = new Map();
+    const fits = keep => keep.every((e, k) => k === 0 || E.get(e)[0] > E.get(keep[k - 1])[1] + 10);
+    const place = () => { // smallest even step (every label, every 2nd, every 3rd…) that fits; start and end always shown
+      const n = sp.length - 1;
+      sp.forEach(e => e.classList.remove('hide')); E = new Map(sp.map(e => [e, edges(e)]));
+      for (let st = 1; st <= n; st++) {
+        const idx = []; for (let k = 0; k < n; k += st) idx.push(k);
+        if (idx.length > 1 && n - idx[idx.length - 1] < st / 2) idx.pop();
+        idx.push(n); const keep = idx.map(k => sp[k]);
+        if (fits(keep) || st === n) { sp.forEach(e => e.classList.toggle('hide', !keep.includes(e))); return st === 1; }
+      }
+    };
+    sp.forEach(e => { e.textContent = e.dataset.full; });
+    if (!place()) { sp.forEach(e => { e.textContent = e.dataset.short; }); place(); }
+  });
+}
 function goalHint(d) {
   const t = parseAmt(d.target); if (!t) return 'Target amount. Set your own milestone step below.';
   const P = goalPlan({ start: parseAmt(d.start), target: t, step: parseAmt(d.step) }), n = P.pts.length - 1;
@@ -1715,14 +1751,15 @@ const Views = {
     const total = db.goals.reduce((s, g) => s + Math.min(g.current, g.target), 0), target = db.goals.reduce((s, g) => s + g.target, 0);
     const curs = [...new Set(db.goals.map(goalCur))], done = db.goals.filter(g => goalPct(g) >= 100).length;
     const mainCard = main ? (() => {
-      const P = goalPlan(main), n = P.pts.length - 1, dense = n > 10, every = n <= 8 ? 1 : Math.ceil(n / 6);
+      const P = goalPlan(main), n = P.pts.length - 1, dense = n > 10;
       let track = '';
       for (let k = 0; k <= n; k++) {
         if (k > 0) track += `<span class="seg2 ${k <= P.reached ? 'on' : ''}" style="flex:${(P.pts[k] - P.pts[k - 1]) / P.step}"></span>`;
         const on = k <= P.reached, label = k === 0 ? 'Reset to start' : (k === P.reached ? `Undo ${fmt(P.pts[k])}` : `Mark ${fmt(P.pts[k])} reached`);
         track += `<button class="node ${on ? 'on' : ''} ${ui.pop === k ? 'pop' : ''}" data-act="milestone" data-id="${main.id}" data-k="${k}" aria-label="${label}"><i>${icon(UI.check)}</i></button>`;
       }
-      const ticks = P.pts.map((v, k) => `<span style="left:${(v - P.start) / (P.target - P.start) * 100}%" class="${k === 0 ? 'first' : k === n ? 'last' : ''} ${k === 0 || k === n || k % every === 0 && n - k >= every / 2 ? '' : 'hide'}">${k === 0 && !P.start ? 'Start' : fmt(v)}</span>`).join('');
+      const ticks = P.pts.map((v, k) => { const full = k === 0 && !P.start ? 'Start' : fmt(v), short = k === 0 && !P.start ? 'Start' : fmtShort(v);
+        return `<span style="left:${(v - P.start) / (P.target - P.start) * 100}%" class="${k === 0 ? 'first' : k === n ? 'last' : ''}" data-full="${full}" data-short="${short}">${full}</span>`; }).join('');
       return `<section class="goal" style="margin-top:28px">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div class="eyebrow" style="font-weight:600">${esc(main.title)}${autoBadge(main)}</div>
           <div style="display:flex;align-items:center;gap:12px"><span class="muted" style="font-size:13.5px">${main.date ? 'Target ' + monthName(main.date) : ''}</span><button class="iconbtn" data-act="edit-goal" data-id="${main.id}" aria-label="Edit ${esc(main.title)}">${icon(UI.pen)}</button></div></div>
@@ -1749,7 +1786,7 @@ const Views = {
     if (!all.length) return `${mobileTop('History')}<div class="h-empty" style="margin-top:60px">${icon(UI.hist)}<b>Your history starts now</b><span>Add accounts and entries, and your months will appear here.</span></div>`;
     const years = [...new Set(all.map(x => x.m.slice(0, 4)))].sort();
     if (!ui.hy || !years.includes(ui.hy)) ui.hy = years[years.length - 1];
-    const cmp = ui.hcmp && years.length > 1, y = ui.hy, yPrev = years[years.indexOf(y) - 1] || years[years.length - 2];
+    const allT = !!ui.hall && all.length > 1, cmp = !allT && ui.hcmp && years.length > 1, y = ui.hy, yPrev = years[years.indexOf(y) - 1] || years[years.length - 2];
     const rowsY = yy => all.filter(x => x.m.startsWith(yy));
     const cur0 = all[all.length - 1], prev = all[all.length - 2];
     const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -1762,7 +1799,20 @@ const Views = {
     const series = cmp ? [{ y: yPrev, rows: rowsY(yPrev), c: 'var(--muted)', dash: true }, { y, rows: rowsY(y), c: 'var(--accent)' }] : [{ y, rows: rowsY(y), c: 'var(--accent)' }];
     const vals = series.flatMap(sr => sr.rows.map(r => r.net));
     let chart;
-    if (vals.length < 2 && !cmp) chart = `<div class="h-empty">${icon(UI.hist)}<b>Your history starts this month</b><span>History begins at your oldest account balance. Add what an account held in the past to see earlier months, or come back next month.</span>${db.accounts.length ? '<a class="btn primary" href="#accounts" style="margin-top:10px">Add a past balance</a>' : ''}</div>`;
+    if (allT) {
+      const W = 640, H = 220, P = 18, nv = all.map(r => r.net), lo = Math.min(...nv), hi = Math.max(...nv), span = hi - lo || 1, n = all.length;
+      const X = i => P + i * (W - 2 * P) / (n - 1), Y = v => H - 34 - (v - lo) / span * (H - 70);
+      const pts = all.map((r, i) => [X(i), Y(r.net)]);
+      const line = pts.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' ');
+      const tipPts = all.map((r, i) => [pts[i][0] / W, pts[i][1] / H, `<small>${MON[+r.m.slice(5) - 1]} ${r.m.slice(0, 4)}</small><b class="num">${fmt(r.net)} ${cur()}</b>`]);
+      const dots = all.map((r, i) => `<span class="h-dot ${r.m === nowYM ? 'last' : ''} ${n > 36 && i !== n - 1 ? 'faint' : ''}" style="left:${pts[i][0] / W * 100}%;top:calc(${pts[i][1] / H * 100}% - ${(pts[i][1] / H * 26).toFixed(1)}px)"></span>`).join('');
+      const km = Math.min(n, innerWidth < 640 ? 4 : 6); let k = km; while (k > 3 && (n - 1) % (k - 1)) k--; if ((n - 1) % (k - 1)) k = km; const lbl = [...new Set(Array.from({ length: k }, (_, j) => Math.round(j * (n - 1) / (k - 1 || 1))))];
+      const xl = lbl.map(i => `<span style="position:absolute;left:${pts[i][0] / W * 100}%;transform:translateX(${i === 0 ? '-10%' : i === n - 1 ? '-90%' : '-50%'});white-space:nowrap">${MON[+all[i].m.slice(5) - 1]} ${all[i].m.slice(2, 4)}</span>`).join('');
+      chart = `<div class="h-chart" id="hchart" data-pts='${JSON.stringify(tipPts).replace(/'/g, '&#39;')}'>
+        <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="Net worth trend, all time"><defs><linearGradient id="hg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".28"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>
+        <path d="${line} L${pts[n - 1][0].toFixed(1)} ${H - 24} L${pts[0][0].toFixed(1)} ${H - 24} Z" fill="url(#hg)"/><path class="h-line" d="${line}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>
+        ${dots}<div class="h-tip" id="htip"></div><div class="h-x" style="display:block;height:16px">${xl}</div></div>`;
+    } else if (vals.length < 2 && !cmp) chart = `<div class="h-empty">${icon(UI.hist)}<b>Your history starts this month</b><span>History begins at your oldest account balance. Add what an account held in the past to see earlier months, or come back next month.</span>${db.accounts.length ? '<a class="btn primary" href="#accounts" style="margin-top:10px">Add a past balance</a>' : ''}</div>`;
     else {
       const W = 640, H = 220, P = 18, lo = Math.min(...vals), hi = Math.max(...vals), span = hi - lo || 1;
       const X = mi => P + mi * (W - 2 * P) / 11, Y = v => H - 34 - (v - lo) / span * (H - 70);
@@ -1801,7 +1851,7 @@ const Views = {
     <div class="hero-row"><h1 class="hero num">${numEl('hnw', cur0.net, 'left')}</h1><div class="hero-unit">${cur()}</div></div>
     ${prev ? `<p class="h-sub">${delta(cur0.net, prev.net)}<span>since ${monthName(prev.m)}</span></p>` : ''}
     ${switcher}
-    <section class="spend h-card" style="margin-top:16px"><div class="sp-head"><span class="sp-ttl"><span>${cmp ? `Net worth · ${yPrev} vs ${y}` : `Net worth in ${y}`}</span><small>${rowsY(y).length} ${rowsY(y).length === 1 ? 'month' : 'months'} tracked</small></span></div><div class="sp-body">${chart}</div></section>
+    <section class="spend h-card" style="margin-top:16px"><div class="sp-head"><span class="sp-ttl"><span>${allT ? 'Net worth over time' : cmp ? `Net worth · ${yPrev} vs ${y}` : `Net worth in ${y}`}</span><small>${allT ? `Since ${monthName(all[0].m)} · ${delta(cur0.net, all[0].net)}` : `${rowsY(y).length} ${rowsY(y).length === 1 ? 'month' : 'months'} tracked`}</small></span>${all.length > 1 ? `<div class="seg sm h-range" role="group" aria-label="Chart range"><button class="${allT ? '' : 'on'}" data-act="h-range" data-v="year" aria-pressed="${!allT}">${y}</button><button class="${allT ? 'on' : ''}" data-act="h-range" data-v="all" aria-pressed="${allT}">All time</button></div>` : ''}</div><div class="sp-body">${chart}</div></section>
     ${cmpCard}
     ${!cmp && prev ? `<div class="cards" style="margin-top:16px">
       ${statCard('var(--g-sky)', UI.wallet, 'Net worth', delta(cur0.net, prev.net), `vs ${ymShort(prev.m)}`)}
@@ -1992,7 +2042,7 @@ const Modals = {
       <div class="icons">${Object.keys(ICONS).map(k => `<button class="ic ${d.icon === k ? 'on' : ''}" style="--c:var(--g-${d.color})" data-act="m-icon" data-v="${k}" aria-label="${k} icon" aria-pressed="${d.icon === k}">${icon(ICONS[k])}</button>`).join('')}</div>
       <span class="flbl">Colour</span>
       <div class="colors">${GROUP_COLORS.map(c => `<button class="${d.color === c ? 'on' : ''}" style="--c:var(--g-${c})" data-act="m-color" data-v="${c}" aria-label="${c}" aria-pressed="${d.color === c}"></button>`).join('')}</div>
-      <button class="sav-row" data-act="m-savings" role="switch" aria-checked="${!!d.savings}"><span><b>Savings category</b><small>Money you put aside. Counts as saving, not spending.</small></span><span class="im-switch ${d.savings ? 'on' : ''}"><i></i></span></button>
+      ${(() => { const its = d.id ? Calc.itemsOf(d.id) : []; return its.length && its.every(i => i.type === 'income') && !d.savings; })() ? '' : `<button class="sav-row" data-act="m-savings" role="switch" aria-checked="${!!d.savings}"><span><b>Savings category</b><small>Money you put aside. Counts as saving, not spending.</small></span><span class="im-switch ${d.savings ? 'on' : ''}"><i></i></span></button>`}
       ${confirm}
       <div class="d-foot">${d.id && !d.confirm ? `<button class="btn danger-text" data-act="m-confirm">Delete category</button>` : '<span></span>'}
         <div class="right"><button class="btn text" data-act="close">Cancel</button><button class="btn primary" data-act="m-save-group">${d.id ? 'Save' : 'Create category'}</button></div></div></div>`;
@@ -2119,7 +2169,7 @@ const Modals = {
     const gc = d.currency || cur(), autoStep = fmt(goalPlan({ start: parseAmt(d.start), target: parseAmt(d.target) || 1 }).step);
     const menu = d.menu ? `<div class="menu gmenu" role="menu">
         <div class="mlbl">Currency</div>
-        ${GOAL_CURS.map(c => `<button data-act="m-gcur" data-v="${c}" role="menuitemradio" aria-checked="${gc === c}">${gc === c ? icon(UI.check) : '<i class="mi-sp"></i>'}${c}</button>`).join('')}
+        ${acc ? `<button role="menuitemradio" aria-checked="true" aria-disabled="true" style="cursor:default">${icon(UI.check)}${cur()}</button><div class="mlbl" style="text-transform:none;letter-spacing:0;font-weight:500;padding-top:0">Matches the linked account</div>` : GOAL_CURS.map(c => `<button data-act="m-gcur" data-v="${c}" role="menuitemradio" aria-checked="${gc === c}">${gc === c ? icon(UI.check) : '<i class="mi-sp"></i>'}${c}</button>`).join('')}
         <div class="msep"></div>
         <button data-act="m-goal-acct">${icon(UI.wallet)}${acc ? `Linked: ${esc(acc.name)}` : 'Link an account'}</button>
         ${d.id ? `<button class="warn" data-act="m-confirm">${icon(UI.trash)}Delete goal</button>` : ''}</div>` : '';
@@ -2288,7 +2338,7 @@ function render(entering = false) {
   if (ui.modal) renderModal();
   // Menus near the bottom of the screen (or above the mobile dock) open upwards so they stay visible
   document.querySelectorAll('#view .menu').forEach(m => { const r = m.getBoundingClientRect(), dock = innerWidth < 900 ? 112 : 16; if (r.bottom > innerHeight - dock && r.top - r.height > 80) m.classList.add('up'); });
-  moveIndicators();
+  moveIndicators(); fitTicks();
   ui.justOpened = null; ui.pop = null; ui.flash = null;
   spy();
 }
@@ -2333,7 +2383,8 @@ function route() {
   }, 150);
 }
 function go(r) { if (location.hash === '#' + r) route(); else location.hash = r; }
-window.addEventListener('resize', () => { $('#ind')?.classList.add('instant'); $('#dind')?.classList.add('instant'); moveIndicators(); });
+window.addEventListener('resize', () => { $('#ind')?.classList.add('instant'); $('#dind')?.classList.add('instant'); moveIndicators(); fitTicks(); });
+try { document.fonts.ready.then(fitTicks); } catch (e) {}
 
 let toastTimer;
 function toast(msg) {
@@ -2357,7 +2408,7 @@ const handlers = {
   period: el => Actions.setting('period', el.dataset.v),
   nav: el => go(el.dataset.v),
   'add-item': el => { if (!db.groups.length) { openModal('group', { name: '', icon: 'home', color: 'violet', returnTo: { kind: 'item', d: blankItem() } }); toast('Create a category first'); return; } openModal('item', blankItem(el.dataset.group)); },
-  'edit-item': el => { const i = db.items.find(x => x.id === el.dataset.id); openModal('item', { id: i.id, name: i.name, amount: fmt(i.amount), type: i.type, freq: i.freq, groupId: i.groupId, note: i.note || '', start: i.start || '', end: i.end || '', datesOpen: !!(i.start || i.end), view: 'main' }); },
+  'edit-item': el => { const i = db.items.find(x => x.id === el.dataset.id); openModal('item', { id: i.id, name: i.name, amount: fmtIn(i.amount), type: i.type, freq: i.freq, groupId: i.groupId, note: i.note || '', start: i.start || '', end: i.end || '', datesOpen: !!(i.start || i.end), view: 'main' }); },
   'su-cur': el => { db.settings.currency = el.dataset.v; Store.save(); renderSetup(); },
   'su-next': () => { ui.su.step++; renderSetup(); },
   'su-back': () => { ui.su.step--; renderSetup(); },
@@ -2371,7 +2422,8 @@ const handlers = {
     location.hash = '#overview'; commit("You're all set. Add your first expense.");
   },
   'h-year': el => { ui.hy = el.dataset.v; render(); },
-  'h-cmp': () => { ui.hcmp = !ui.hcmp; render(); },
+  'h-cmp': () => { ui.hcmp = !ui.hcmp; if (ui.hcmp) ui.hall = false; render(); },
+  'h-range': el => { ui.hall = el.dataset.v === 'all'; if (ui.hall) ui.hcmp = false; render(); },
   'open-signin': () => { if (!Cloud.sb) { toast('Sign-in is loading, try again in a moment'); return; } openModal('signin', { email: '', step: 'pw', pw: '' }); setTimeout(() => $('#si-email')?.focus(), 80); },
   'si-send': async () => {
     const d = ui.modal.d, email = (d.email || '').trim();
@@ -2462,9 +2514,9 @@ const handlers = {
   'cancel-del-group': () => { ui.gconfirm = null; render(); },
   'del-group': el => { const id = el.dataset.id; ui.gconfirm = null; const c = $('#g-' + id); if (c && !REDUCED) { c.classList.add('removing'); setTimeout(() => Actions.deleteGroup(id), 260); } else Actions.deleteGroup(id); },
   'new-account': el => openModal('account', { name: '', type: 'checking', balance: '', bdate: todayISO(), hist: [], groupId: el.dataset.group || agroupFor('checking'), gTouched: !!el.dataset.group }),
-  'edit-account': el => { const a = db.accounts.find(x => x.id === el.dataset.id); openModal('account', { id: a.id, name: a.name, type: a.type, balance: fmt(a.balance), bdate: todayISO(), hist: (a.hist || []).map(e => ({ ...e })), groupId: a.groupId, gTouched: true }); },
-  'm-bh-pick': el => { const d = ui.modal.d, e = d.hist.find(x => x.d === el.dataset.d); d.bdate = e.d; d.balance = fmt(e.b); d.bTouched = true; renderModal(); },
-  'm-bh-del': el => { const d = ui.modal.d; if (d.hist.length < 2) { toast('An account needs at least one balance'); return; } d.hist = d.hist.filter(x => x.d !== el.dataset.d); if (d.bdate === el.dataset.d) { d.bdate = todayISO(); d.balance = fmt(d.hist.reduce((x, y) => (y.d > x.d ? y : x)).b); } d.bTouched = true; renderModal(); },
+  'edit-account': el => { const a = db.accounts.find(x => x.id === el.dataset.id); openModal('account', { id: a.id, name: a.name, type: a.type, balance: fmtIn(a.balance), bdate: todayISO(), hist: (a.hist || []).map(e => ({ ...e })), groupId: a.groupId, gTouched: true }); },
+  'm-bh-pick': el => { const d = ui.modal.d, e = d.hist.find(x => x.d === el.dataset.d); d.bdate = e.d; d.balance = fmtIn(e.b); d.bTouched = true; renderModal(); },
+  'm-bh-del': el => { const d = ui.modal.d; if (d.hist.length < 2) { toast('An account needs at least one balance'); return; } d.hist = d.hist.filter(x => x.d !== el.dataset.d); if (d.bdate === el.dataset.d) { d.bdate = todayISO(); d.balance = fmtIn(d.hist.reduce((x, y) => (y.d > x.d ? y : x)).b); } d.bTouched = true; renderModal(); },
   'm-bh-all': () => { ui.modal.d.bhAll = true; renderModal(); },
   'new-agroup': () => openModal('agroup', { name: '', icon: 'savings', color: GROUP_COLORS[db.agroups.length % GROUP_COLORS.length] }),
   'edit-agroup': el => { const g = db.agroups.find(x => x.id === el.dataset.id); openModal('agroup', { id: g.id, name: g.name, icon: g.icon, color: g.color }); },
@@ -2475,11 +2527,11 @@ const handlers = {
   'm-save-agroup': () => { const d = ui.modal.d; ui.modal = null; Actions.saveAgroup(d); renderModal(); },
   'm-del-agroup': () => { const id = ui.modal.d.id; ui.modal = null; Actions.deleteAgroup(id); renderModal(); },
   'new-goal': () => openModal('goal', { title: '', target: '', current: '', date: '' }),
-  'edit-goal': el => { const g = db.goals.find(x => x.id === el.dataset.id); openModal('goal', { id: g.id, title: g.title, target: fmt(g.target), current: fmt(g.current), date: g.date, accountId: g.accountId || null, currency: goalCur(g), start: g.start ? fmt(g.start) : '', step: g.step ? fmt(g.step) : '' }); },
+  'edit-goal': el => { const g = db.goals.find(x => x.id === el.dataset.id); openModal('goal', { id: g.id, title: g.title, target: fmtIn(g.target), current: fmtIn(g.current), date: g.date, accountId: g.accountId || null, currency: goalCur(g), start: g.start ? fmtIn(g.start) : '', step: g.step ? fmtIn(g.step) : '' }); },
   'm-goal-acct': () => { ui.modal.d.menu = false; ui.modal.d.view = 'acct'; renderModal(); },
   'm-gmenu': () => { ui.modal.d.menu = !ui.modal.d.menu; renderModal(); },
   'm-gcur': el => { const d = ui.modal.d; d.currency = el.dataset.v; d.menu = false; renderModal(); },
-  'm-goal-pick': el => { const d = ui.modal.d; d.accountId = el.dataset.id || null; d.view = 'main'; d.slide = true; renderModal(); },
+  'm-goal-pick': el => { const d = ui.modal.d; d.accountId = el.dataset.id || null; if (d.accountId && d.currency && d.currency !== cur()) { d.currency = cur(); toast(`Goal currency set to ${cur()} to match the account`); } d.view = 'main'; d.slide = true; renderModal(); },
   'm-goal-back': () => { ui.modal.d.view = 'main'; ui.modal.d.slide = true; renderModal(); },
   milestone: el => { db.hintSeen = true; Actions.milestone(el.dataset.id, +el.dataset.k); },
   accent: el => Actions.setting('accent', el.dataset.v),
@@ -2684,28 +2736,46 @@ var Cloud = {
   sb: null, user: null, status: 'off', timer: null, remoteAt: null, busy: false,
   // Sign-in runs on the real website and in the desktop app (not inside the Claude preview)
   available: /(^|\.)famlyfi\.com$|\.netlify\.app$|^localhost$|^127\.0\.0\.1$|^tauri\.localhost$/.test(location.hostname) && location.protocol !== 'file:',
+  /* Staying signed in: your session is kept on this device and refreshed automatically.
+     A slow or missing connection never signs you out: the app keeps showing your account and syncs
+     as soon as it can. You are only signed out when you tap "Sign out", or if the session is truly
+     ended by the server (then you get a clear message and your data on this device stays). */
+  storedUser() { try { const k = Object.keys(localStorage).find(x => /^sb-.*-auth-token$/.test(x)); const v = k && JSON.parse(localStorage.getItem(k)); return (v && (v.user || v.currentSession?.user)) || null; } catch (e) { return null; } },
+  hasStoredSession() { return !!this.storedUser(); },
+  loadLib() { return new Promise((ok, no) => { if (window.supabase) return ok(); const sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js'; sc.onload = ok; sc.onerror = () => { sc.remove(); no(new Error('offline')); }; document.head.appendChild(sc); }); },
+  retryLater() { if (this.retryT) return; const go = () => { clearTimeout(this.retryT); this.retryT = null; removeEventListener('online', go); this.init(); }; addEventListener('online', go); this.retryT = setTimeout(go, 30000); },
   async init() {
     if (!this.available) return;
-    try {
-      await new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js'; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); });
+    if (!this.user) { const u = this.storedUser(); if (u) { this.user = u; this.status = navigator.onLine ? 'syncing' : 'offline'; } }  // show the account right away, even offline
+    try { await this.loadLib(); } catch (e) { this.setStatus('offline'); this.retryLater(); render(); return; }
+    if (!this.sb) {
       this.sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { flowType: 'implicit', persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
       this.sb.auth.onAuthStateChange((ev, session) => {
-        const was = this.user?.id; this.user = session?.user || null;
-        if (this.user && this.user.id !== was) { this.setStatus('syncing'); this.pull(true); }
-        if (!this.user) this.setStatus('off');
+        const prev = this.user?.id; if (session?.user) this.user = session.user;
+        if (ev === 'SIGNED_IN' && this.signingIn) { this.signingIn = false; this.first(true); return; }
+        if (session?.user && session.user.id !== prev) { this.first(false); return; }
+        if (ev === 'USER_UPDATED') render();
+        if (ev === 'SIGNED_OUT' && !this.userSignOut) {
+          if (this.hasStoredSession()) return;                      // a hiccup, not a real sign-out
+          if (prev) { this.user = null; this.setStatus('off'); render(); toast('Your session ended. Sign in again to keep syncing. Your data on this device is safe.'); }
+        }
       });
-      const { data } = await this.sb.auth.getSession();
-      this.user = data.session?.user || null;
-      if (this.user) { this.setStatus('syncing'); await this.pull(true); }
-      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && this.user) this.pull(false); });
-      addEventListener('online', () => { if (this.user) this.push(); });
-      render();
-    } catch (e) { this.status = 'error'; }
+    }
+    try {
+      const { data, error } = await this.sb.auth.getSession();
+      if (data?.session?.user) { this.user = data.session.user; this.setStatus('syncing'); await this.first(false); }
+      else if (this.hasStoredSession()) { this.setStatus(navigator.onLine ? 'error' : 'offline'); this.retryLater(); }   // could not refresh right now: stay signed in, try again later
+      else if (this.user) { this.user = null; this.setStatus('off'); }
+      if (error && this.hasStoredSession()) this.retryLater();
+    } catch (e) { this.setStatus('offline'); this.retryLater(); }
+    try { if (this.user && navigator.storage?.persist) navigator.storage.persist(); } catch (e) {}  // ask the device not to clear app storage
+    render();
   },
   setStatus(st) { this.status = st; const el = document.querySelector('[data-sync]'); if (el) el.outerHTML = syncBadge(); else if (ui.route === 'profile' || ui.route === 'settings') render(); },
   async signInPassword(email, password) {
+    this.signingIn = true;
     const { error } = await this.sb.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+    if (error) { this.signingIn = false; throw error; }
   },
   async setPassword(password) {
     const { data, error } = await this.sb.auth.updateUser({ password, data: { has_password: true } });
@@ -2717,52 +2787,137 @@ var Cloud = {
     if (error) throw error;
   },
   async verifyCode(email, token) {
+    this.signingIn = !this.user;
     const { error } = await this.sb.auth.verifyOtp({ email, token, type: 'email' });
-    if (error) throw error;
+    if (error) { this.signingIn = false; throw error; }
   },
-  // Load the account's data. First sign-in with no cloud data: upload what's on this device (if it's real data)
-  async pull(first) {
-    if (!this.user || this.busy) return;
-    this.busy = true;
+  /* ---------- Sync engine ----------
+     The cloud keeps one copy of your data. Every device remembers the copy it last synced ("base").
+     Before saving, a device checks whether the cloud changed in the meantime; if it did, both sides'
+     changes are merged item by item (nothing is overwritten), and the save only goes through if nobody
+     else saved in between. Open apps check for changes every 20 seconds and when you come back to them. */
+  SKEY: 'famlyfi.sync', base: null, dirty: false, chain: Promise.resolve(), pollT: null,
+  loadState() { try { const st = JSON.parse(localStorage.getItem(this.SKEY) || 'null'); if (st && this.user && st.uid === this.user.id) { this.base = st.base ? JSON.parse(st.base) : null; this.remoteAt = st.remoteAt || null; this.dirty = !!st.dirty; return true; } } catch (e) {} this.base = null; this.remoteAt = null; this.dirty = false; return false; },
+  saveState() { try { if (this.user) localStorage.setItem(this.SKEY, JSON.stringify({ uid: this.user.id, remoteAt: this.remoteAt, dirty: this.dirty, base: this.base ? JSON.stringify(this.base) : null })); } catch (e) {} },
+  // Runs sync jobs one after another, never two at once
+  run(job) { this.chain = this.chain.then(job, job).catch(() => {}); return this.chain; },
+  clone(x) { return x == null ? x : JSON.parse(JSON.stringify(x)); },
+  apply(data) { const keep = { onboard: false }; Object.keys(db).forEach(k => delete db[k]); Object.assign(db, this.clone(data), keep); Store.saveLocal(); },
+  same(a, b) { return JSON.stringify(a) === JSON.stringify(b); },
+  first(firstTime) { return this.run(async () => {
+    if (!this.user || !this.sb) return;
     try {
-      const { data, error } = await this.sb.from('user_data').select('data, updated_at').eq('user_id', this.user.id).maybeSingle();
+      const known = this.loadState();
+      const { data: row, error } = await this.sb.from('user_data').select('data, updated_at').eq('user_id', this.user.id).maybeSingle();
       if (error) throw error;
-      if (data) {
-        if (first || !this.remoteAt || data.updated_at > this.remoteAt) {
-          if (!first && this.timer) { this.busy = false; return; } // local edits waiting to upload win
-          this.remoteAt = data.updated_at;
-          const d = data.data || {};
-          if (d && d.items) { Object.keys(db).forEach(k => delete db[k]); Object.assign(db, d); db.onboard = false; Store.saveLocal(); if (first) toast('Signed in. Your data is up to date.'); render(); }
-        }
-        this.setStatus('synced');
+      if (row && row.data && row.data.items) {
+        if (known && this.dirty) { await this.syncNow(row); }       // unsynced edits on this device: merge them in
+        else if (!known || row.updated_at !== this.remoteAt) { this.apply(row.data); this.base = this.clone(row.data); this.remoteAt = row.updated_at; this.dirty = false; this.saveState(); render(); }
+        if (firstTime) toast('Signed in. Your data is up to date.');
       } else {
-        if (!db.onboard && !db.example) await this.push(true); else this.setStatus('synced');
-        if (first) toast('Signed in');
+        if (!db.onboard && !db.example) { this.dirty = true; await this.syncNow(null); }
+        if (firstTime) toast('Signed in');
       }
+      this.setStatus('synced');
     } catch (e) { this.setStatus(navigator.onLine ? 'error' : 'offline'); }
-    this.busy = false;
+    this.startPolling();
+  }); },
+  // Merge local edits with the cloud copy (when needed), then save with a "nobody else saved since" check
+  async syncNow(knownRow) {
+    for (let attempt = 0; attempt < 4; attempt++) {
+      let row = knownRow;
+      if (row === undefined) { const r = await this.sb.from('user_data').select('data, updated_at').eq('user_id', this.user.id).maybeSingle(); if (r.error) throw r.error; row = r.data; }
+      knownRow = undefined;
+      if (row && row.updated_at !== this.remoteAt && row.data) {        // someone else saved since our last sync
+        const merged = this.clone(this.dirty ? merge3(this.base, this.clone(db), row.data) : row.data);
+        const changed = !this.same(merged, db); this.apply(merged);
+        if (changed) render();
+        if (!this.dirty) { this.base = this.clone(row.data); this.remoteAt = row.updated_at; this.saveState(); return; }
+      }
+      if (!this.dirty) return;
+      const at = new Date().toISOString(), payload = JSON.parse(JSON.stringify(db));
+      let res;
+      if (row) res = await this.sb.from('user_data').update({ data: payload, updated_at: at }).eq('user_id', this.user.id).eq('updated_at', row.updated_at).select('updated_at');
+      else res = await this.sb.from('user_data').insert({ user_id: this.user.id, data: payload, updated_at: at }).select('updated_at');
+      if (res.error && !/duplicate|conflict/i.test(res.error.message || '')) throw res.error;
+      if (!res.error && res.data && res.data.length) { this.base = payload; this.remoteAt = res.data[0].updated_at || at; this.dirty = !this.same(payload, JSON.parse(JSON.stringify(db))); this.saveState(); if (!this.dirty) return; }
+      // someone saved in between: loop, merge again, retry
+    }
   },
-  queue() { if (!this.user) return; clearTimeout(this.timer); this.setStatus('syncing'); this.timer = setTimeout(() => this.push(), 1200); },
-  async push(now) {
-    if (!this.user) return;
-    clearTimeout(this.timer); this.timer = null;
+  queue() { if (!this.user) return; this.dirty = true; this.saveState(); clearTimeout(this.timer); this.setStatus('syncing'); this.timer = setTimeout(() => this.push(), 1200); },
+  push() { clearTimeout(this.timer); this.timer = null; return this.run(async () => {
+    if (!this.user || !this.sb) return;
     if (!navigator.onLine) { this.setStatus('offline'); return; }
+    try { await this.syncNow(); this.setStatus('synced'); } catch (e) { this.setStatus(navigator.onLine ? 'error' : 'offline'); setTimeout(() => { if (this.dirty) this.push(); }, 15000); }
+  }); },
+  // Called by the app before reloading or updating: make sure nothing is left unsaved
+  flush() { return this.dirty || this.timer ? this.push() : this.chain; },
+  // Look for changes made on other devices (cheap check first)
+  check() { return this.run(async () => {
+    if (!this.user || !this.sb || !navigator.onLine || document.visibilityState !== 'visible') return;
+    if (ui.modal || this.timer || (typeof Drag !== 'undefined' && Drag.s?.active)) return;   // don't change things under your fingers
     try {
-      const at = new Date().toISOString();
-      const { error } = await this.sb.from('user_data').upsert({ user_id: this.user.id, data: db, updated_at: at });
-      if (error) throw error;
-      this.remoteAt = at; this.setStatus('synced');
-    } catch (e) { this.setStatus('error'); }
+      const r = await this.sb.from('user_data').select('updated_at').eq('user_id', this.user.id).maybeSingle();
+      if (r.error) throw r.error;
+      if (r.data && r.data.updated_at !== this.remoteAt) { await this.syncNow(); this.setStatus('synced'); }
+      else if (this.dirty) { await this.syncNow(); this.setStatus('synced'); }
+    } catch (e) { this.setStatus(navigator.onLine ? 'error' : 'offline'); }
+  }); },
+  startPolling() {
+    if (this.pollT) return;
+    this.pollT = setInterval(() => this.check(), 20000);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') this.check(); });
+    addEventListener('focus', () => this.check());
+    addEventListener('online', () => { if (this.dirty) this.push(); else this.check(); });
   },
   async signOut() {
-    if (this.timer) await this.push(true);
-    await this.sb.auth.signOut();
-    this.user = null; this.remoteAt = null;
+    await this.flush();
+    this.userSignOut = true;
+    try { if (this.sb) await this.sb.auth.signOut(); } catch (e) {}
+    try { localStorage.removeItem(this.SKEY); if (!this.sb) Object.keys(localStorage).filter(k => /^sb-.*-auth-token$/.test(k)).forEach(k => localStorage.removeItem(k)); } catch (e) {}
+    this.user = null; this.remoteAt = null; this.base = null; this.dirty = false; this.userSignOut = false;
     // Remove this account's data from the device; it stays safe in the account
     const fresh = freshDb(); Object.keys(db).forEach(k => delete db[k]); Object.assign(db, fresh); Store.saveLocal();
     location.hash = '#home'; render(); toast('Signed out');
   }
 };
+/* Three-way merge: base = last synced copy, local = this device, remote = the cloud.
+   Lists of things with an id (categories, entries, accounts, groups, goals) merge item by item:
+   whichever side changed an item wins; new items from both sides are kept; deletions apply unless
+   the other side edited that item meanwhile (edits win over deletes, so nothing is lost silently). */
+function merge3(base, local, remote) {
+  base = base || {};
+  const J = x => JSON.stringify(x), out = {};
+  const keys = new Set([...Object.keys(local || {}), ...Object.keys(remote || {})]);
+  const isIdList = a => Array.isArray(a) && a.length && a.every(x => x && typeof x === 'object' && 'id' in x);
+  for (const k of keys) {
+    const b = base[k], l = local[k], r = remote[k];
+    if ((isIdList(l) || isIdList(r) || isIdList(b)) && (Array.isArray(l) || l === undefined) && (Array.isArray(r) || r === undefined)) {
+      const B = new Map((b || []).map(x => [x.id, x])), L = new Map((l || []).map(x => [x.id, x])), R = new Map((r || []).map(x => [x.id, x]));
+      const localReordered = J((l || []).map(x => x.id).filter(id => B.has(id))) !== J((b || []).map(x => x.id).filter(id => L.has(id)));
+      const order = localReordered ? [...(l || []), ...(r || [])] : [...(r || []), ...(l || [])];
+      const seen = new Set(), res = [];
+      for (const x of order) {
+        const id = x.id; if (seen.has(id)) continue; seen.add(id);
+        const inB = B.has(id), inL = L.has(id), inR = R.has(id);
+        const lCh = inL && (!inB || J(L.get(id)) !== J(B.get(id))), rCh = inR && (!inB || J(R.get(id)) !== J(B.get(id)));
+        if (inL && inR) res.push(lCh && rCh ? merge3(B.get(id) || {}, L.get(id), R.get(id)) : lCh ? L.get(id) : R.get(id));   // both edited: merge field by field
+        else if (inL) { if (!inB || lCh) res.push(L.get(id)); }        // new here, or edited here while deleted there
+        else if (inR) { if (!inB || rCh) res.push(R.get(id)); }        // new there, or edited there while deleted here
+      }
+      out[k] = res;
+    } else if (l && r && typeof l === 'object' && typeof r === 'object' && !Array.isArray(l) && !Array.isArray(r)) {
+      out[k] = merge3(b && typeof b === 'object' ? b : {}, l, r);     // settings, profile, pins…
+    } else {
+      out[k] = (l !== undefined && J(l) !== J(b)) || r === undefined ? l : r;
+    }
+  }
+  // Keep things consistent: entries need their category, accounts need their group
+  const fix = (listK, refK, ownerK) => { (out[listK] || []).forEach(x => { if (x[refK] && !(out[ownerK] || []).some(o => o.id === x[refK])) {
+    const owner = [local, remote, base].map(src => (src[ownerK] || []).find(o => o.id === x[refK])).find(Boolean); if (owner) (out[ownerK] = out[ownerK] || []).push(owner); } }); };
+  fix('items', 'groupId', 'groups'); fix('accounts', 'groupId', 'agroups');
+  return out;
+}
 function syncBadge() {
   const m = { synced: ['ok', 'Synced'], syncing: ['busy', 'Saving…'], offline: ['warn', 'Offline · will sync later'], error: ['warn', "Couldn't sync · retrying"], off: ['', ''] }[Cloud.status] || ['', ''];
   return m[1] ? `<span class="sync ${m[0]}" data-sync><i></i>${m[1]}</span>` : '<span data-sync></span>';
@@ -2780,6 +2935,7 @@ document.addEventListener('pointerdown', e => {
 }, true);
 // ---- "What's new" note, shown once after the app updates (newest first; keep each line short) ----
 const WHATS_NEW = {
+  '0.80': ['Your devices now merge changes instead of overwriting each other', 'You stay signed in, even with a weak connection', 'Cents and comma decimals (12,50) are kept exactly', 'History: see your net worth over all time'],
   '0.79': ['Updates now reach the desktop app within seconds'],
   '0.78': ['Sign in with a password (optional)', 'Forgot your password? Reset it with an email code', 'Sign in from the welcome screen works again'],
   '0.77': ['Famlyfi can now be installed as an app on Android'],
@@ -2831,7 +2987,7 @@ var Updater = {
     } catch (e) {}
     try { return await get(this.PAGES + '?t=' + Date.now()); } catch (e) { return null; }
   },
-  async reloadApp() { if (Cloud.timer) await Cloud.push(true); location.reload(); },
+  async reloadApp() { await Cloud.flush(); location.reload(); },
   async check(manual) {
     if (!this.on || this.checking) return;
     this.checking = true; if (manual) render();
@@ -2847,7 +3003,7 @@ var Updater = {
   async install() {
     if (!this.info || this.busy) return;
     this.busy = true; renderModal();
-    if (Cloud.timer) await Cloud.push(true); // save any unsynced changes first
+    await Cloud.flush(); // save any unsynced changes first
     try { await window.__TAURI__.core.invoke('install_update'); }
     catch (e) { this.busy = false; renderModal(); toast("Update didn't finish. Please try again."); }
   },
