@@ -102,6 +102,7 @@ fn reveal(app: &AppHandle) {
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_window_state::Builder::default().with_denylist(&["splash"]).with_state_flags(tauri_plugin_window_state::StateFlags::all() & !tauri_plugin_window_state::StateFlags::VISIBLE).build())
         .manage(PendingUpdate::default())
         .manage(Boot::default())
         .invoke_handler(tauri::generate_handler![
