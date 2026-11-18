@@ -1010,7 +1010,7 @@ const ACCOUNT_TYPES = {
 };
 const CURRENCIES = ['CHF', 'USD'];
 /* App version: bumped on every published update (0.51 = update 51) */
-const APP_VERSION = '0.80';
+const APP_VERSION = '0.81';
 const STORE_KEY = 'famlyfi.v1';
 
 /* =========================================================
@@ -1106,12 +1106,15 @@ const UP = () => window.Updater || {};
 const hasRealData = () => !db.example && !!(db.items.length || db.accounts.length || db.goals.length);
 const Store = {
   load() {
-    try { const d = JSON.parse(localStorage.getItem(STORE_KEY)); if (d && d.v === 1) { if (d.settings && !CURRENCIES.includes(d.settings.currency)) d.settings.currency = 'CHF'; return migrateAccounts(d); } } catch (e) {}
+    let raw = null;
+    try { raw = localStorage.getItem(STORE_KEY); const d = JSON.parse(raw); if (d && d.v === 1) { if (d.settings && !CURRENCIES.includes(d.settings.currency)) d.settings.currency = 'CHF'; return migrateAccounts(d); } } catch (e) {}
+    // Saved data exists but can't be read: keep it aside (never overwrite it) and let the cloud copy come back in full
+    if (raw) { try { localStorage.setItem(STORE_KEY + '.damaged', raw); localStorage.removeItem('famlyfi.sync'); } catch (e) {} this.damaged = true; }
     const d = freshDb();
     try { localStorage.setItem(STORE_KEY, JSON.stringify(d)); } catch (e) {}
     return d;
   },
-  saveLocal() { try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); } catch (e) {} },
+  saveLocal() { try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); this.failWarned = false; } catch (e) { if (!this.failWarned && typeof toast === 'function') { this.failWarned = true; toast(Cloud && Cloud.user ? 'This device is out of storage. Your changes are still saved to your account.' : 'Couldn’t save on this device. Its storage is full. Free up space, or sign in to keep your data safe.'); } } },
   save() { if (typeof syncGoals === 'function') syncGoals(); snapshot(); this.saveLocal(); if (typeof Cloud !== 'undefined') Cloud.queue(); }
 };
 let db = Store.load();
@@ -2281,8 +2284,10 @@ function moveIndicators() {
   }
   requestAnimationFrame(() => { ind?.classList.remove('instant'); dind?.classList.remove('instant'); });
 }
+let navSig = '';
 function renderSide() {
-  if (!shellBuilt) buildShell();
+  const sig = navList().map(([k]) => k).join();
+  if (!shellBuilt || sig !== navSig) { navSig = sig; buildShell(); }
   const r = ui.route, name = db.profile.name || 'You';
   const counts = { overview: db.items.length, accounts: db.accounts.length, goals: db.goals.length };
   navList().forEach(([k]) => {
@@ -2935,6 +2940,7 @@ document.addEventListener('pointerdown', e => {
 }, true);
 // ---- "What's new" note, shown once after the app updates (newest first; keep each line short) ----
 const WHATS_NEW = {
+  '0.81': ['Stability fixes: safer saving and smoother sync between devices'],
   '0.80': ['Your devices now merge changes instead of overwriting each other', 'You stay signed in, even with a weak connection', 'Cents and comma decimals (12,50) are kept exactly', 'History: see your net worth over all time'],
   '0.79': ['Updates now reach the desktop app within seconds'],
   '0.78': ['Sign in with a password (optional)', 'Forgot your password? Reset it with an email code', 'Sign in from the welcome screen works again'],
@@ -3013,6 +3019,7 @@ var Updater = {
   }
 };
 Cloud.init();
+if (Store.damaged) setTimeout(() => toast(Cloud.user ? 'Data on this device couldn’t be read. Restoring it from your account…' : 'Data on this device couldn’t be read, so the app started fresh. Sign in to restore your data.'), 900);
 WhatsNew.run();
 if (Updater.on) {
   const shown = () => document.documentElement.classList.add('shown');
